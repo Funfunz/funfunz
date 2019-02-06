@@ -1,0 +1,2 @@
+# all-admin
+backoffice generator
