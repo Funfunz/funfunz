@@ -1,0 +1,49 @@
+{
+  "name": "all-admin",
+  "version": "0.0.1",
+  "description": "backoffice generator",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint src/*.js",
+    "dev": "DEBUG=all-admin:* NODE_ENV=development babel-node --extensions \".js,.ts,.tsx\" ./src/index.ts",
+    "clean": "rm -rf lib bin && mkdir lib",
+    "type-check": "tsc --noEmit",
+    "type-check:watch": "npm run type-check -- --watch",
+    "build": "npm run clean && npm run build:types && npm run build:js",
+    "build:types": "tsc --emitDeclarationOnly",
+    "build:js": "babel src -d lib --extensions \".js,.ts,.tsx\" --source-maps inline",
+    "start": "NODE_ENV=production node ./lib/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JWebCoder/all-admin.git"
+  },
+  "keywords": [
+    "backoffice",
+    "generator"
+  ],
+  "author": "João Moura",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/JWebCoder/all-admin/issues"
+  },
+  "homepage": "https://github.com/JWebCoder/all-admin#readme",
+  "dependencies": {
+    "@types/mysql2": "github:types/mysql2",
+    "mysql2": "^1.6.4"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@babel/node": "^7.2.2",
+    "@babel/plugin-proposal-class-properties": "^7.3.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.3.2",
+    "@babel/preset-env": "^7.3.1",
+    "@babel/preset-typescript": "^7.1.0",
+    "@types/node": "^10.12.21",
+    "babel-plugin-module-resolver": "^3.1.3",
+    "eslint": "^5.13.0",
+    "typescript": "^3.3.1"
+  }
+}
