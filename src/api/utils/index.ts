@@ -1,0 +1,42 @@
+import fs from 'fs'
+import Debug from 'debug'
+import { HttpException, MCResponse } from '@root/api/types';
+import { NextFunction } from 'express';
+
+const debug = Debug('holiday-payments-server:utils')
+
+export function catchMiddleware (next: NextFunction) {
+  return function (err: HttpException) {
+    if (next) {
+      next(err)
+    }
+    return {
+      error: err,
+    }
+  }
+}
+
+export function buildError (message: string, status: number) {
+  const err = new HttpException(status, message)
+  return err
+}
+
+export function addToResponse (res: MCResponse, data: any, target: string) {
+  if (res) {
+    res.data = {
+      ...res.data,
+      [target]: data,
+    }
+    return res
+  }
+  throw buildError('Response object not valid', 500)
+}
+
+export function nextAndReturn (next: NextFunction) {
+  return function (data: any) {
+    if (next) {
+      next()
+    }
+    return data
+  }
+}

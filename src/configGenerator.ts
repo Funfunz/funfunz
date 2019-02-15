@@ -1,5 +1,6 @@
 import fs from 'fs'
 import { describeInfo, schemaInfo } from '@root/describeTable'
+import { typeAnswers } from '@root/index'
 
 type tableInfo = {
   name: string,
@@ -39,7 +40,7 @@ function buildColumnInfo():columnInfo {
   }
 }
 
-export default function generateConfig(DBData: Array<{schema: schemaInfo, describe: describeInfo}>):any {
+export function generateSettings(DBData: Array<{schema: schemaInfo, describe: describeInfo}>):any {
   let resultData: Array<any> = []
   DBData.forEach(
     tableData => {
@@ -81,6 +82,25 @@ export default function generateConfig(DBData: Array<{schema: schemaInfo, descri
     }
   )
   fs.writeFile('settings.json', JSON.stringify(resultData, null, 2), 'utf8', (err) => {
+    if (err) {
+      console.log('err', err)
+    }
+  })
+}
+
+export function generateConfig(answers: typeAnswers) {
+  const finalConfig = {
+    [answers.DBType]: {
+        host: answers.DBHost,
+        database: answers.DBName,
+        user: answers.DBUser,
+        password: answers.DBPassword
+    },
+    server: {
+        port: 3004
+    }
+  }
+  fs.writeFile('config.json', JSON.stringify(finalConfig, null, 2), 'utf8', (err) => {
     if (err) {
       console.log('err', err)
     }

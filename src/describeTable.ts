@@ -17,28 +17,26 @@ export type schemaInfo = Array<{
   REFERENCED_TABLE_NAME?: string,
   REFERENCED_COLUMN_NAME?: string,
 }>
-
-const DB = 'splitbills'
  
 // create the connection to database
 function createPoolSchema() {
   return mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: 'BlueInfinity1!',
+    host: process.env.DBHost,
+    user: process.env.DBUser,
+    password: process.env.DBPassword,
     database: 'INFORMATION_SCHEMA',
     waitForConnections: true,
     connectionLimit: 40,
-    queueLimit: 0
+    queueLimit: 0,
   })
 }
 
 function createPoolDB() {
   return mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: 'BlueInfinity1!',
-    database: DB,
+    host: process.env.DBHost,
+    user: process.env.DBUser,
+    password: process.env.DBPassword,
+    database: process.env.DBName,
     waitForConnections: true,
     connectionLimit: 40,
     queueLimit: 0
@@ -68,12 +66,12 @@ const describe = (tablesNames: Array<string>): PromiseLike<Array<{schema: schema
             }
           }
           poolSchema.execute(
-            `SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = "${DB}" AND TABLE_NAME = "${tableName}" AND REFERENCED_COLUMN_NAME IS NOT NULL;`,
+            `SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM KEY_COLUMN_USAGE WHERE TABLE_SCHEMA='${process.env.DBName}' AND TABLE_NAME="${tableName}" AND REFERENCED_COLUMN_NAME IS NOT NULL;`,
             (err, schema: schemaInfo) => {
               if (err) {
                 rej(err)
               }
-              if (schema.length === 0) {
+              if (!schema || schema.length === 0) {
                 schema = [{TABLE_NAME: tableName}]
               }
               results.schema = schema
@@ -81,7 +79,7 @@ const describe = (tablesNames: Array<string>): PromiseLike<Array<{schema: schema
             }
           )
           poolDB.execute(
-            `describe ${tableName}`,
+            `describe \`${tableName}\``,
             (err, describe: describeInfo) => {
               if (err) {
                 rej(err)
