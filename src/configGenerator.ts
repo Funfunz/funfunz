@@ -8,6 +8,7 @@ type tableInfo = {
   columns: Array<
     columnInfo
   >,
+  visible: boolean
 }
 
 type columnInfo = {
@@ -15,6 +16,11 @@ type columnInfo = {
   verbose: string,
   type: string,
   allowNull: boolean,
+  visible: {
+    main: boolean,
+    detail: boolean
+  },
+  editable: boolean,
   relation?: {
     type: string,
     table: string,
@@ -28,6 +34,7 @@ function buildTableInfo():tableInfo {
     name: '',
     pk: '',
     columns: [],
+    visible: true
   }
 }
 
@@ -37,6 +44,11 @@ function buildColumnInfo():columnInfo {
     verbose: '',
     type: '',
     allowNull: true,
+    visible: {
+      main: true,
+      detail: true
+    },
+    editable: true
   }
 }
 
@@ -47,7 +59,7 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
       let table = buildTableInfo()
       const schema = tableData.schema
       const describe = tableData.describe
-      console.log(schema)
+      
       table.name = schema[0].TABLE_NAME
       describe.forEach(
         (column) => {

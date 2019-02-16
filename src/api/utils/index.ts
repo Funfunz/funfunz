@@ -1,12 +1,8 @@
-import fs from 'fs'
-import Debug from 'debug'
 import { HttpException, MCResponse } from '@root/api/types';
-import { NextFunction } from 'express';
+import { ErrorRequestHandler, NextFunction } from 'express'
 
-const debug = Debug('holiday-payments-server:utils')
-
-export function catchMiddleware (next: NextFunction) {
-  return function (err: HttpException) {
+export function catchMiddleware(next: NextFunction) {
+  return (err: HttpException) => {
     if (next) {
       next(err)
     }
@@ -16,12 +12,12 @@ export function catchMiddleware (next: NextFunction) {
   }
 }
 
-export function buildError (message: string, status: number) {
+export function buildError(message: string, status: number) {
   const err = new HttpException(status, message)
   return err
 }
 
-export function addToResponse (res: MCResponse, data: any, target: string) {
+export function addToResponse(res: MCResponse, data: any, target: string) {
   if (res) {
     res.data = {
       ...res.data,
@@ -32,11 +28,19 @@ export function addToResponse (res: MCResponse, data: any, target: string) {
   throw buildError('Response object not valid', 500)
 }
 
-export function nextAndReturn (next: NextFunction) {
-  return function (data: any) {
+export function nextAndReturn(next: NextFunction) {
+  return function(data: any) {
     if (next) {
       next()
     }
     return data
   }
+}
+
+// error handler
+export const errorHandler: ErrorRequestHandler = (err, req, res) => {
+  res.status(err.status || 500)
+  res.json({
+    message: err.message,
+  })
 }

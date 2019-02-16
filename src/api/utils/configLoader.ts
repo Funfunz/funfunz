@@ -1,23 +1,45 @@
-import { Validator } from 'jsonschema'
-import settingsSchema from '@root/api/utils/settingsSchema'
 import configSchema from '@root/api/utils/configSchema'
+import settingsSchema from '@root/api/utils/settingsSchema'
+import { Validator } from 'jsonschema'
 
-let config: {
-  settings: Array<any>,
+const config: {
+  settings: any[],
   config: any,
   [key: string]: any,
 } = {
   settings: [],
-  config: {}
+  config: {},
 }
 
-export function setConfig (configs: any, target: string) {
+/**
+ * Normalize a port into a number, string, or false.
+ */
+function normalizePort(val: string) {
+  const port = parseInt(val, 10)
+
+  if (isNaN(port)) {
+    // named pipe
+    return val
+  }
+
+  if (port >= 0) {
+    // port number
+    return port
+  }
+
+  return false
+}
+
+export function setConfig(configs: any, target: string) {
   if (configCheck(configs, target)) {
+    if (config.server && config.server.port) {
+      config.server.port = normalizePort(config.server.port)
+    }
     config[target] = configs
   }
 }
 
-function configCheck (configs: any, target: string) {
+function configCheck(configs: any, target: string) {
   const validator = new Validator();
 
   if (!configs) {
@@ -38,6 +60,6 @@ function configCheck (configs: any, target: string) {
   return true
 }
 
-export default function () {
+export default function() {
   return config
 }

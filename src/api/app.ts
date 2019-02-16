@@ -1,32 +1,26 @@
-import express from 'express'
-import path from 'path'
-import cors from 'cors'
-// import favicon from 'serve-favicon'
-import logger from 'morgan'
-import bodyParser from 'body-parser'
-import cookieParser from 'cookie-parser'
+import database from '@root/api/db'
+import IndexRouter from '@root/api/routes'
 // import fileUpload from 'express-fileupload'
 import { HttpException } from '@root/api/types'
-
+import { errorHandler } from '@root/api/utils'
+import cookieParser from 'cookie-parser'
+import cors from 'cors'
 import Debug from 'debug'
+import express from 'express'
+// import favicon from 'serve-favicon'
+import logger from 'morgan'
+import path from 'path'
 
-// routes
-import index from '@root/api/routes'
-
-// database
-import database from '@root/api/db'
-import IndexRouter from '@root/api/routes';
-
-const debug = Debug('cpmbg:setup')
+const debug = Debug('funfunzmc:init')
 
 /** Class representing the express server instance. */
 class App {
   /**
-  * Create an express server instance.
-  */
+   * Create an express server instance.
+   */
 
-  server: express.Express
-  constructor () {
+  public server: express.Express
+  constructor() {
     debug('start')
     database.initDB()
     this.server = express()
@@ -40,10 +34,8 @@ class App {
     // uncomment after placing your favicon in /public
     // app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
     this.server.use(logger('dev'))
-    this.server.use(bodyParser.json())
-    this.server.use(bodyParser.urlencoded({ extended: false }))
-    this.server.use(bodyParser.json())
-    this.server.use(bodyParser.urlencoded({ extended: false }))
+    this.server.use(express.json())
+    this.server.use(express.urlencoded())
     // this.server.use(fileUpload())
     this.server.use(cookieParser())
     this.server.use(express.static(path.join(__dirname, '../public')))
@@ -60,15 +52,7 @@ class App {
       }
     )
 
-    // error handler
-    const erroHandler: express.ErrorRequestHandler = (err, req, res) => {
-      res.status(err.status || 500)
-      res.json({
-        message: err.message,
-      })
-    }
-  
-    this.server.use(erroHandler)
+    this.server.use(errorHandler)
     debug('end')
   }
 }

@@ -1,6 +1,5 @@
 // get the client
 import mysql from 'mysql2'
-import { typeAnswers } from '@root/index'
 
 // create the connection to database
 function createConnection() {
@@ -8,24 +7,22 @@ function createConnection() {
     host: process.env.DBHost,
     user: process.env.DBUser,
     password: process.env.DBPassword,
-    database: process.env.DBName
+    database: process.env.DBName,
   })
 }
- 
-// simple query
 
-const tables = (): Promise<Array<string>> => {
+const tables = (): Promise<string[]> => {
   return new Promise<any>(
     (res, rej) => {
       const connection = createConnection()
       connection.execute(
         'show tables',
-        (err, results: Array<mysql.RowDataPacket>) => {
+        (err, results: mysql.RowDataPacket[]) => {
           if (err) {
             rej(err)
           }
-          const tables: Array<string> = results.map(result => result[`Tables_in_${process.env.DBName}`])
-          res({connection, tables})
+          const tablesList: string[] = results.map((result) => result[`Tables_in_${process.env.DBName}`])
+          res({connection, tables: tablesList})
         }
       )
     }
@@ -35,12 +32,10 @@ const tables = (): Promise<Array<string>> => {
       return result.tables
     }
   ).catch(
-    err => {
+    (err) => {
       throw err
     }
   )
 }
-
-
 
 export default tables

@@ -1,10 +1,10 @@
 // get the client
-import tables from '@root/listTables'
+import { generateConfig, generateSettings } from '@root/configGenerator'
 import describe from '@root/describeTable'
-import { generateSettings, generateConfig } from '@root/configGenerator'
+import tables from '@root/listTables'
 import { prompt } from 'enquirer'
 
-export type typeAnswers = {
+export interface ITypeAnswers {
   DBType: string,
   DBHost: string,
   DBName: string,
@@ -22,47 +22,47 @@ const question = [
       'mysql',
       'pgsql',
       'mongoDB',
-    ]
+    ],
   },
   {
     type: 'input',
     name: 'DBHost',
     message: 'Database hostname?',
-    initial: 'localhost'
+    initial: 'localhost',
   },
   {
     type: 'input',
     name: 'DBName',
     message: 'Database name?',
-    initial: 'example_database'
+    initial: 'example_database',
   },
   {
     type: 'input',
     name: 'DBUser',
     message: 'Database user?',
-    initial: 'root'
+    initial: 'root',
   },
   {
     type: 'password',
     name: 'DBPassword',
     message: 'Database password?',
-    initial: ''
+    initial: '',
   },
 ];
- 
+
 prompt(question).then(
   (answers: any) => {
-    const compiledAnswers: typeAnswers = {
+    const compiledAnswers: ITypeAnswers = {
       DBType: answers.DBType,
       DBHost: answers.DBHost,
       DBName: answers.DBName,
       DBUser: answers.DBUser,
-      DBPassword: answers.DBPassword
+      DBPassword: answers.DBPassword,
     }
 
     process.env = {
       ...process.env,
-      ...compiledAnswers
+      ...compiledAnswers,
     }
     Promise.all([
       generateConfig(compiledAnswers),
@@ -70,7 +70,7 @@ prompt(question).then(
     ]).then(
       ([config, tablesNames]) => {
         describe(tablesNames).then(
-          results => {
+          (results) => {
             generateSettings(results)
           }
         )
