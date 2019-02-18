@@ -17,7 +17,7 @@ export type schemaInfo = Array<{
   REFERENCED_TABLE_NAME?: string,
   REFERENCED_COLUMN_NAME?: string,
 }>
- 
+
 // create the connection to database
 function createPoolSchema() {
   return mysql.createPool({
@@ -39,25 +39,25 @@ function createPoolDB() {
     database: process.env.DBName,
     waitForConnections: true,
     connectionLimit: 40,
-    queueLimit: 0
+    queueLimit: 0,
   })
 }
 
-const describe = (tablesNames: Array<string>): PromiseLike<Array<{schema: schemaInfo, describe: describeInfo}>> => {
+const describe = (tablesNames: string[]): PromiseLike<Array<{schema: schemaInfo, describe: describeInfo}>> => {
   const poolSchema = createPoolSchema()
   const poolDB = createPoolDB()
 
-  const promises:Array<Promise<{schema: schemaInfo, describe: describeInfo}>> = tablesNames.map(
-    tableName => {
+  const promises: Array<Promise<{schema: schemaInfo, describe: describeInfo}>> = tablesNames.map(
+    (tableName) => {
       return new Promise<{schema: schemaInfo, describe: describeInfo}>(
         (res, rej) => {
           let counter = 0
-          let results: {
+          const results: {
             schema: schemaInfo,
             describe: describeInfo
           } = {
             schema: [],
-            describe: []
+            describe: [],
           }
           function callback() {
             counter += 1
@@ -66,7 +66,16 @@ const describe = (tablesNames: Array<string>): PromiseLike<Array<{schema: schema
             }
           }
           poolSchema.execute(
-            `SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM KEY_COLUMN_USAGE WHERE TABLE_SCHEMA='${process.env.DBName}' AND TABLE_NAME="${tableName}" AND REFERENCED_COLUMN_NAME IS NOT NULL;`,
+            'SELECT ' +
+            'TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME ' +
+            'FROM KEY_COLUMN_USAGE ' +
+            'WHERE ' +
+              'TABLE_SCHEMA=\'' + process.env.DBName + '\' ' +
+              'AND' +
+              'TABLE_NAME=\'' + tableName + '\' ' +
+              'AND ' +
+              'REFERENCED_COLUMN_NAME IS NOT NULL' +
+            ';',
             (err, schema: schemaInfo) => {
               if (err) {
                 rej(err)
@@ -80,11 +89,11 @@ const describe = (tablesNames: Array<string>): PromiseLike<Array<{schema: schema
           )
           poolDB.execute(
             `describe \`${tableName}\``,
-            (err, describe: describeInfo) => {
+            (err, describeData: describeInfo) => {
               if (err) {
                 rej(err)
               }
-              results.describe = describe
+              results.describe = describeData
               callback()
             }
           )
@@ -99,7 +108,7 @@ const describe = (tablesNames: Array<string>): PromiseLike<Array<{schema: schema
       return result
     }
   ).catch(
-    err => {
+    (err) => {
       throw err
     }
   )

@@ -1,4 +1,4 @@
-import { HttpException, MCResponse } from '@root/api/types';
+import { HttpException, IMCResponse } from '@root/api/types';
 import { ErrorRequestHandler, NextFunction } from 'express'
 
 export function catchMiddleware(next: NextFunction) {
@@ -17,7 +17,7 @@ export function buildError(message: string, status: number) {
   return err
 }
 
-export function addToResponse(res: MCResponse, data: any, target: string) {
+export function addToResponse(res: IMCResponse, data: any, target: string) {
   if (res) {
     res.data = {
       ...res.data,

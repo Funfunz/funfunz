@@ -1,17 +1,15 @@
-import fs from 'fs'
 import { describeInfo, schemaInfo } from '@root/describeTable'
-import { typeAnswers } from '@root/index'
+import { ITypeAnswers } from '@root/index'
+import fs from 'fs'
 
-type tableInfo = {
+interface ITableInfo {
   name: string,
   pk: string,
-  columns: Array<
-    columnInfo
-  >,
+  columns: IColumnInfo[],
   visible: boolean
 }
 
-type columnInfo = {
+interface IColumnInfo {
   name: string,
   verbose: string,
   type: string,
@@ -25,20 +23,20 @@ type columnInfo = {
     type: string,
     table: string,
     key: string,
-    display: Array<string>
+    display: string[]
   }
 }
 
-function buildTableInfo():tableInfo {
+function buildTableInfo(): ITableInfo {
   return {
     name: '',
     pk: '',
     columns: [],
-    visible: true
+    visible: true,
   }
 }
 
-function buildColumnInfo():columnInfo {
+function buildColumnInfo(): IColumnInfo {
   return {
     name: '',
     verbose: '',
@@ -46,47 +44,47 @@ function buildColumnInfo():columnInfo {
     allowNull: true,
     visible: {
       main: true,
-      detail: true
+      detail: true,
     },
-    editable: true
+    editable: true,
   }
 }
 
-export function generateSettings(DBData: Array<{schema: schemaInfo, describe: describeInfo}>):any {
-  let resultData: Array<any> = []
+export function generateSettings(DBData: Array<{schema: schemaInfo, describe: describeInfo}>): any {
+  const resultData: any[] = []
   DBData.forEach(
-    tableData => {
-      let table = buildTableInfo()
+    (tableData) => {
+      const table = buildTableInfo()
       const schema = tableData.schema
       const describe = tableData.describe
-      
+
       table.name = schema[0].TABLE_NAME
       describe.forEach(
         (column) => {
-          let columnData = buildColumnInfo()
+          const columnData = buildColumnInfo()
           columnData.name = column.Field
           columnData.verbose = column.Field
           columnData.type = column.Type
           columnData.allowNull = column.Null === 'NO' ? false : true
-          
+
           if (column.Key === 'PRI') {
             table.pk = column.Field
           }
           tableData.schema.forEach(
-            (schema) => {
-              if (schema.COLUMN_NAME === column.Field) {
+            (schemaData) => {
+              if (schemaData.COLUMN_NAME === column.Field) {
                 columnData.relation = {
                   type: 'oneToMany',
-                  table: schema.REFERENCED_TABLE_NAME || '',
-                  key: schema.REFERENCED_COLUMN_NAME || '',
+                  table: schemaData.REFERENCED_TABLE_NAME || '',
+                  key: schemaData.REFERENCED_COLUMN_NAME || '',
                   display: [
-                    schema.REFERENCED_COLUMN_NAME || ''
-                  ]
+                    schemaData.REFERENCED_COLUMN_NAME || '',
+                  ],
                 }
               }
             }
           )
-          
+
           table.columns.push(columnData)
         }
       )
@@ -100,17 +98,17 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
   })
 }
 
-export function generateConfig(answers: typeAnswers) {
+export function generateConfig(answers: ITypeAnswers) {
   const finalConfig = {
     [answers.DBType]: {
         host: answers.DBHost,
         database: answers.DBName,
         user: answers.DBUser,
-        password: answers.DBPassword
+        password: answers.DBPassword,
     },
     server: {
-        port: 3004
-    }
+        port: 3004,
+    },
   }
   fs.writeFile('config.json', JSON.stringify(finalConfig, null, 2), 'utf8', (err) => {
     if (err) {

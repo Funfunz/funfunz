@@ -1,8 +1,8 @@
 import express from 'express'
 
 export class HttpException extends Error {
-  status: number;
-  message: string;
+  public status: number;
+  public message: string;
   constructor(status: number, message: string) {
     super(message);
     this.status = status;
@@ -10,6 +10,6 @@ export class HttpException extends Error {
   }
 }
 
-export interface MCResponse extends express.Response {
+export interface IMCResponse extends express.Response {
   data?: any
 }
