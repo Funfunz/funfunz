@@ -4,6 +4,6 @@ export declare class HttpException extends Error {
     message: string;
     constructor(status: number, message: string);
 }
-export interface MCResponse extends express.Response {
+export interface IMCResponse extends express.Response {
     data?: any;
 }

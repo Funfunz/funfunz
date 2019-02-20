@@ -1,11 +1,11 @@
-import { MCResponse } from '@root/api/types';
+import { IMCResponse } from '@root/api/types';
 import { NextFunction, Request } from 'express';
 declare class TableController {
-    settings: Array<any>;
+    settings: any[];
     constructor();
-    getTableData(req: Request, res: MCResponse, next: NextFunction): void;
-    insertRow(req: Request, res: MCResponse, next: NextFunction): void;
-    updateRow(req: Request, res: MCResponse, next: NextFunction): void;
-    deleteRow(req: Request, res: MCResponse, next: NextFunction): void;
+    getTableData(req: Request, res: IMCResponse, next: NextFunction): void;
+    insertRow(req: Request, res: IMCResponse, next: NextFunction): void;
+    updateRow(req: Request, res: IMCResponse, next: NextFunction): void;
+    deleteRow(req: Request, res: IMCResponse, next: NextFunction): void;
 }
 export default TableController;

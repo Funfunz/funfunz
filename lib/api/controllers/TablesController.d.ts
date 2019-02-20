@@ -1,8 +1,8 @@
-import { MCResponse } from '@root/api/types';
+import { IMCResponse } from '@root/api/types';
 import { NextFunction, Request } from 'express';
 declare class TablesController {
-    settings: Array<any>;
+    settings: any[];
     constructor();
-    getTables(req: Request, res: MCResponse, next: NextFunction): any;
+    getTables(req: Request, res: IMCResponse, next: NextFunction): any;
 }
 export default TablesController;

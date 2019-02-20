@@ -1,6 +1,7 @@
 {
   "presets": ["@babel/preset-env", "@babel/typescript"],
   "plugins": [
+    "dynamic-import-node",
     "@babel/proposal-class-properties",
     "@babel/proposal-object-rest-spread",
     ["module-resolver", {

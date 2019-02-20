@@ -1,11 +1,11 @@
-import { Router } from 'express'
-import { sendJSON } from '@root/api/middleware/response'
-import TablesController from '@root/api/controllers/TablesController'
 import TableController from '@root/api/controllers/TableController'
+import TablesController from '@root/api/controllers/TablesController'
+import { sendJSON } from '@root/api/middleware/response'
+import { Router } from 'express'
 
 class IndexRouter {
-  router: Router
-  constructor (router?: Router) {
+  public router: Router
+  constructor(router?: Router) {
     const tablesController = new TablesController()
     const tableController = new TableController()
 
@@ -42,7 +42,7 @@ class IndexRouter {
     )
   }
 
-  getRouter (): Router {
+  public getRouter(): Router {
     return this.router
   }
 }
