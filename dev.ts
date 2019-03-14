@@ -4,5 +4,5 @@ import index from './src/api/index'
 
 index({
   config,
-  settings
+  settings,
 })

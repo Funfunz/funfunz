@@ -9,11 +9,11 @@
     "dev": "DEBUG=funfunzmc:* NODE_ENV=development babel-node --extensions \".js,.ts,.tsx,.json\" ./dev.ts",
     "questions": "DEBUG=funfunzmc:* NODE_ENV=development babel-node --extensions \".js,.ts,.tsx,.json\" ./src/index.ts",
     "clean": "rm -rf lib bin && mkdir lib",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc",
     "type-check:watch": "npm run type-check -- --watch",
     "build": "npm run clean && npm run build:types && npm run build:js",
-    "build:types": "tsc --emitDeclarationOnly",
-    "build:js": "babel src -d lib --extensions \".js,.ts,.tsx\" --source-maps inline",
+    "build:types": "tsc",
+    "build:js": "babel src -d lib --extensions \".js,.ts,.tsx\" --source-maps inline && cp -rf ./src/api/public/* ./lib/api/public",
     "start": "NODE_ENV=production node ./lib/index.js"
   },
   "repository": {
@@ -42,6 +42,7 @@
     "knex": "^0.16.3",
     "morgan": "^1.9.1",
     "mysql2": "^1.6.4",
+    "pluralize": "^7.0.0",
     "tslint": "^5.12.1"
   },
   "devDependencies": {
@@ -59,6 +60,7 @@
     "@types/express": "^4.16.1",
     "@types/morgan": "^1.7.35",
     "@types/node": "^10.12.21",
+    "@types/pluralize": "0.0.29",
     "babel-plugin-dynamic-import-node": "^2.2.0",
     "babel-plugin-module-resolver": "^3.1.3",
     "eslint": "^5.13.0",

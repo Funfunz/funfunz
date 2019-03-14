@@ -1,0 +1,1 @@
+{"version":3,"sources":["/Users/joaomoura/Repos/jti/global-portfolio-backoffice/src/views/404/style.module.scss"],"names":[],"mappings":"AAAA,mBACE,cAAA,CACA,iBAAA,CACA,OAAA,CACA,QAAA,CACA,kCAAA,CAAA,0BAA2B","file":"7.9fd1c339.chunk.css","sourcesContent":[".text {\n  font-size: 40px;\n  position: absolute;\n  top: 20%;\n  left: 50%;\n  transform: translateX(-50%);\n}"]}

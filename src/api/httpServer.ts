@@ -3,10 +3,10 @@ import Debug from 'debug'
 import express from 'express'
 import http from 'http'
 
-const debug = Debug('funfunzjs:http-server')
+const debug = Debug('funfunzmc:http-server')
 
 export default function startServer(app: express.Application): void {
-  const PORT = config().server.port
+  const PORT = config().config.server.port
   /**
    * Create HTTP server.
    */

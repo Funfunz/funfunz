@@ -1,9 +1,11 @@
 import { describeInfo, schemaInfo } from '@root/describeTable'
 import { ITypeAnswers } from '@root/index'
 import fs from 'fs'
+import pluralize from 'pluralize'
 
 interface ITableInfo {
   name: string,
+  verbose: string,
   pk: string,
   columns: IColumnInfo[],
   visible: boolean
@@ -30,6 +32,7 @@ interface IColumnInfo {
 function buildTableInfo(): ITableInfo {
   return {
     name: '',
+    verbose: '',
     pk: '',
     columns: [],
     visible: true,
@@ -59,6 +62,10 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
       const describe = tableData.describe
 
       table.name = schema[0].TABLE_NAME
+
+      const pluralName = pluralize(table.name)
+
+      table.verbose = pluralName.charAt(0).toUpperCase() + pluralName.slice(1)
       describe.forEach(
         (column) => {
           const columnData = buildColumnInfo()

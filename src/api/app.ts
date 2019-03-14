@@ -27,19 +27,14 @@ class App {
 
     this.server.use(cors())
 
-    // view ngine setup
-    this.server.set('views', path.join(__dirname, 'views'))
-    this.server.set('view engine', 'jade')
-
     // uncomment after placing your favicon in /public
     // app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
     this.server.use(logger('dev'))
     this.server.use(express.json())
-    this.server.use(express.urlencoded())
+    this.server.use(express.urlencoded({ extended: true }))
     // this.server.use(fileUpload())
     this.server.use(cookieParser())
-    this.server.use(express.static(path.join(__dirname, '../public')))
-
+    this.server.use('/', express.static(path.join(__dirname, './public')))
     const indexRouter = new IndexRouter()
     this.server.use('/', indexRouter.getRouter())
 

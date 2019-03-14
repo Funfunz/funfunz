@@ -61,6 +61,8 @@
     // "emitDecoratorMetadata": true,         /* Enables experimental support for emitting type metadata for decorators. */
   },
   "exclude": [
-    "*.ts"
+    "*.ts",
+    "lib/*.ts",
+    "lib/**/*.ts"
   ]
 }

@@ -18,7 +18,10 @@ class TablesController {
       throw buildError('Tables not found', 404)
     } else {
       const tables = this.settings.map(
-        (table) => table.name
+        (table) => ({
+          name: table.name,
+          verbose: table.verbose,
+        })
       )
       addToResponse(res, tables, 'tables')
       return nextAndReturn(next)(tables)

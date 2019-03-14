@@ -1,6 +1,6 @@
 import database from '@root/api/db/index'
 import { HttpException, IMCResponse } from '@root/api/types';
-import { addToResponse, catchMiddleware, nextAndReturn } from '@root/api/utils'
+import { addToResponse, buildError, catchMiddleware, nextAndReturn } from '@root/api/utils'
 import config from '@root/api/utils/configLoader'
 import Debug from 'debug'
 import { NextFunction, Request } from 'express';
@@ -12,6 +12,19 @@ class TableController {
   constructor() {
     debug('Created')
     this.settings = config().settings
+  }
+
+  public getTableConfig(req: Request, res: IMCResponse, next: NextFunction) {
+    if (!this.settings || this.settings.length === 0) {
+      throw buildError('Table not found', 404)
+    } else {
+      const table = this.settings.filter(
+        (tableItem) => tableItem.name === req.params.table
+      )[0]
+
+      addToResponse(res, table.columns, 'results')
+      return nextAndReturn(next)(table.columns)
+    }
   }
 
   public getTableData(req: Request, res: IMCResponse, next: NextFunction) {

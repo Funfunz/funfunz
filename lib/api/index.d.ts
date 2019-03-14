@@ -1,1 +1,1 @@
-export default function (configs: any): void;
+export default function (configs: any): import("express").Express;

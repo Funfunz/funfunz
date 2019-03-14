@@ -4,7 +4,6 @@ import Debug from 'debug'
 
 export default function(configs: any) {
   const debug = Debug('funfunzmc:server')
-
   Object.keys(configs).forEach(
     (configKey) => {
       setConfig(configs[configKey], configKey)
@@ -14,7 +13,7 @@ export default function(configs: any) {
   const CONFIG = config()
 
   debug('---------------------------------------------')
-  debug('INIT PARAMETERS:\n', CONFIG.server)
+  debug('INIT PARAMETERS:\n', CONFIG.config.server)
   debug('NODE_ENV', process.env.NODE_ENV)
   debug('---------------------------------------------')
 

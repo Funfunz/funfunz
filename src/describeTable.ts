@@ -71,7 +71,7 @@ const describe = (tablesNames: string[]): PromiseLike<Array<{schema: schemaInfo,
             'FROM KEY_COLUMN_USAGE ' +
             'WHERE ' +
               'TABLE_SCHEMA=\'' + process.env.DBName + '\' ' +
-              'AND' +
+              'AND ' +
               'TABLE_NAME=\'' + tableName + '\' ' +
               'AND ' +
               'REFERENCED_COLUMN_NAME IS NOT NULL' +
