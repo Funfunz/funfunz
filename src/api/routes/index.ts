@@ -24,6 +24,12 @@ class IndexRouter {
       },
       sendJSON('results')
     )
+    this.router.get('/table/:table/count',
+    (req, res, next) => {
+      tableController.getTableCount(req, res, next)
+    },
+    sendJSON('count')
+    )
     this.router.get('/table/:table',
       (req, res, next) => {
         tableController.getTableData(req, res, next)

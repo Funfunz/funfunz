@@ -1,14 +1,35 @@
 import { describeInfo, schemaInfo } from '@root/describeTable'
 import { ITypeAnswers } from '@root/index'
+import express from 'express'
 import fs from 'fs'
+import knex from 'knex'
 import pluralize from 'pluralize'
 
-interface ITableInfo {
+type IHookFunction = (
+  req: express.Request,
+  res: express.Response,
+  DB: knex,
+  tableName: string,
+  data: any
+) => Promise <any>
+
+export interface ITableInfo {
   name: string,
   verbose: string,
   pk: string,
   columns: IColumnInfo[],
-  visible: boolean
+  visible: boolean,
+  roles: string[],
+  hooks?: {
+    getTableData?: {
+      before?: IHookFunction
+      after?: IHookFunction
+    },
+    getTableCount?: {
+      before?: IHookFunction
+      after?: IHookFunction
+    }
+  }
 }
 
 interface IColumnInfo {
@@ -18,15 +39,15 @@ interface IColumnInfo {
   allowNull: boolean,
   visible: {
     main: boolean,
-    detail: boolean
+    detail: boolean,
   },
   editable: boolean,
   relation?: {
     type: string,
     table: string,
     key: string,
-    display: string[]
-  }
+    display: string[],
+  },
 }
 
 function buildTableInfo(): ITableInfo {
@@ -36,6 +57,7 @@ function buildTableInfo(): ITableInfo {
     pk: '',
     columns: [],
     visible: true,
+    roles: ['all'],
   }
 }
 

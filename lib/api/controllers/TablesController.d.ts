@@ -1,8 +1,9 @@
-import { IMCResponse } from '@root/api/types';
-import { NextFunction, Request } from 'express';
+import { IMCRequest, IMCResponse } from '@root/api/types';
+import { ITableInfo } from '@root/configGenerator';
+import { NextFunction } from 'express';
 declare class TablesController {
-    settings: any[];
+    settings: ITableInfo[];
     constructor();
-    getTables(req: Request, res: IMCResponse, next: NextFunction): any;
+    getTables(req: IMCRequest, res: IMCResponse, next: NextFunction): Promise<any>;
 }
 export default TablesController;

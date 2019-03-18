@@ -6,9 +6,9 @@ export function catchMiddleware(next: NextFunction) {
     if (next) {
       next(err)
     }
-    return {
+    return Promise.resolve({
       error: err,
-    }
+    })
   }
 }
 
@@ -33,7 +33,7 @@ export function nextAndReturn(next: NextFunction) {
     if (next) {
       next()
     }
-    return data
+    return Promise.resolve(data)
   }
 }
 
@@ -43,4 +43,26 @@ export const errorHandler: ErrorRequestHandler = (err, req, res) => {
   res.json({
     message: err.message,
   })
+}
+
+export function hasAuthorization(tableRoles: string[], userRoles: string[]): boolean {
+  let isAuthorized: string | undefined = 'true'
+
+  if (tableRoles && tableRoles.length) {
+    isAuthorized = tableRoles.find(
+      (tableRole: string) => {
+        if (tableRole === 'all') {
+          return true
+        }
+        const userHasAuthorization = userRoles.find(
+          (userRole: string) => {
+            return (userRole === tableRole);
+          }
+        )
+        return userHasAuthorization ? true : false
+      }
+    )
+  }
+
+  return isAuthorized ? true : false
 }

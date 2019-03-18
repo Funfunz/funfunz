@@ -7,3 +7,6 @@ export declare class HttpException extends Error {
 export interface IMCResponse extends express.Response {
     data?: any;
 }
+export interface IMCRequest extends express.Request {
+    user?: any;
+}
