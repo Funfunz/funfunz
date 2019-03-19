@@ -12,6 +12,9 @@ declare class TableController {
     getTableCount(req: IMCRequest, res: IMCResponse, next: NextFunction): Bluebird<any> | Promise<{
         error: HttpException;
     }>;
+    getRow(req: IMCRequest, res: IMCResponse, next: NextFunction): Bluebird<any> | Promise<{
+        error: HttpException;
+    }>;
     insertRow(req: Request, res: IMCResponse, next: NextFunction): void;
     updateRow(req: Request, res: IMCResponse, next: NextFunction): void;
     deleteRow(req: Request, res: IMCResponse, next: NextFunction): void;

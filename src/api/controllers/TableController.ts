@@ -120,6 +120,44 @@ class TableController {
     }
   }
 
+  public getRow(req: IMCRequest, res: IMCResponse, next: NextFunction) {
+    if (!this.settings || this.settings.length === 0) {
+      throw buildError('Table not found', 404)
+    }
+
+    const table = this.settings.filter(
+      (tableItem) => tableItem.name === req.params.table
+    )[0]
+
+    let userRoles: string[] = []
+    if (req.user && req.user.roles) {
+      userRoles = req.user.roles
+    }
+
+    if (!hasAuthorization(table.roles, userRoles)) {
+      return catchMiddleware(next)(new HttpException(401, 'Not authorized'))
+    } else {
+      if (!database.db) {
+        return catchMiddleware(next)(new HttpException(500, 'No database'))
+      } else {
+        const requestedColumns = table.columns.filter(
+          (column) => column.visible.detail
+        ).map(
+          (column) => column.name
+        )
+        return database.db.select(requestedColumns)
+          .from(req.params.table)
+          .where('id', req.params.id)
+        .then(
+          (results) => {
+            addToResponse(res, results[0], 'result')
+            return nextAndReturn(next)(results[0])
+          }
+        )
+      }
+    }
+  }
+
   public insertRow(req: Request, res: IMCResponse, next: NextFunction) {
     if (database.db) {
       database.db(req.params.table).insert(req.body.data).then(
