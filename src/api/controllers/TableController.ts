@@ -18,7 +18,7 @@ class TableController {
 
   public getTableConfig(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     if (!this.settings || this.settings.length === 0) {
-      throw buildError('Table not found', 404)
+      return catchMiddleware(next)(new HttpException(404, 'Table not found'))
     } else {
       let userRoles: string[] = []
       if (req.user && req.user.roles) {

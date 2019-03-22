@@ -1,5 +1,5 @@
-import { IMCRequest, IMCResponse } from '@root/api/types';
-import { addToResponse, buildError, hasAuthorization, nextAndReturn } from '@root/api/utils'
+import { HttpException, IMCRequest, IMCResponse } from '@root/api/types';
+import { addToResponse, catchMiddleware, hasAuthorization, nextAndReturn } from '@root/api/utils'
 import config from '@root/api/utils/configLoader'
 import { ITableInfo } from '@root/configGenerator'
 import Debug from 'debug'
@@ -16,7 +16,7 @@ class TablesController {
 
   public getTables(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     if (!this.settings || this.settings.length === 0) {
-      throw buildError('Tables not found', 404)
+      return catchMiddleware(next)(new HttpException(404, 'Tables not found'))
     } else {
       let userRoles: string[] = []
       if (req.user && req.user.roles) {
