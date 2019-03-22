@@ -14,7 +14,8 @@
     "build": "npm run clean && npm run build:types && npm run build:js",
     "build:types": "tsc",
     "build:js": "babel src -d lib --extensions \".js,.ts,.tsx\" --source-maps inline && cp -rf ./src/api/public/* ./lib/api/public",
-    "start": "NODE_ENV=production node ./lib/index.js"
+    "start": "NODE_ENV=production node ./lib/index.js",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
