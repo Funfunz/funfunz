@@ -71,6 +71,7 @@ prompt(question).then(
       ([config, tablesNames]) => {
         describe(tablesNames).then(
           (results) => {
+            console.log(results)
             generateSettings(results)
           }
         )

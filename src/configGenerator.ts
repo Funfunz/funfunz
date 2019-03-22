@@ -82,7 +82,7 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
       const table = buildTableInfo()
       const schema = tableData.schema
       const describe = tableData.describe
-
+      console.log(schema[0])
       table.name = schema[0].TABLE_NAME
 
       const pluralName = pluralize(table.name)

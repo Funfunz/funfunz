@@ -25,6 +25,9 @@ class TablesController {
       const tables = this.settings.map(
         (table: ITableInfo) => {
           let isAuthorized: boolean = true
+          if (!table.visible) {
+            return undefined
+          }
           if (table.roles && table.roles.length) {
             isAuthorized = hasAuthorization(table.roles, userRoles)
           }
