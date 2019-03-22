@@ -2,7 +2,7 @@
   "name": "funfunzmc",
   "version": "0.0.1",
   "description": "backoffice generator",
-  "main": "lib/index.js",
+  "main": "lib/api/index.js",
   "scripts": {
     "test": "jest",
     "lint": "eslint src/*.js",
