@@ -43,7 +43,7 @@ export function setConfig(configs: any, target: string) {
 function configCheck(configs: any, target: string) {
   const validator = new Validator();
 
-  if (!configs) {
+  if (!configs && configs !== false) {
     throw new Error('Configuration is missing')
   }
   if (target === 'settings') {
