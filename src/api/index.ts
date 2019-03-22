@@ -4,6 +4,9 @@ import Debug from 'debug'
 
 export default function(configs: any) {
   const debug = Debug('funfunzmc:server')
+
+  setConfig(true, 'defaultInterface')
+
   Object.keys(configs).forEach(
     (configKey) => {
       setConfig(configs[configKey], configKey)

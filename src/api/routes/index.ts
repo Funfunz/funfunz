@@ -1,6 +1,7 @@
 import TableController from '@root/api/controllers/TableController'
 import TablesController from '@root/api/controllers/TablesController'
 import { sendJSON } from '@root/api/middleware/response'
+import config from '@root/api/utils/configLoader'
 import { Router } from 'express'
 import fs from 'fs'
 import path from 'path'
@@ -61,16 +62,18 @@ class IndexRouter {
       sendJSON('results')
     )
 
-    this.router.get('*', function(req, res) {
-      fs.readFile(path.join(__dirname, '../public/index.html'), function(err, data) {
-        if (err) {
-          res.status(500).send({error: 'No html available'})
-        } else {
-          res.set('Content-Type', 'text/html')
-          res.send(data)
-        }
+    if (config().defaultInterface) {
+      this.router.get('*', function(req, res) {
+        fs.readFile(path.join(__dirname, '../public/index.html'), function(err, data) {
+          if (err) {
+            res.status(500).send({error: 'No html available'})
+          } else {
+            res.set('Content-Type', 'text/html')
+            res.send(data)
+          }
+        })
       })
-    })
+    }
   }
 
   public getRouter(): Router {
