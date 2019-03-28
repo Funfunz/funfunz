@@ -42,7 +42,7 @@ class TablesController {
       ).filter(
         (table) => table
       )
-      addToResponse(res, tables, 'tables')
+      addToResponse(res, 'tables')(tables)
       return nextAndReturn(next)(tables)
     }
   }

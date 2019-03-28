@@ -49,7 +49,6 @@ function configCheck(configs: any, target: string) {
   if (target === 'settings') {
     const validation = validator.validate(configs, settingsSchema)
     if (validation.errors.length > 0) {
-      console.log(validation.errors)
       throw new Error(validation.errors.toString())
     }
   }

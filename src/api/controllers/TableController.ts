@@ -1,7 +1,14 @@
 import database from '@root/api/db'
-import { HttpException, IMCRequest, IMCResponse } from '@root/api/types';
-import { addToResponse, buildError, catchMiddleware, hasAuthorization, nextAndReturn } from '@root/api/utils'
-import config from '@root/api/utils/configLoader'
+import { HttpException, IMCRequest, IMCResponse } from '@root/api/types'
+import {
+  addToResponse,
+  catchMiddleware,
+  filterTableColumns,
+  getTableConfig,
+  hasAuthorization,
+  nextAndReturn,
+  runHook
+} from '@root/api/utils'
 import { ITableInfo } from '@root/configGenerator'
 import Bluebird from 'bluebird'
 import Debug from 'debug'
@@ -10,69 +17,53 @@ import { NextFunction, Request } from 'express'
 const debug = Debug('funfunzmc:controller-table')
 
 class TableController {
-  public settings: ITableInfo[]
   constructor() {
     debug('Created')
-    this.settings = config().settings
   }
 
   public getTableConfig(req: IMCRequest, res: IMCResponse, next: NextFunction) {
-    if (!this.settings || this.settings.length === 0) {
-      return catchMiddleware(next)(new HttpException(404, 'Table not found'))
+    let userRoles: string[] = []
+    if (req.user && req.user.roles) {
+      userRoles = req.user.roles
+    }
+
+    const TABLE_CONFIG = getTableConfig(req.params.table)
+
+    if (hasAuthorization(TABLE_CONFIG.roles, userRoles)) {
+      addToResponse(res, 'results')(TABLE_CONFIG.columns)
+      return nextAndReturn(next)(TABLE_CONFIG.columns)
     } else {
-      let userRoles: string[] = []
-      if (req.user && req.user.roles) {
-        userRoles = req.user.roles
-      }
-
-      const table = this.settings.filter(
-        (tableItem) => tableItem.name === req.params.table
-      )[0]
-
-      if (hasAuthorization(table.roles, userRoles)) {
-        addToResponse(res, table.columns, 'results')
-        return nextAndReturn(next)(table.columns)
-      } else {
-        return catchMiddleware(next)(new HttpException(401, 'Not authorized'))
-      }
+      return catchMiddleware(next)(new HttpException(401, 'Not authorized'))
     }
   }
 
   public getTableData(req: IMCRequest, res: IMCResponse, next: NextFunction) {
-    if (!this.settings || this.settings.length === 0) {
-      throw buildError('Table not found', 404)
-    }
+    const PAGE_NUMBER = req.query.page
+    const LIMIT = 10
+    const TABLE_NAME = req.params.table
 
-    const table = this.settings.filter(
-      (tableItem) => tableItem.name === req.params.table
-    )[0]
+    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
+
+    const COLUMNS = filterTableColumns(TABLE_CONFIG, 'main')
 
     let userRoles: string[] = []
     if (req.user && req.user.roles) {
       userRoles = req.user.roles
     }
 
-    if (!hasAuthorization(table.roles, userRoles)) {
+    if (!hasAuthorization(TABLE_CONFIG.roles, userRoles)) {
       return catchMiddleware(next)(new HttpException(401, 'Not authorized'))
     } else {
       if (!database.db) {
         return catchMiddleware(next)(new HttpException(500, 'No database'))
       } else {
-        return database.db.select('*').from(req.params.table).offset((req.query.page || 0) * 10).limit(10).then(
+        return database.db.select(COLUMNS).from(TABLE_NAME).offset((PAGE_NUMBER || 0) * LIMIT).limit(LIMIT).then(
           (results) => {
-            if (table.hooks && table.hooks.getTableData && table.hooks.getTableData.after) {
-              if (database.db) {
-                return table.hooks.getTableData.after(req, res, database.db, table.name, results).then(
-                  (resultsBeforeGet) => {
-                    addToResponse(res, resultsBeforeGet, 'results')
-                    return nextAndReturn(next)(resultsBeforeGet)
-                  }
-                )
-              }
-            } else {
-              addToResponse(res, results, 'results')
-              return nextAndReturn(next)(results)
-            }
+            runHook(TABLE_CONFIG, 'getTableData', 'after', req, res, database.db, results).then(
+              addToResponse(res, 'results')
+            ).then(
+              nextAndReturn(next)
+            )
           }
         )
       }
@@ -80,40 +71,27 @@ class TableController {
   }
 
   public getTableCount(req: IMCRequest, res: IMCResponse, next: NextFunction) {
-    if (!this.settings || this.settings.length === 0) {
-      throw buildError('Table not found', 404)
-    }
-
-    const table = this.settings.filter(
-      (tableItem) => tableItem.name === req.params.table
-    )[0]
+    const TABLE_NAME = req.params.table
+    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
 
     let userRoles: string[] = []
     if (req.user && req.user.roles) {
       userRoles = req.user.roles
     }
 
-    if (!hasAuthorization(table.roles, userRoles)) {
+    if (!hasAuthorization(TABLE_CONFIG.roles, userRoles)) {
       return catchMiddleware(next)(new HttpException(401, 'Not authorized'))
     } else {
       if (!database.db) {
         return catchMiddleware(next)(new HttpException(500, 'No database'))
       } else {
-        return database.db.select('*').from(req.params.table).then(
+        return database.db.select('*').from(TABLE_NAME).then(
           (results) => {
-            if (table.hooks && table.hooks.getTableCount && table.hooks.getTableCount.after) {
-              if (database.db) {
-                return table.hooks.getTableCount.after(req, res, database.db, table.name, results).then(
-                  (count) => {
-                    addToResponse(res, count, 'count')
-                    return nextAndReturn(next)(count)
-                  }
-                )
-              }
-            } else {
-              addToResponse(res, results.length, 'count')
-              return nextAndReturn(next)(results)
-            }
+            runHook(TABLE_CONFIG, 'getTableCount', 'after', req, res, database.db, results).then(
+              addToResponse(res, 'count')
+            ).then(
+              nextAndReturn(next)
+            )
           }
         )
       }
@@ -121,80 +99,140 @@ class TableController {
   }
 
   public getRow(req: IMCRequest, res: IMCResponse, next: NextFunction) {
-    if (!this.settings || this.settings.length === 0) {
-      throw buildError('Table not found', 404)
-    }
-
-    const table = this.settings.filter(
-      (tableItem) => tableItem.name === req.params.table
-    )[0]
+    const TABLE_NAME = req.params.table
+    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
 
     let userRoles: string[] = []
     if (req.user && req.user.roles) {
       userRoles = req.user.roles
     }
 
-    if (!hasAuthorization(table.roles, userRoles)) {
+    if (!hasAuthorization(TABLE_CONFIG.roles, userRoles)) {
       return catchMiddleware(next)(new HttpException(401, 'Not authorized'))
     } else {
       if (!database.db) {
         return catchMiddleware(next)(new HttpException(500, 'No database'))
       } else {
-        const requestedColumns = table.columns.filter(
-          (column) => column.visible.detail
-        ).map(
-          (column) => column.name
-        )
-        return database.db.select(requestedColumns)
-          .from(req.params.table)
-          .where('id', req.params.id)
-        .then(
+        const requestedColumns = filterTableColumns(TABLE_CONFIG, 'detail')
+
+        const query = database.db.select(requestedColumns)
+          .from(`${req.params.table}`)
+          .where(`id`, req.params.id)
+
+        return query.then(
           (results) => {
-            addToResponse(res, results[0], 'result')
-            return nextAndReturn(next)(results[0])
+            let relationQueries: Array<Bluebird<{}>> = []
+            if (req.query.includeRelations) {
+              relationQueries = this.getRelationQueries(TABLE_CONFIG, results[0].id)
+            }
+
+            if (relationQueries.length) {
+              return Promise.all([
+                results[0],
+                ...relationQueries,
+              ])
+            }
+
+            return Promise.all([
+              results[0],
+            ])
           }
+        ).then(
+          this.mergeRelatedData
+        ).then(
+          addToResponse(res, 'result')
+        ).then(
+          nextAndReturn(next)
         )
       }
     }
   }
 
   public insertRow(req: Request, res: IMCResponse, next: NextFunction) {
-    if (database.db) {
-      database.db(req.params.table).insert(req.body.data).then(
-        (results) => {
-          addToResponse(res, results, 'results')
-          return nextAndReturn(next)(results)
-        }
-      )
+    if (!database.db) {
+      return catchMiddleware(next)(new HttpException(500, 'No database'))
     } else {
-      catchMiddleware(next)(new HttpException(500, 'No database'))
+      return database.db(req.params.table).insert(req.body.data).then(
+        addToResponse(res, 'results')
+      ).then(
+        nextAndReturn(next)
+      )
     }
   }
 
   public updateRow(req: Request, res: IMCResponse, next: NextFunction) {
-    if (database.db) {
-      database.db(req.body.table).where('id', req.body.id).update(req.body.data).then(
-        (results) => {
-          addToResponse(res, results, 'results')
-          return nextAndReturn(next)(results)
-        }
-      )
+    if (!database.db) {
+      return catchMiddleware(next)(new HttpException(500, 'No database'))
     } else {
-      catchMiddleware(next)(new HttpException(500, 'No database'))
+      return database.db(req.body.table).where('id', req.body.id).update(req.body.data).then(
+        addToResponse(res, 'results')
+      ).then(
+        nextAndReturn(next)
+      )
     }
   }
 
   public deleteRow(req: Request, res: IMCResponse, next: NextFunction) {
-    if (database.db) {
-      database.db(req.params.table).where('id', req.params.id).del().then(
-        (results) => {
-          addToResponse(res, results, 'results')
-          return nextAndReturn(next)(results)
+    if (!database.db) {
+      return catchMiddleware(next)(new HttpException(500, 'No database'))
+    } else {
+      return database.db(req.params.table).where('id', req.params.id).del().then(
+        addToResponse(res, 'results')
+      ).then(
+        nextAndReturn(next)
+      )
+    }
+  }
+
+  private getRelationQueries(TABLE_CONFIG: ITableInfo, parentId: any) {
+    const relationQueries: Array<Bluebird<{}>> = []
+    if (TABLE_CONFIG.relations && TABLE_CONFIG.relations.manyToOne) {
+      const MANY_TO_ONE = TABLE_CONFIG.relations.manyToOne
+      const KEYS: string[] = Object.keys(MANY_TO_ONE)
+      KEYS.forEach(
+        (tableName) => {
+          relationQueries.push(
+            this.getRelatedRow(
+              tableName,
+              MANY_TO_ONE[tableName],
+              parentId
+            )
+          )
         }
       )
-    } else {
-      catchMiddleware(next)(new HttpException(500, 'No database'))
     }
+
+    return relationQueries
+  }
+
+  private getRelatedRow(tableName: string, columnName: string, parentId: any) {
+    if (!database.db) {
+      throw new HttpException(500, 'No database')
+    }
+    const TABLE_NAME = tableName
+    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
+
+    const requestedColumns = filterTableColumns(TABLE_CONFIG, 'detail')
+    return database.db.select(requestedColumns)
+      .from(tableName)
+      .where(columnName, parentId).then(
+        (results) => ({
+          results,
+          tableName,
+        })
+      )
+  }
+
+  private mergeRelatedData([results, ...relations]: any) {
+    if (relations && relations.length) {
+      relations.forEach(
+        (relation: {tableName: string, results: any[]}) => {
+          results[relation.tableName] = relation.results
+        }
+      )
+    }
+
+    return results
   }
 }
 

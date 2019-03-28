@@ -3,10 +3,16 @@ import { ITypeAnswers } from '@root/index';
 import express from 'express';
 import knex from 'knex';
 declare type IHookFunction = (req: express.Request, res: express.Response, DB: knex, tableName: string, data: any) => Promise<any>;
+export declare type Hooks = 'getTableData' | 'getTableCount';
 export interface ITableInfo {
     name: string;
     verbose: string;
     pk: string;
+    relations?: {
+        manyToOne?: {
+            [key: string]: string;
+        };
+    };
     columns: IColumnInfo[];
     visible: boolean;
     roles: string[];

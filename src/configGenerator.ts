@@ -13,10 +13,17 @@ type IHookFunction = (
   data: any
 ) => Promise <any>
 
+export type Hooks = 'getTableData' | 'getTableCount'
+
 export interface ITableInfo {
   name: string,
   verbose: string,
   pk: string,
+  relations?: {
+    manyToOne?: {
+      [key: string]: string,
+    }
+  }
   columns: IColumnInfo[],
   visible: boolean,
   roles: string[],
@@ -28,7 +35,7 @@ export interface ITableInfo {
     getTableCount?: {
       before?: IHookFunction
       after?: IHookFunction
-    }
+    },
   }
 }
 
@@ -82,7 +89,6 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
       const table = buildTableInfo()
       const schema = tableData.schema
       const describe = tableData.describe
-      console.log(schema[0])
       table.name = schema[0].TABLE_NAME
 
       const pluralName = pluralize(table.name)
