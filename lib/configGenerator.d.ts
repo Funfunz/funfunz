@@ -27,7 +27,7 @@ export interface ITableInfo {
         };
     };
 }
-interface IColumnInfo {
+export interface IColumnInfo {
     name: string;
     verbose: string;
     type: string;
@@ -41,7 +41,7 @@ interface IColumnInfo {
         type: string;
         table: string;
         key: string;
-        display: string[];
+        display: string;
     };
 }
 export declare function generateSettings(DBData: Array<{

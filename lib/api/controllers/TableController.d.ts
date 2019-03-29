@@ -4,7 +4,7 @@ import { NextFunction, Request } from 'express';
 declare class TableController {
     constructor();
     getTableConfig(req: IMCRequest, res: IMCResponse, next: NextFunction): Promise<any>;
-    getTableData(req: IMCRequest, res: IMCResponse, next: NextFunction): Bluebird<void> | Promise<{
+    getTableData(req: IMCRequest, res: IMCResponse, next: NextFunction): Bluebird<any> | Promise<{
         error: HttpException;
     }>;
     getTableCount(req: IMCRequest, res: IMCResponse, next: NextFunction): Bluebird<void> | Promise<{

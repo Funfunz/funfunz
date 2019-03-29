@@ -9,12 +9,24 @@ import {
   nextAndReturn,
   runHook
 } from '@root/api/utils'
-import { ITableInfo } from '@root/configGenerator'
+import { IColumnInfo, ITableInfo } from '@root/configGenerator'
 import Bluebird from 'bluebird'
 import Debug from 'debug'
 import { NextFunction, Request } from 'express'
+import Knex from 'Knex'
 
 const debug = Debug('funfunzmc:controller-table')
+
+interface IToRequest {
+  [key: string]: {
+    values: {
+      [key: string]: true,
+    },
+    key: string,
+    display: string,
+    parentColumn: string
+  },
+}
 
 class TableController {
   constructor() {
@@ -28,10 +40,16 @@ class TableController {
     }
 
     const TABLE_CONFIG = getTableConfig(req.params.table)
+    const RESULT = {
+      columns: TABLE_CONFIG.columns,
+      name: TABLE_CONFIG.name,
+      pk: TABLE_CONFIG.pk,
+      verbose: TABLE_CONFIG.verbose,
+    }
 
     if (hasAuthorization(TABLE_CONFIG.roles, userRoles)) {
-      addToResponse(res, 'results')(TABLE_CONFIG.columns)
-      return nextAndReturn(next)(TABLE_CONFIG.columns)
+      addToResponse(res, 'results')(RESULT)
+      return nextAndReturn(next)(RESULT)
     } else {
       return catchMiddleware(next)(new HttpException(401, 'Not authorized'))
     }
@@ -57,14 +75,109 @@ class TableController {
       if (!database.db) {
         return catchMiddleware(next)(new HttpException(500, 'No database'))
       } else {
-        return database.db.select(COLUMNS).from(TABLE_NAME).offset((PAGE_NUMBER || 0) * LIMIT).limit(LIMIT).then(
+        const DB = database.db
+        const QUERY = DB.select(COLUMNS).from(TABLE_NAME)
+        if (req.query.filter) {
+          const columnsByKey: {
+            [key: string]: IColumnInfo
+          } = {}
+
+          TABLE_CONFIG.columns.forEach(
+            (column) => {
+              columnsByKey[column.name] = column
+            }
+          )
+
+          const FILTERS = JSON.parse(req.query.filter)
+          Object.keys(FILTERS).forEach(
+            (key, index) => {
+              if (columnsByKey[key].type === 'int(11)') {
+                index === 0 ?
+                  QUERY.where({
+                    [key]: FILTERS[key],
+                  }) :
+                  QUERY.andWhere({
+                    [key]: FILTERS[key],
+                  })
+              } else {
+                index === 0 ?
+                  QUERY.where(key, 'like', '%' + FILTERS[key] + '%') :
+                  QUERY.andWhere(key, 'like', '%' + FILTERS[key] + '%')
+              }
+            }
+          )
+        }
+        return QUERY
+          .offset((PAGE_NUMBER || 0) * LIMIT)
+          .limit(LIMIT)
+          .then(
           (results) => {
-            runHook(TABLE_CONFIG, 'getTableData', 'after', req, res, database.db, results).then(
-              addToResponse(res, 'results')
-            ).then(
-              nextAndReturn(next)
+            const toRequest: IToRequest = {}
+            const RELATIONS = TABLE_CONFIG.columns.filter(
+              (column) => column.relation
+            )
+            results.forEach(
+              (row: any, index: number) => {
+                RELATIONS.forEach(
+                  (column) => {
+                    if (column.relation) {
+                      if (!toRequest[column.relation.table]) {
+                        toRequest[column.relation.table] = {
+                          values: {},
+                          key: column.relation.key,
+                          display: column.relation.display,
+                          parentColumn: column.name,
+                        }
+                      }
+
+                      if (toRequest[column.relation.table].values[row[column.name]] === undefined) {
+                        toRequest[column.relation.table].values = {
+                          ...toRequest[column.relation.table].values,
+                          [row[column.name]]: index,
+                        }
+                      }
+                    }
+                  }
+                )
+              }
+            )
+
+            const relationQueries: Knex.QueryBuilder[] = []
+            Object.keys(toRequest).forEach(
+              (tableName) => {
+                relationQueries.push(
+                  DB.select(toRequest[tableName].display)
+                    .from(tableName)
+                    .whereIn(toRequest[tableName].key, Object.keys(toRequest[tableName].values))
+                )
+              }
+            )
+
+            return Promise.all([results, toRequest, ...relationQueries])
+          }
+        ).then(
+          ([results, toRequest, ...relationResults]) => {
+            return results.map(
+              (row: any) => {
+                Object.keys(toRequest).forEach(
+                  (tableName, index) => {
+                    const ROW_KEY = toRequest[tableName].parentColumn
+                    const ROW_INDEX = toRequest[tableName].values[row[ROW_KEY]]
+                    row[ROW_KEY] = relationResults[index][ROW_INDEX][toRequest[tableName].display]
+                  }
+                )
+                return row
+              }
             )
           }
+        ).then(
+          (results) => {
+            return runHook(TABLE_CONFIG, 'getTableData', 'after', req, res, database.db, results)
+          }
+        ).then(
+          addToResponse(res, 'results')
+        ).then(
+          nextAndReturn(next)
         )
       }
     }

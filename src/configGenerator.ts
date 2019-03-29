@@ -39,7 +39,7 @@ export interface ITableInfo {
   }
 }
 
-interface IColumnInfo {
+export interface IColumnInfo {
   name: string,
   verbose: string,
   type: string,
@@ -53,7 +53,7 @@ interface IColumnInfo {
     type: string,
     table: string,
     key: string,
-    display: string[],
+    display: string,
   },
 }
 
@@ -112,9 +112,7 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
                   type: 'oneToMany',
                   table: schemaData.REFERENCED_TABLE_NAME || '',
                   key: schemaData.REFERENCED_COLUMN_NAME || '',
-                  display: [
-                    schemaData.REFERENCED_COLUMN_NAME || '',
-                  ],
+                  display: schemaData.REFERENCED_COLUMN_NAME || '',
                 }
               }
             }
