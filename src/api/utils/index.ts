@@ -1,6 +1,6 @@
-import { HttpException, IMCRequest, IMCResponse } from '@root/api/types'
+import { HttpException, IMCRequest, IMCResponse, IUser } from '@root/api/types'
 import config from '@root/api/utils/configLoader'
-import { Hooks, ITableInfo } from '@root/configGenerator'
+import { Hooks, IColumnInfo, ITableInfo } from '@root/configGenerator'
 import { ErrorRequestHandler, NextFunction } from 'express'
 import Knex from 'knex'
 
@@ -9,7 +9,7 @@ export function catchMiddleware(next: NextFunction) {
     if (next) {
       next(err)
     }
-    return Promise.resolve({
+    return Promise.reject({
       error: err,
     })
   }
@@ -50,7 +50,7 @@ export const errorHandler: ErrorRequestHandler = (err, req, res) => {
   })
 }
 
-export function hasAuthorization(tableRoles: string[], userRoles: string[]): boolean {
+export function hasAuthorization(tableRoles: string[], user: IUser = {roles: []}): boolean {
   let isAuthorized: string | undefined = 'true'
 
   if (tableRoles && tableRoles.length) {
@@ -59,7 +59,7 @@ export function hasAuthorization(tableRoles: string[], userRoles: string[]): boo
         if (tableRole === 'all') {
           return true
         }
-        const userHasAuthorization = userRoles.find(
+        const userHasAuthorization = user.roles.find(
           (userRole: string) => {
             return (userRole === tableRole);
           }
@@ -72,7 +72,7 @@ export function hasAuthorization(tableRoles: string[], userRoles: string[]): boo
   return isAuthorized ? true : false
 }
 
-export function filterTableColumns(table: ITableInfo, target: 'main' | 'detail') {
+export function filterVisibleTableColumns(table: ITableInfo, target: 'main' | 'detail') {
   return table.columns.filter(
     (column) => column.visible[target]
   ).map(
@@ -105,4 +105,42 @@ export function getTableConfig(TABLE_NAME: string) {
   return config().settings.filter(
     (tableItem) => tableItem.name === TABLE_NAME
   )[0]
+}
+
+export function getColumnsByName(TABLE_CONFIG: ITableInfo) {
+  const columnsByName: {
+    [key: string]: IColumnInfo
+  } = {}
+
+  TABLE_CONFIG.columns.forEach(
+    (column) => {
+      columnsByName[column.name] = column
+    }
+  )
+
+  return columnsByName
+}
+
+export function applyQueryFilters(QUERY: Knex.QueryBuilder, filters: string, TABLE_CONFIG: ITableInfo) {
+  const columnsByName = getColumnsByName(TABLE_CONFIG)
+  const FILTERS = JSON.parse(filters)
+  Object.keys(FILTERS).forEach(
+    (key, index) => {
+      if (columnsByName[key].type === 'int(11)') {
+        index === 0 ?
+          QUERY.where({
+            [key]: FILTERS[key],
+          }) :
+          QUERY.andWhere({
+            [key]: FILTERS[key],
+          })
+      } else {
+        index === 0 ?
+          QUERY.where(key, 'like', '%' + FILTERS[key] + '%') :
+          QUERY.andWhere(key, 'like', '%' + FILTERS[key] + '%')
+      }
+    }
+  )
+
+  return QUERY
 }

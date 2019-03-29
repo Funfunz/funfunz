@@ -2,14 +2,15 @@ import database from '@root/api/db'
 import { HttpException, IMCRequest, IMCResponse } from '@root/api/types'
 import {
   addToResponse,
+  applyQueryFilters,
   catchMiddleware,
-  filterTableColumns,
+  filterVisibleTableColumns,
   getTableConfig,
   hasAuthorization,
   nextAndReturn,
   runHook
 } from '@root/api/utils'
-import { IColumnInfo, ITableInfo } from '@root/configGenerator'
+import { ITableInfo } from '@root/configGenerator'
 import Bluebird from 'bluebird'
 import Debug from 'debug'
 import { NextFunction, Request } from 'express'
@@ -24,7 +25,7 @@ interface IToRequest {
     },
     key: string,
     display: string,
-    parentColumn: string
+    foreignKeyColumn: string
   },
 }
 
@@ -34,11 +35,6 @@ class TableController {
   }
 
   public getTableConfig(req: IMCRequest, res: IMCResponse, next: NextFunction) {
-    let userRoles: string[] = []
-    if (req.user && req.user.roles) {
-      userRoles = req.user.roles
-    }
-
     const TABLE_CONFIG = getTableConfig(req.params.table)
     const RESULT = {
       columns: TABLE_CONFIG.columns,
@@ -47,7 +43,7 @@ class TableController {
       verbose: TABLE_CONFIG.verbose,
     }
 
-    if (hasAuthorization(TABLE_CONFIG.roles, userRoles)) {
+    if (hasAuthorization(TABLE_CONFIG.roles, req.user)) {
       addToResponse(res, 'results')(RESULT)
       return nextAndReturn(next)(RESULT)
     } else {
@@ -56,143 +52,128 @@ class TableController {
   }
 
   public getTableData(req: IMCRequest, res: IMCResponse, next: NextFunction) {
-    const PAGE_NUMBER = req.query.page
-    const LIMIT = 10
+    const PAGE_NUMBER = req.query.page || 0
     const TABLE_NAME = req.params.table
-
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
+    const COLUMNS = filterVisibleTableColumns(TABLE_CONFIG, 'main')
+    let LIMIT = 10
 
-    const COLUMNS = filterTableColumns(TABLE_CONFIG, 'main')
-
-    let userRoles: string[] = []
-    if (req.user && req.user.roles) {
-      userRoles = req.user.roles
+    if (req.query.limit) {
+      LIMIT = parseInt(req.query.limit, 10)
     }
 
-    if (!hasAuthorization(TABLE_CONFIG.roles, userRoles)) {
+    if (!hasAuthorization(TABLE_CONFIG.roles, req.user)) {
       return catchMiddleware(next)(new HttpException(401, 'Not authorized'))
-    } else {
-      if (!database.db) {
-        return catchMiddleware(next)(new HttpException(500, 'No database'))
-      } else {
-        const DB = database.db
-        const QUERY = DB.select(COLUMNS).from(TABLE_NAME)
-        if (req.query.filter) {
-          const columnsByKey: {
-            [key: string]: IColumnInfo
-          } = {}
+    }
+    if (!database.db) {
+      return catchMiddleware(next)(new HttpException(500, 'No database'))
+    }
+    const DB = database.db
+    let QUERY = DB.select(COLUMNS).from(TABLE_NAME)
+    if (req.query.filter) {
+      QUERY = applyQueryFilters(QUERY, req.query.filter, TABLE_CONFIG)
+    }
+    return QUERY
+      .offset((PAGE_NUMBER) * LIMIT)
+      .limit(LIMIT)
+      .then(
+      (results) => {
+        const toRequest: IToRequest = {}
+        const COLUMNS_WITH_RELATIONS = TABLE_CONFIG.columns.filter(
+          (column) => column.relation
+        )
+        results.forEach(
+          (row: any, index: number) => {
+            COLUMNS_WITH_RELATIONS.forEach(
+              (column) => {
+                if (!column.relation) {
+                  throw new HttpException(500, 'Column should have a relation')
+                }
+                const RELATION = column.relation
+                const RELATION_TABLE_NAME = RELATION.table
+                const ROW_RELATION_VALUE = row[column.name]
 
-          TABLE_CONFIG.columns.forEach(
-            (column) => {
-              columnsByKey[column.name] = column
-            }
-          )
-
-          const FILTERS = JSON.parse(req.query.filter)
-          Object.keys(FILTERS).forEach(
-            (key, index) => {
-              if (columnsByKey[key].type === 'int(11)') {
-                index === 0 ?
-                  QUERY.where({
-                    [key]: FILTERS[key],
-                  }) :
-                  QUERY.andWhere({
-                    [key]: FILTERS[key],
-                  })
-              } else {
-                index === 0 ?
-                  QUERY.where(key, 'like', '%' + FILTERS[key] + '%') :
-                  QUERY.andWhere(key, 'like', '%' + FILTERS[key] + '%')
-              }
-            }
-          )
-        }
-        return QUERY
-          .offset((PAGE_NUMBER || 0) * LIMIT)
-          .limit(LIMIT)
-          .then(
-          (results) => {
-            const toRequest: IToRequest = {}
-            const RELATIONS = TABLE_CONFIG.columns.filter(
-              (column) => column.relation
-            )
-            results.forEach(
-              (row: any, index: number) => {
-                RELATIONS.forEach(
-                  (column) => {
-                    if (column.relation) {
-                      if (!toRequest[column.relation.table]) {
-                        toRequest[column.relation.table] = {
-                          values: {},
-                          key: column.relation.key,
-                          display: column.relation.display,
-                          parentColumn: column.name,
-                        }
-                      }
-
-                      if (toRequest[column.relation.table].values[row[column.name]] === undefined) {
-                        toRequest[column.relation.table].values = {
-                          ...toRequest[column.relation.table].values,
-                          [row[column.name]]: index,
-                        }
-                      }
-                    }
+                if (!toRequest[RELATION_TABLE_NAME]) {
+                  toRequest[RELATION_TABLE_NAME] = {
+                    values: {},
+                    key: RELATION.key,
+                    display: RELATION.display,
+                    foreignKeyColumn: column.name,
                   }
-                )
+                }
+
+                if (toRequest[RELATION_TABLE_NAME].values[ROW_RELATION_VALUE] === undefined) {
+                  toRequest[RELATION_TABLE_NAME].values = {
+                    ...toRequest[RELATION_TABLE_NAME].values,
+                    [ROW_RELATION_VALUE]: index,
+                  }
+                }
               }
             )
+          }
+        )
 
-            const relationQueries: Knex.QueryBuilder[] = []
+        const relationQueries: Knex.QueryBuilder[] = []
+        Object.keys(toRequest).forEach(
+          (tableName) => {
+            relationQueries.push(
+              DB.select(toRequest[tableName].display, toRequest[tableName].key)
+                .from(tableName)
+                .whereIn(toRequest[tableName].key, Object.keys(toRequest[tableName].values))
+            )
+          }
+        )
+
+        return Promise.all([results, toRequest, ...relationQueries])
+      }
+    ).then(
+      ([results, toRequest, ...relationResults]) => {
+        const MATCHER: {
+          [foreignKeyColumn: string]: {
+            [value: string]: string
+          }
+        } = {}
+        Object.keys(toRequest).forEach(
+          (tableName, index) => {
+            const FOREIGN_KEY_COLUMN = toRequest[tableName].foreignKeyColumn
+            MATCHER[FOREIGN_KEY_COLUMN] = {}
+            relationResults[index].forEach(
+              (relationRow: any) => {
+                const CURRENT_VALUE = relationRow[toRequest[tableName].key]
+                const VALUE_TO_DISPLAY = relationRow[toRequest[tableName].display]
+                MATCHER[FOREIGN_KEY_COLUMN][CURRENT_VALUE] = VALUE_TO_DISPLAY
+              }
+            )
+          }
+        )
+        return results.map(
+          (row: any) => {
             Object.keys(toRequest).forEach(
               (tableName) => {
-                relationQueries.push(
-                  DB.select(toRequest[tableName].display)
-                    .from(tableName)
-                    .whereIn(toRequest[tableName].key, Object.keys(toRequest[tableName].values))
-                )
+                const ROW_KEY = toRequest[tableName].foreignKeyColumn
+                row[ROW_KEY] = MATCHER[ROW_KEY][row[ROW_KEY]]
               }
             )
-
-            return Promise.all([results, toRequest, ...relationQueries])
+            return row
           }
-        ).then(
-          ([results, toRequest, ...relationResults]) => {
-            return results.map(
-              (row: any) => {
-                Object.keys(toRequest).forEach(
-                  (tableName, index) => {
-                    const ROW_KEY = toRequest[tableName].parentColumn
-                    const ROW_INDEX = toRequest[tableName].values[row[ROW_KEY]]
-                    row[ROW_KEY] = relationResults[index][ROW_INDEX][toRequest[tableName].display]
-                  }
-                )
-                return row
-              }
-            )
-          }
-        ).then(
-          (results) => {
-            return runHook(TABLE_CONFIG, 'getTableData', 'after', req, res, database.db, results)
-          }
-        ).then(
-          addToResponse(res, 'results')
-        ).then(
-          nextAndReturn(next)
         )
       }
-    }
+    ).then(
+      (results) => {
+        return runHook(TABLE_CONFIG, 'getTableData', 'after', req, res, database.db, results)
+      }
+    ).then(
+      addToResponse(res, 'results')
+    ).then(
+      nextAndReturn(next)
+    )
   }
 
   public getTableCount(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
 
-    let userRoles: string[] = []
-    if (req.user && req.user.roles) {
-      userRoles = req.user.roles
-    }
-
-    if (!hasAuthorization(TABLE_CONFIG.roles, userRoles)) {
+    if (!hasAuthorization(TABLE_CONFIG.roles, req.user)) {
       return catchMiddleware(next)(new HttpException(401, 'Not authorized'))
     } else {
       if (!database.db) {
@@ -215,18 +196,13 @@ class TableController {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
 
-    let userRoles: string[] = []
-    if (req.user && req.user.roles) {
-      userRoles = req.user.roles
-    }
-
-    if (!hasAuthorization(TABLE_CONFIG.roles, userRoles)) {
+    if (!hasAuthorization(TABLE_CONFIG.roles, req.user)) {
       return catchMiddleware(next)(new HttpException(401, 'Not authorized'))
     } else {
       if (!database.db) {
         return catchMiddleware(next)(new HttpException(500, 'No database'))
       } else {
-        const requestedColumns = filterTableColumns(TABLE_CONFIG, 'detail')
+        const requestedColumns = filterVisibleTableColumns(TABLE_CONFIG, 'detail')
 
         const query = database.db.select(requestedColumns)
           .from(`${req.params.table}`)
@@ -325,7 +301,7 @@ class TableController {
     const TABLE_NAME = tableName
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
 
-    const requestedColumns = filterTableColumns(TABLE_CONFIG, 'detail')
+    const requestedColumns = filterVisibleTableColumns(TABLE_CONFIG, 'detail')
     return database.db.select(requestedColumns)
       .from(tableName)
       .where(columnName, parentId).then(

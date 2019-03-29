@@ -1,3 +1,4 @@
+import { AnyMxRecord } from 'dns';
 import express from 'express'
 
 export class HttpException extends Error {
@@ -10,10 +11,15 @@ export class HttpException extends Error {
   }
 }
 
+export interface IUser {
+  [key: string]: any,
+  roles: string[]
+}
+
 export interface IMCResponse extends express.Response {
   data?: any
 }
 
 export interface IMCRequest extends express.Request {
-  user?: any;
+  user?: IUser;
 }

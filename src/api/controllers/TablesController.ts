@@ -18,10 +18,6 @@ class TablesController {
     if (!this.settings || this.settings.length === 0) {
       return catchMiddleware(next)(new HttpException(404, 'Tables not found'))
     } else {
-      let userRoles: string[] = []
-      if (req.user && req.user.roles) {
-        userRoles = req.user.roles
-      }
       const tables = this.settings.map(
         (table: ITableInfo) => {
           let isAuthorized: boolean = true
@@ -29,7 +25,7 @@ class TablesController {
             return undefined
           }
           if (table.roles && table.roles.length) {
-            isAuthorized = hasAuthorization(table.roles, userRoles)
+            isAuthorized = hasAuthorization(table.roles, req.user)
           }
           if (isAuthorized) {
             return {
