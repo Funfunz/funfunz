@@ -124,23 +124,23 @@ class TableController {
           }
         )
 
-        return Promise.all([results, toRequest, ...relationQueries])
+        return Promise.all<any[], IToRequest, any[][]>([results, toRequest, Promise.all(relationQueries)])
       }
     ).then(
-      ([results, toRequest, ...relationResults]) => {
+      ([results, toRequest, relationResults]) => {
         const MATCHER: {
           [foreignKeyColumn: string]: {
             [value: string]: string
           }
         } = {}
-        Object.keys(toRequest).forEach(
-          (tableName, index) => {
-            const FOREIGN_KEY_COLUMN = toRequest[tableName].foreignKeyColumn
+        Object.values(toRequest).forEach(
+          (requestedTable, index) => {
+            const FOREIGN_KEY_COLUMN = requestedTable.foreignKeyColumn
             MATCHER[FOREIGN_KEY_COLUMN] = {}
             relationResults[index].forEach(
               (relationRow: any) => {
-                const CURRENT_VALUE = relationRow[toRequest[tableName].key]
-                const VALUE_TO_DISPLAY = relationRow[toRequest[tableName].display]
+                const CURRENT_VALUE = relationRow[requestedTable.key]
+                const VALUE_TO_DISPLAY = relationRow[requestedTable.display]
                 MATCHER[FOREIGN_KEY_COLUMN][CURRENT_VALUE] = VALUE_TO_DISPLAY
               }
             )
@@ -148,9 +148,9 @@ class TableController {
         )
         return results.map(
           (row: any) => {
-            Object.keys(toRequest).forEach(
-              (tableName) => {
-                const ROW_KEY = toRequest[tableName].foreignKeyColumn
+            Object.values(toRequest).forEach(
+              (requestedTable) => {
+                const ROW_KEY = requestedTable.foreignKeyColumn
                 row[ROW_KEY] = MATCHER[ROW_KEY][row[ROW_KEY]]
               }
             )
