@@ -8,9 +8,10 @@ import {
   getTableConfig,
   hasAuthorization,
   nextAndReturn,
-  runHook
+  runHook,
+  getColumnsWithRelations
 } from '@root/api/utils'
-import { ITableInfo } from '@root/configGenerator'
+import { ITableInfo, IColumnInfo, IColumnRelation } from '@root/configGenerator'
 import Bluebird from 'bluebird'
 import Debug from 'debug'
 import { NextFunction, Request } from 'express'
@@ -18,15 +19,24 @@ import Knex from 'Knex'
 
 const debug = Debug('funfunzmc:controller-table')
 
+interface IToRequestItem {
+  values: Set<number>,
+  key: string,
+  display: string,
+  foreignKeyColumn: string
+}
+
 interface IToRequest {
-  [key: string]: {
-    values: {
-      [key: string]: true,
-    },
-    key: string,
-    display: string,
-    foreignKeyColumn: string
-  },
+  [key: string]: IToRequestItem,
+}
+
+function toRequestBuilder(relation: IColumnRelation, columnName: string): IToRequestItem {
+  return {
+    values: new Set<number>(),
+    key: relation.key,
+    display: relation.display,
+    foreignKeyColumn: columnName,
+  }
 }
 
 class TableController {
@@ -78,85 +88,10 @@ class TableController {
       .limit(LIMIT)
       .then(
       (results) => {
-        const toRequest: IToRequest = {}
-        const COLUMNS_WITH_RELATIONS = TABLE_CONFIG.columns.filter(
-          (column) => column.relation
-        )
-        results.forEach(
-          (row: any, index: number) => {
-            COLUMNS_WITH_RELATIONS.forEach(
-              (column) => {
-                if (!column.relation) {
-                  throw new HttpException(500, 'Column should have a relation')
-                }
-                const RELATION = column.relation
-                const RELATION_TABLE_NAME = RELATION.table
-                const ROW_RELATION_VALUE = row[column.name]
-
-                if (!toRequest[RELATION_TABLE_NAME]) {
-                  toRequest[RELATION_TABLE_NAME] = {
-                    values: {},
-                    key: RELATION.key,
-                    display: RELATION.display,
-                    foreignKeyColumn: column.name,
-                  }
-                }
-
-                if (toRequest[RELATION_TABLE_NAME].values[ROW_RELATION_VALUE] === undefined) {
-                  toRequest[RELATION_TABLE_NAME].values = {
-                    ...toRequest[RELATION_TABLE_NAME].values,
-                    [ROW_RELATION_VALUE]: index,
-                  }
-                }
-              }
-            )
-          }
-        )
-
-        const relationQueries: Knex.QueryBuilder[] = []
-        Object.keys(toRequest).forEach(
-          (tableName) => {
-            relationQueries.push(
-              DB.select(toRequest[tableName].display, toRequest[tableName].key)
-                .from(tableName)
-                .whereIn(toRequest[tableName].key, Object.keys(toRequest[tableName].values))
-            )
-          }
-        )
-
-        return Promise.all<any[], IToRequest, any[][]>([results, toRequest, Promise.all(relationQueries)])
-      }
-    ).then(
-      ([results, toRequest, relationResults]) => {
-        const MATCHER: {
-          [foreignKeyColumn: string]: {
-            [value: string]: string
-          }
-        } = {}
-        Object.values(toRequest).forEach(
-          (requestedTable, index) => {
-            const FOREIGN_KEY_COLUMN = requestedTable.foreignKeyColumn
-            MATCHER[FOREIGN_KEY_COLUMN] = {}
-            relationResults[index].forEach(
-              (relationRow: any) => {
-                const CURRENT_VALUE = relationRow[requestedTable.key]
-                const VALUE_TO_DISPLAY = relationRow[requestedTable.display]
-                MATCHER[FOREIGN_KEY_COLUMN][CURRENT_VALUE] = VALUE_TO_DISPLAY
-              }
-            )
-          }
-        )
-        return results.map(
-          (row: any) => {
-            Object.values(toRequest).forEach(
-              (requestedTable) => {
-                const ROW_KEY = requestedTable.foreignKeyColumn
-                row[ROW_KEY] = MATCHER[ROW_KEY][row[ROW_KEY]]
-              }
-            )
-            return row
-          }
-        )
+        if (req.query.friendlyData) {
+          return this.addVerboseRelatedData(results, TABLE_CONFIG, DB)
+        }
+        return results
       }
     ).then(
       (results) => {
@@ -271,6 +206,74 @@ class TableController {
         nextAndReturn(next)
       )
     }
+  }
+
+  private addVerboseRelatedData(results: any[], TABLE_CONFIG: ITableInfo, DB: Knex) {
+    const toRequest: IToRequest = {}
+    const COLUMNS_WITH_RELATIONS = getColumnsWithRelations(TABLE_CONFIG)
+    results.forEach(
+      (row: any, index: number) => {
+        COLUMNS_WITH_RELATIONS.forEach(
+          (column) => {
+            if (!column.relation) {
+              throw new HttpException(500, 'Column should have a relation')
+            }
+            const RELATION_TABLE_NAME = column.relation.table
+
+            if (!toRequest[RELATION_TABLE_NAME]) {
+              toRequest[RELATION_TABLE_NAME] = toRequestBuilder(column.relation, column.name)
+            }
+
+            toRequest[RELATION_TABLE_NAME].values.add(row[column.name])
+          }
+        )
+      }
+    )
+
+    const relationQueries: Knex.QueryBuilder[] = []
+    Object.keys(toRequest).forEach(
+      (tableName) => {
+        relationQueries.push(
+          DB.select(toRequest[tableName].display, toRequest[tableName].key)
+            .from(tableName)
+            .whereIn(toRequest[tableName].key, Array.from(toRequest[tableName].values.values()))
+        )
+      }
+    )
+
+    return Promise.all<any[]>(relationQueries).then(
+      (relationResults) => {
+        const MATCHER: {
+          [foreignKeyColumn: string]: {
+            [value: string]: string
+          }
+        } = {}
+        Object.values(toRequest).forEach(
+          (requestedTable, index) => {
+            const FOREIGN_KEY_COLUMN = requestedTable.foreignKeyColumn
+            MATCHER[FOREIGN_KEY_COLUMN] = {}
+            relationResults[index].forEach(
+              (relationRow: any) => {
+                const CURRENT_VALUE = relationRow[requestedTable.key]
+                const VALUE_TO_DISPLAY = relationRow[requestedTable.display]
+                MATCHER[FOREIGN_KEY_COLUMN][CURRENT_VALUE] = VALUE_TO_DISPLAY
+              }
+            )
+          }
+        )
+        return results.map(
+          (row: any) => {
+            Object.values(toRequest).forEach(
+              (requestedTable) => {
+                const ROW_KEY = requestedTable.foreignKeyColumn
+                row[ROW_KEY] = MATCHER[ROW_KEY][row[ROW_KEY]]
+              }
+            )
+            return row
+          }
+        )
+      }
+    )
   }
 
   private getRelationQueries(TABLE_CONFIG: ITableInfo, parentId: any) {

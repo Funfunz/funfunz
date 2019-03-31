@@ -14,4 +14,5 @@ export declare function getTableConfig(TABLE_NAME: string): ITableInfo;
 export declare function getColumnsByName(TABLE_CONFIG: ITableInfo): {
     [key: string]: IColumnInfo;
 };
+export declare function getColumnsWithRelations(TABLE_CONFIG: ITableInfo): IColumnInfo[];
 export declare function applyQueryFilters(QUERY: Knex.QueryBuilder, filters: string, TABLE_CONFIG: ITableInfo): Knex.QueryBuilder;

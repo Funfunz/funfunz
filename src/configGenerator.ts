@@ -39,6 +39,13 @@ export interface ITableInfo {
   }
 }
 
+export interface IColumnRelation {
+  type: string,
+  table: string,
+  key: string,
+  display: string,
+}
+
 export interface IColumnInfo {
   name: string,
   verbose: string,
@@ -49,12 +56,7 @@ export interface IColumnInfo {
     detail: boolean,
   },
   editable: boolean,
-  relation?: {
-    type: string,
-    table: string,
-    key: string,
-    display: string,
-  },
+  relation?: IColumnRelation
 }
 
 function buildTableInfo(): ITableInfo {

@@ -121,6 +121,12 @@ export function getColumnsByName(TABLE_CONFIG: ITableInfo) {
   return columnsByName
 }
 
+export function getColumnsWithRelations(TABLE_CONFIG: ITableInfo) {
+  return TABLE_CONFIG.columns.filter(
+    (column) => column.relation
+  )
+}
+
 export function applyQueryFilters(QUERY: Knex.QueryBuilder, filters: string, TABLE_CONFIG: ITableInfo) {
   const columnsByName = getColumnsByName(TABLE_CONFIG)
   const FILTERS = JSON.parse(filters)

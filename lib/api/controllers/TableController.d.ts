@@ -10,6 +10,7 @@ declare class TableController {
     insertRow(req: Request, res: IMCResponse, next: NextFunction): Bluebird<any> | Promise<never>;
     updateRow(req: Request, res: IMCResponse, next: NextFunction): Bluebird<any> | Promise<never>;
     deleteRow(req: Request, res: IMCResponse, next: NextFunction): Bluebird<any> | Promise<never>;
+    private addVerboseRelatedData;
     private getRelationQueries;
     private getRelatedRow;
     private mergeRelatedData;
