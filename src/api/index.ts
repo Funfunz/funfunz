@@ -35,3 +35,5 @@ export default function(configs: any) {
   }
   return app.server
 }
+
+export * from './types'

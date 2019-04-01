@@ -5,13 +5,13 @@ import {
   applyQueryFilters,
   catchMiddleware,
   filterVisibleTableColumns,
+  getColumnsWithRelations,
   getTableConfig,
   hasAuthorization,
   nextAndReturn,
-  runHook,
-  getColumnsWithRelations
+  runHook
 } from '@root/api/utils'
-import { ITableInfo, IColumnInfo, IColumnRelation } from '@root/configGenerator'
+import { IColumnRelation, ITableInfo } from '@root/configGenerator'
 import Bluebird from 'bluebird'
 import Debug from 'debug'
 import { NextFunction, Request } from 'express'
@@ -68,10 +68,6 @@ class TableController {
     const COLUMNS = filterVisibleTableColumns(TABLE_CONFIG, 'main')
     let LIMIT = 10
 
-    if (req.query.limit) {
-      LIMIT = parseInt(req.query.limit, 10)
-    }
-
     if (!hasAuthorization(TABLE_CONFIG.roles, req.user)) {
       return catchMiddleware(next)(new HttpException(401, 'Not authorized'))
     }
@@ -83,10 +79,15 @@ class TableController {
     if (req.query.filter) {
       QUERY = applyQueryFilters(QUERY, req.query.filter, TABLE_CONFIG)
     }
-    return QUERY
-      .offset((PAGE_NUMBER) * LIMIT)
-      .limit(LIMIT)
-      .then(
+
+    if (req.query.limit) {
+      LIMIT = parseInt(req.query.limit, 10)
+    }
+    if (LIMIT > 0) {
+      QUERY.offset((PAGE_NUMBER) * LIMIT).limit(LIMIT)
+    }
+
+    return QUERY.then(
       (results) => {
         if (req.query.friendlyData) {
           return this.addVerboseRelatedData(results, TABLE_CONFIG, DB)

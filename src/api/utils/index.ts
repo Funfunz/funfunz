@@ -52,7 +52,6 @@ export const errorHandler: ErrorRequestHandler = (err, req, res) => {
 
 export function hasAuthorization(tableRoles: string[], user: IUser = {roles: []}): boolean {
   let isAuthorized: string | undefined = 'true'
-
   if (tableRoles && tableRoles.length) {
     isAuthorized = tableRoles.find(
       (tableRole: string) => {
@@ -60,8 +59,8 @@ export function hasAuthorization(tableRoles: string[], user: IUser = {roles: []}
           return true
         }
         const userHasAuthorization = user.roles.find(
-          (userRole: string) => {
-            return (userRole === tableRole);
+          (userRole) => {
+            return (userRole.name === tableRole);
           }
         )
         return userHasAuthorization ? true : false
@@ -74,7 +73,7 @@ export function hasAuthorization(tableRoles: string[], user: IUser = {roles: []}
 
 export function filterVisibleTableColumns(table: ITableInfo, target: 'main' | 'detail') {
   return table.columns.filter(
-    (column) => column.visible[target]
+    (column) => column.visible[target] || column.name === table.pk
   ).map(
     (column) => column.name
   )

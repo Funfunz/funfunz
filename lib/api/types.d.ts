@@ -6,7 +6,10 @@ export declare class HttpException extends Error {
 }
 export interface IUser {
     [key: string]: any;
-    roles: string[];
+    roles: Array<{
+        id: number;
+        name: string;
+    }>;
 }
 export interface IMCResponse extends express.Response {
     data?: any;
