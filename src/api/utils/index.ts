@@ -86,14 +86,18 @@ export function runHook(
   req: IMCRequest,
   res: IMCResponse,
   database: Knex | null,
-  results: any
+  results?: any
 ) {
   if (TABLE.hooks && TABLE.hooks[hook]) {
     const HOOK = TABLE.hooks[hook]
     if (database && HOOK && HOOK[instance]) {
       const CALLER  = HOOK[instance]
       return CALLER ?
-        CALLER(req, res, database, TABLE.name, results) :
+        instance === 'before' ?
+          CALLER(req, res, database, TABLE.name)
+          :
+          CALLER(req, res, database, TABLE.name, results)
+        :
         Promise.resolve(hook === 'getTableCount' ? results.length : results)
     }
   }

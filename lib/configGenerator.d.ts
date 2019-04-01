@@ -2,7 +2,7 @@ import { describeInfo, schemaInfo } from '@root/describeTable';
 import { ITypeAnswers } from '@root/index';
 import express from 'express';
 import knex from 'knex';
-declare type IHookFunction = (req: express.Request, res: express.Response, DB: knex, tableName: string, data: any) => Promise<any>;
+declare type IHookFunction = (req: express.Request, res: express.Response, DB: knex, tableName: string, data?: any) => Promise<any>;
 export declare type Hooks = 'getTableData' | 'getTableCount';
 export interface ITableInfo {
     name: string;

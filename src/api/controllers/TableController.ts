@@ -87,7 +87,22 @@ class TableController {
       QUERY.offset((PAGE_NUMBER) * LIMIT).limit(LIMIT)
     }
 
-    return QUERY.then(
+    return runHook(TABLE_CONFIG, 'getTableData', 'before', req, res, database.db).then(
+      (hookResult) => {
+        if (hookResult) {
+          if (hookResult.filter) {
+            Object.keys(hookResult.filter).forEach(
+              (column) => {
+                if (Array.isArray(hookResult.filter[column])) {
+                  QUERY.whereIn(column, hookResult.filter[column])
+                }
+              }
+            )
+          }
+        }
+        return QUERY
+      }
+    ).then(
       (results) => {
         if (req.query.friendlyData) {
           return this.addVerboseRelatedData(results, TABLE_CONFIG, DB)

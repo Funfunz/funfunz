@@ -10,7 +10,7 @@ type IHookFunction = (
   res: express.Response,
   DB: knex,
   tableName: string,
-  data: any
+  data?: any
 ) => Promise <any>
 
 export type Hooks = 'getTableData' | 'getTableCount'

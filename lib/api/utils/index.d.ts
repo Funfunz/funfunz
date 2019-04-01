@@ -9,7 +9,7 @@ export declare function nextAndReturn(next: NextFunction): (data: any) => Promis
 export declare const errorHandler: ErrorRequestHandler;
 export declare function hasAuthorization(tableRoles: string[], user?: IUser): boolean;
 export declare function filterVisibleTableColumns(table: ITableInfo, target: 'main' | 'detail'): string[];
-export declare function runHook(TABLE: ITableInfo, hook: Hooks, instance: 'after' | 'before', req: IMCRequest, res: IMCResponse, database: Knex | null, results: any): Promise<any>;
+export declare function runHook(TABLE: ITableInfo, hook: Hooks, instance: 'after' | 'before', req: IMCRequest, res: IMCResponse, database: Knex | null, results?: any): Promise<any>;
 export declare function getTableConfig(TABLE_NAME: string): ITableInfo;
 export declare function getColumnsByName(TABLE_CONFIG: ITableInfo): {
     [key: string]: IColumnInfo;
