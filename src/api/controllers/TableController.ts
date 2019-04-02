@@ -203,13 +203,22 @@ class TableController {
   public updateRow(req: Request, res: IMCResponse, next: NextFunction) {
     if (!database.db) {
       return catchMiddleware(next)(new HttpException(500, 'No database'))
-    } else {
-      return database.db(req.body.table).where('id', req.body.id).update(req.body.data).then(
-        addToResponse(res, 'results')
-      ).then(
-        nextAndReturn(next)
-      )
     }
+    const TABLE_NAME = req.params.table
+    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
+
+    TABLE_CONFIG.columns.forEach(
+      (column) => {
+        if (column.type === 'datetime') {
+          req.body.data[column.name] = new Date(req.body.data[column.name] || null)
+        }
+      }
+    )
+    return database.db(TABLE_NAME).where('id', req.params.id).update(req.body.data).then(
+      addToResponse(res, 'results')
+    ).then(
+      nextAndReturn(next)
+    )
   }
 
   public deleteRow(req: Request, res: IMCResponse, next: NextFunction) {
