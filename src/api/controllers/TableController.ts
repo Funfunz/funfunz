@@ -1,5 +1,5 @@
-import database from '@root/api/db'
-import { HttpException, IMCRequest, IMCResponse } from '@root/api/types'
+import database, { Database } from '@root/api/db'
+import { HttpException, IMCRequest, IMCResponse, IUser } from '@root/api/types'
 import {
   addToResponse,
   applyQueryFilters,
@@ -53,12 +53,11 @@ class TableController {
       verbose: TABLE_CONFIG.verbose,
     }
 
-    if (hasAuthorization(TABLE_CONFIG.roles, req.user)) {
-      addToResponse(res, 'results')(RESULT)
-      return nextAndReturn(next)(RESULT)
-    } else {
+    if (!hasAuthorization(TABLE_CONFIG.roles, req.user)) {
       return catchMiddleware(next)(new HttpException(401, 'Not authorized'))
     }
+    addToResponse(res, 'results')(RESULT)
+    return nextAndReturn(next)(RESULT)
   }
 
   public getTableData(req: IMCRequest, res: IMCResponse, next: NextFunction) {
@@ -124,113 +123,137 @@ class TableController {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
 
-    if (!hasAuthorization(TABLE_CONFIG.roles, req.user)) {
-      return catchMiddleware(next)(new HttpException(401, 'Not authorized'))
-    } else {
-      if (!database.db) {
-        return catchMiddleware(next)(new HttpException(500, 'No database'))
-      } else {
-        return database.db.select('*').from(TABLE_NAME).then(
-          (results) => {
-            runHook(TABLE_CONFIG, 'getTableCount', 'after', req, res, database.db, results).then(
-              addToResponse(res, 'count')
-            ).then(
-              nextAndReturn(next)
-            )
+    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
+      (DB) => {
+        TABLE_CONFIG.columns.forEach(
+          (column) => {
+            if (column.type === 'datetime') {
+              req.body.data[column.name] = new Date(req.body.data[column.name] || null)
+            }
           }
         )
+
+        return Promise.all([DB, DB(TABLE_NAME).select('*')])
       }
-    }
+    ).then(
+      ([DB, results]) => {
+        return runHook(TABLE_CONFIG, 'getTableCount', 'after', req, res, DB, results)
+      }
+    ).then(
+      addToResponse(res, 'count')
+    ).then(
+      nextAndReturn(next)
+    ).catch(
+      catchMiddleware(next)
+    )
   }
 
   public getRow(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
 
-    if (!hasAuthorization(TABLE_CONFIG.roles, req.user)) {
-      return catchMiddleware(next)(new HttpException(401, 'Not authorized'))
-    } else {
-      if (!database.db) {
-        return catchMiddleware(next)(new HttpException(500, 'No database'))
-      } else {
+    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
+      (DB) => {
         const requestedColumns = filterVisibleTableColumns(TABLE_CONFIG, 'detail')
 
-        const query = database.db.select(requestedColumns)
+        return DB.select(requestedColumns)
           .from(`${req.params.table}`)
           .where(`id`, req.params.id)
-
-        return query.then(
-          (results) => {
-            let relationQueries: Array<Bluebird<{}>> = []
-            if (req.query.includeRelations) {
-              relationQueries = this.getRelationQueries(TABLE_CONFIG, results[0].id)
-            }
-
-            if (relationQueries.length) {
-              return Promise.all([
-                results[0],
-                ...relationQueries,
-              ])
-            }
-
-            return Promise.all([
-              results[0],
-            ])
-          }
-        ).then(
-          this.mergeRelatedData
-        ).then(
-          addToResponse(res, 'result')
-        ).then(
-          nextAndReturn(next)
-        )
       }
-    }
-  }
-
-  public insertRow(req: Request, res: IMCResponse, next: NextFunction) {
-    if (!database.db) {
-      return catchMiddleware(next)(new HttpException(500, 'No database'))
-    } else {
-      return database.db(req.params.table).insert(req.body.data).then(
-        addToResponse(res, 'results')
-      ).then(
-        nextAndReturn(next)
-      )
-    }
-  }
-
-  public updateRow(req: Request, res: IMCResponse, next: NextFunction) {
-    if (!database.db) {
-      return catchMiddleware(next)(new HttpException(500, 'No database'))
-    }
-    const TABLE_NAME = req.params.table
-    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
-
-    TABLE_CONFIG.columns.forEach(
-      (column) => {
-        if (column.type === 'datetime') {
-          req.body.data[column.name] = new Date(req.body.data[column.name] || null)
+    ).then(
+      (results) => {
+        let relationQueries: Array<Bluebird<{}>> = []
+        if (req.query.includeRelations) {
+          relationQueries = this.getRelationQueries(TABLE_CONFIG, results[0].id)
         }
+
+        if (relationQueries.length) {
+          return Promise.all([
+            results[0],
+            ...relationQueries,
+          ])
+        }
+
+        return Promise.all([
+          results[0],
+        ])
       }
-    )
-    return database.db(TABLE_NAME).where('id', req.params.id).update(req.body.data).then(
+    ).then(
+      this.mergeRelatedData
+    ).then(
       addToResponse(res, 'results')
     ).then(
       nextAndReturn(next)
+    ).catch(
+      catchMiddleware(next)
     )
   }
 
-  public deleteRow(req: Request, res: IMCResponse, next: NextFunction) {
-    if (!database.db) {
-      return catchMiddleware(next)(new HttpException(500, 'No database'))
-    } else {
-      return database.db(req.params.table).where('id', req.params.id).del().then(
-        addToResponse(res, 'results')
-      ).then(
-        nextAndReturn(next)
-      )
-    }
+  public insertRow(req: IMCRequest, res: IMCResponse, next: NextFunction) {
+    const TABLE_NAME = req.params.table
+    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
+
+    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
+      (DB) => {
+        TABLE_CONFIG.columns.forEach(
+          (column) => {
+            if (column.type === 'datetime') {
+              req.body.data[column.name] = new Date(req.body.data[column.name] || null)
+            }
+          }
+        )
+
+        return DB(req.params.table).insert(req.body.data)
+      }
+    ).then(
+      addToResponse(res, 'results')
+    ).then(
+      nextAndReturn(next)
+    ).catch(
+      catchMiddleware(next)
+    )
+  }
+
+  public updateRow(req: IMCRequest, res: IMCResponse, next: NextFunction) {
+    const TABLE_NAME = req.params.table
+    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
+
+    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
+      (DB) => {
+        TABLE_CONFIG.columns.forEach(
+          (column) => {
+            if (column.type === 'datetime') {
+              req.body.data[column.name] = new Date(req.body.data[column.name] || null)
+            }
+          }
+        )
+
+        return DB(TABLE_NAME).where('id', req.params.id).update(req.body.data)
+      }
+    ).then(
+      addToResponse(res, 'results')
+    ).then(
+      nextAndReturn(next)
+    ).catch(
+      catchMiddleware(next)
+    )
+  }
+
+  public deleteRow(req: IMCRequest, res: IMCResponse, next: NextFunction) {
+    const TABLE_NAME = req.params.table
+    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
+
+    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
+      (DB) => {
+        return DB(TABLE_NAME).where('id', req.params.id).del()
+      }
+    ).then(
+      addToResponse(res, 'results')
+    ).then(
+      nextAndReturn(next)
+    ).catch(
+      catchMiddleware(next)
+    )
   }
 
   private addVerboseRelatedData(results: any[], TABLE_CONFIG: ITableInfo, DB: Knex) {
@@ -299,6 +322,21 @@ class TableController {
         )
       }
     )
+  }
+
+  private requirementsCheck(
+    tableConfig: ITableInfo,
+    user: IUser | undefined,
+    dbInstance: Database,
+    next: (param?: any) => void
+  ) {
+    if (!hasAuthorization(tableConfig.roles, user)) {
+      return Promise.reject(new HttpException(401, 'Not authorized'))
+    }
+    if (!dbInstance.db) {
+      return catchMiddleware(next)(new HttpException(500, 'No database'))
+    }
+    return Promise.resolve(dbInstance.db)
   }
 
   private getRelationQueries(TABLE_CONFIG: ITableInfo, parentId: any) {
