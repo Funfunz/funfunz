@@ -125,14 +125,6 @@ class TableController {
 
     return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
       (DB) => {
-        TABLE_CONFIG.columns.forEach(
-          (column) => {
-            if (column.type === 'datetime') {
-              req.body.data[column.name] = new Date(req.body.data[column.name] || null)
-            }
-          }
-        )
-
         return Promise.all([DB, DB(TABLE_NAME).select('*')])
       }
     ).then(
@@ -158,7 +150,7 @@ class TableController {
 
         return DB.select(requestedColumns)
           .from(`${req.params.table}`)
-          .where(`id`, req.params.id)
+          .where('id', req.params.id)
       }
     ).then(
       (results) => {
@@ -199,14 +191,20 @@ class TableController {
           (column) => {
             if (column.type === 'datetime') {
               req.body.data[column.name] = new Date(req.body.data[column.name] || null)
+            } else if (column.type === 'tinyint(1)') {
+              req.body.data[column.name] = column.type ? 1 : 0
             }
           }
         )
-
+        console.log('table', req.params.table)
+        console.log('data', req.body.data)
         return DB(req.params.table).insert(req.body.data)
       }
     ).then(
-      addToResponse(res, 'results')
+      (results) => {
+        console.log('results', results)
+        addToResponse(res, 'results')(results)
+      }
     ).then(
       nextAndReturn(next)
     ).catch(

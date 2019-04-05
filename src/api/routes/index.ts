@@ -41,7 +41,7 @@ class IndexRouter {
       (req, res, next) => {
         tableController.getRow(req, res, next)
       },
-      sendJSON('result')
+      sendJSON('results')
     )
     this.router.put('/:table/:id',
       (req, res, next) => {

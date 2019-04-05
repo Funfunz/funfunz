@@ -6,3 +6,4 @@ declare class Database {
 }
 declare const database: Database;
 export default database;
+export { Database };
