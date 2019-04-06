@@ -1,9 +1,12 @@
 import { describeInfo, schemaInfo } from '@root/describeTable'
 import { ITypeAnswers } from '@root/index'
+import Debug from 'debug'
 import express from 'express'
 import fs from 'fs'
 import knex from 'knex'
 import pluralize from 'pluralize'
+
+const debug = Debug('funfunzmc:config-generator')
 
 type IHookFunction = (
   req: express.Request,
@@ -129,7 +132,7 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
   )
   fs.writeFile('settings.json', JSON.stringify(resultData, null, 2), 'utf8', (err) => {
     if (err) {
-      console.log('err', err)
+      debug('err' + JSON.stringify(err))
     }
   })
 }
@@ -148,7 +151,7 @@ export function generateConfig(answers: ITypeAnswers) {
   }
   fs.writeFile('config.json', JSON.stringify(finalConfig, null, 2), 'utf8', (err) => {
     if (err) {
-      console.log('err', err)
+      debug('err' + JSON.stringify(err))
     }
   })
 }

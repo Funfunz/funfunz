@@ -205,13 +205,10 @@ class TableController {
             }
           }
         )
-        console.log('table', req.params.table)
-        console.log('data', req.body.data)
         return DB(req.params.table).insert(req.body.data)
       }
     ).then(
       (results) => {
-        console.log('results', results)
         addToResponse(res, 'results')(results)
       }
     ).then(
