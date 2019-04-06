@@ -8,6 +8,7 @@ export interface ITableInfo {
     name: string;
     verbose: string;
     pk: string;
+    searchFields?: string[];
     relations?: {
         manyToOne?: {
             [key: string]: string;

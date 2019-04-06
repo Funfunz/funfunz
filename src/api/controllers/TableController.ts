@@ -3,6 +3,7 @@ import { HttpException, IMCRequest, IMCResponse, IUser } from '@root/api/types'
 import {
   addToResponse,
   applyQueryFilters,
+  applyQuerySearch,
   catchMiddleware,
   filterVisibleTableColumns,
   getColumnsWithRelations,
@@ -79,6 +80,10 @@ class TableController {
       QUERY = applyQueryFilters(QUERY, req.query.filter, TABLE_CONFIG)
     }
 
+    if (req.query.search) {
+      QUERY = applyQuerySearch(QUERY, req.query.search, TABLE_CONFIG)
+    }
+
     if (req.query.limit) {
       LIMIT = parseInt(req.query.limit, 10)
     }
@@ -125,7 +130,11 @@ class TableController {
 
     return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
       (DB) => {
-        return Promise.all([DB, DB(TABLE_NAME).select('*')])
+        let QUERY = DB(TABLE_NAME).select('*')
+        if (req.query.search) {
+          QUERY = applyQuerySearch(QUERY, req.query.search, TABLE_CONFIG)
+        }
+        return Promise.all([DB, QUERY])
       }
     ).then(
       ([DB, results]) => {
