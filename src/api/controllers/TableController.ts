@@ -64,6 +64,7 @@ class TableController {
   public getTableData(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     const PAGE_NUMBER = req.query.page || 0
     const TABLE_NAME = req.params.table
+    const ORDER = req.query.order || null
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
     const COLUMNS = filterVisibleTableColumns(TABLE_CONFIG, 'main')
     let LIMIT = 10
@@ -82,6 +83,15 @@ class TableController {
 
     if (req.query.search) {
       QUERY = applyQuerySearch(QUERY, req.query.search, TABLE_CONFIG)
+    }
+
+    if (ORDER) {
+      const ORDER_OBJ = JSON.parse(ORDER)
+      if (Array.isArray(ORDER_OBJ)) {
+        QUERY.orderBy(ORDER_OBJ)
+      } else {
+        QUERY.orderBy(ORDER_OBJ.column, ORDER_OBJ.order)
+      }
     }
 
     if (req.query.limit) {

@@ -1,2 +1,2 @@
-declare const tables: () => Promise<string[]>;
-export default tables;
+declare const getTableList: () => Promise<string[]>;
+export default getTableList;
