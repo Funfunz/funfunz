@@ -1,7 +1,7 @@
 // get the client
 import { generateConfig, generateSettings } from '@root/configGenerator'
 import describe from '@root/describeTable'
-import tables from '@root/listTables'
+import getTableList from '@root/listTables'
 import { prompt } from 'enquirer'
 
 export interface ITypeAnswers {
@@ -66,10 +66,10 @@ prompt(question).then(
     }
     Promise.all([
       generateConfig(compiledAnswers),
-      tables(),
+      getTableList(),
     ]).then(
-      ([config, tablesNames]) => {
-        describe(tablesNames).then(
+      ([config, tableNames]) => {
+        describe(tableNames).then(
           (results) => {
             generateSettings(results)
           }

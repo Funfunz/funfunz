@@ -11,7 +11,7 @@ function createConnection() {
   })
 }
 
-const tables = (): Promise<string[]> => {
+const getTableList = (): Promise<string[]> => {
   return new Promise<any>(
     (res, rej) => {
       const connection = createConnection()
@@ -38,4 +38,4 @@ const tables = (): Promise<string[]> => {
   )
 }
 
-export default tables
+export default getTableList

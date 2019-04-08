@@ -127,14 +127,37 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
           table.columns.push(columnData)
         }
       )
+      fs.writeFile(
+        'generatedConfigs/models/' + table.name + '.js',
+        'export default ' + JSON.stringify(table, null, 2),
+        'utf8',
+        (err) => {
+          if (err) {
+            debug('err' + JSON.stringify(err))
+          }
+        }
+      )
       resultData.push(table)
     }
   )
-  fs.writeFile('settings.json', JSON.stringify(resultData, null, 2), 'utf8', (err) => {
-    if (err) {
-      debug('err' + JSON.stringify(err))
+
+  fs.writeFile(
+    'generatedConfigs/MCsettings.js',
+    resultData.map(
+      (table) => `import ${table.name}Model from './models/${table.name}'\n`
+    ).join('') +
+    '\nexport default [\n' +
+    resultData.map(
+      (table) => `  ${table.name}Model,\n`
+    ).join('') +
+    ']\n',
+    'utf8',
+    (err) => {
+      if (err) {
+        debug('err' + JSON.stringify(err))
+      }
     }
-  })
+  )
 }
 
 export function generateConfig(answers: ITypeAnswers) {
@@ -149,9 +172,14 @@ export function generateConfig(answers: ITypeAnswers) {
         port: 3004,
     },
   }
-  fs.writeFile('config.json', JSON.stringify(finalConfig, null, 2), 'utf8', (err) => {
-    if (err) {
-      debug('err' + JSON.stringify(err))
+  fs.writeFile(
+    'generatedConfigs/MCconfig.js',
+    'export default ' + JSON.stringify(finalConfig, null, 2),
+    'utf8',
+    (err) => {
+      if (err) {
+        debug('err' + JSON.stringify(err))
+      }
     }
-  })
+  )
 }

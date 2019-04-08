@@ -45,7 +45,7 @@ function createPoolDB() {
 
 const describe = (tablesNames: string[]): PromiseLike<Array<{schema: schemaInfo, describe: describeInfo}>> => {
   const poolSchema = createPoolSchema()
-  const poolDB = createPoolDB()
+  const poolDescribeDB = createPoolDB()
 
   const promises: Array<Promise<{schema: schemaInfo, describe: describeInfo}>> = tablesNames.map(
     (tableName) => {
@@ -82,12 +82,19 @@ const describe = (tablesNames: string[]): PromiseLike<Array<{schema: schemaInfo,
               }
               if (!schema || schema.length === 0) {
                 schema = [{TABLE_NAME: tableName}]
+              } else {
+                schema = schema.map(
+                  (schemaItem) => ({
+                    ...schemaItem,
+                    TABLE_NAME: tableName,
+                  })
+                )
               }
               results.schema = schema
               callback()
             }
           )
-          poolDB.execute(
+          poolDescribeDB.execute(
             `describe \`${tableName}\``,
             (err, describeData: describeInfo) => {
               if (err) {
@@ -102,9 +109,9 @@ const describe = (tablesNames: string[]): PromiseLike<Array<{schema: schemaInfo,
     }
   )
   return Promise.all(promises).then(
-    (result: Array<{schema: schemaInfo, describe: describeInfo}>) => {
+    (result) => {
       poolSchema.end()
-      poolDB.end()
+      poolDescribeDB.end()
       return result
     }
   ).catch(
