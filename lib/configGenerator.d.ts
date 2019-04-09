@@ -14,6 +14,13 @@ export interface ITableInfo {
             [key: string]: string;
         };
     };
+    chips?: [{
+        verbose: string;
+        columns: [{
+            name: string;
+            verbose: string;
+        }];
+    }];
     columns: IColumnInfo[];
     visible: boolean;
     roles: string[];

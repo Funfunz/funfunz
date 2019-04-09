@@ -52,6 +52,7 @@ class TableController {
       name: TABLE_CONFIG.name,
       pk: TABLE_CONFIG.pk,
       verbose: TABLE_CONFIG.verbose,
+      chips: TABLE_CONFIG.chips || [],
     }
 
     if (!hasAuthorization(TABLE_CONFIG.roles, req.user)) {

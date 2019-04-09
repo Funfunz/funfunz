@@ -26,21 +26,32 @@ export interface ITableInfo {
   relations?: {
     manyToOne?: {
       [key: string]: string,
-    }
-  }
+    },
+  },
+  chips?: [
+    {
+      verbose: string,
+      columns: [
+        {
+          name: string,
+          verbose: string,
+        }
+      ],
+    },
+  ],
   columns: IColumnInfo[],
   visible: boolean,
   roles: string[],
   hooks?: {
     getTableData?: {
-      before?: IHookFunction
-      after?: IHookFunction
+      before?: IHookFunction,
+      after?: IHookFunction,
     },
     getTableCount?: {
-      before?: IHookFunction
-      after?: IHookFunction
+      before?: IHookFunction,
+      after?: IHookFunction,
     },
-  }
+  },
 }
 
 export interface IColumnRelation {

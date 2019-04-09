@@ -72,8 +72,22 @@ export function hasAuthorization(tableRoles: string[], user: IUser = {roles: []}
 }
 
 export function filterVisibleTableColumns(table: ITableInfo, target: 'main' | 'detail') {
+  const toKeep: {
+    [key: string]: boolean
+  } = {}
+  if (table.chips) {
+    table.chips.forEach(
+      (chip) => {
+        chip.columns.forEach(
+          (column) => {
+            toKeep[column.name] = true
+          }
+        )
+      }
+    )
+  }
   return table.columns.filter(
-    (column) => column.visible[target] || column.name === table.pk
+    (column) => column.visible[target] || column.name === table.pk || toKeep[column.name]
   ).map(
     (column) => column.name
   )
