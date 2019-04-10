@@ -12,7 +12,7 @@ import {
   nextAndReturn,
   runHook
 } from '@root/api/utils'
-import { IColumnRelation, ITableInfo } from '@root/configGenerator'
+import { IColumnRelation, ITableInfo, IColumnInfo } from '@root/configGenerator'
 import Bluebird from 'bluebird'
 import Debug from 'debug'
 import { NextFunction, Request } from 'express'
@@ -53,6 +53,7 @@ class TableController {
       pk: TABLE_CONFIG.pk,
       verbose: TABLE_CONFIG.verbose,
       chips: TABLE_CONFIG.chips || [],
+      itemTitle: TABLE_CONFIG.itemTitle,
     }
 
     if (!hasAuthorization(TABLE_CONFIG.roles, req.user)) {
@@ -382,7 +383,10 @@ class TableController {
     const TABLE_NAME = tableName
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
 
-    const requestedColumns = filterVisibleTableColumns(TABLE_CONFIG, 'detail')
+    const requestedColumns = filterVisibleTableColumns(TABLE_CONFIG, 'detail').filter(
+      (column) => column !== columnName
+    )
+
     return database.db.select(requestedColumns)
       .from(tableName)
       .where(columnName, parentId).then(

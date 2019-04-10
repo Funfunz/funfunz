@@ -39,6 +39,7 @@ export interface ITableInfo {
       ],
     },
   ],
+  itemTitle?: string,
   columns: IColumnInfo[],
   visible: boolean,
   roles: string[],

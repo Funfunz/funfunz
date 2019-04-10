@@ -21,6 +21,7 @@ export interface ITableInfo {
             verbose: string;
         }];
     }];
+    itemTitle?: string;
     columns: IColumnInfo[];
     visible: boolean;
     roles: string[];
