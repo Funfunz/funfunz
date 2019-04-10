@@ -170,13 +170,15 @@ export function applyQueryFilters(QUERY: Knex.QueryBuilder, filters: string, TAB
 
 export function applyQuerySearch(QUERY: Knex.QueryBuilder, search: string, TABLE_CONFIG: ITableInfo) {
   const searchFields = TABLE_CONFIG.searchFields || []
-  searchFields.forEach(
-    (searchField, index) => {
-      index === 0 ?
-        QUERY.where(searchField, 'like', '%' + search + '%') :
-        QUERY.orWhere(searchField, 'like', '%' + search + '%')
-    }
-  )
+  QUERY.where(function() {
+    searchFields.forEach(
+      (searchField, index) => {
+        index === 0 ?
+          this.where(searchField, 'like', '%' + search + '%') :
+          this.orWhere(searchField, 'like', '%' + search + '%')
+      }
+    )
+  })
 
   return QUERY
 }

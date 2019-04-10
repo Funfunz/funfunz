@@ -12,7 +12,7 @@ import {
   nextAndReturn,
   runHook
 } from '@root/api/utils'
-import { IColumnRelation, ITableInfo, IColumnInfo } from '@root/configGenerator'
+import { IColumnRelation, ITableInfo } from '@root/configGenerator'
 import Bluebird from 'bluebird'
 import Debug from 'debug'
 import { NextFunction, Request } from 'express'
@@ -116,6 +116,7 @@ class TableController {
             )
           }
         }
+        console.log(QUERY.toQuery())
         return QUERY
       }
     ).then(
