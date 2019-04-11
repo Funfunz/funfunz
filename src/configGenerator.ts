@@ -52,6 +52,22 @@ export interface ITableInfo {
       before?: IHookFunction,
       after?: IHookFunction,
     },
+    getRow?: {
+      before?: IHookFunction,
+      after?: IHookFunction,
+    },
+    insertRow?: {
+      before?: IHookFunction,
+      after?: IHookFunction,
+    },
+    updateRow?: {
+      before?: IHookFunction,
+      after?: IHookFunction,
+    },
+    deleteRow?: {
+      before?: IHookFunction,
+      after?: IHookFunction,
+    },
   },
 }
 
