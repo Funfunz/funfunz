@@ -194,6 +194,10 @@ class TableController {
     ).then(
       this.mergeRelatedData
     ).then(
+      (results) => {
+        return runHook(TABLE_CONFIG, 'getRow', 'after', req, res, database.db, results)
+      }
+    ).then(
       addToResponse(res, 'results')
     ).then(
       nextAndReturn(next)
@@ -218,6 +222,10 @@ class TableController {
           }
         )
         return DB(req.params.table).insert(req.body.data)
+      }
+    ).then(
+      (results) => {
+        return runHook(TABLE_CONFIG, 'insertRow', 'after', req, res, database.db, results)
       }
     ).then(
       (results) => {
@@ -247,6 +255,10 @@ class TableController {
         return DB(TABLE_NAME).where('id', req.params.id).update(req.body.data)
       }
     ).then(
+      (results) => {
+        return runHook(TABLE_CONFIG, 'updateRow', 'after', req, res, database.db, results)
+      }
+    ).then(
       addToResponse(res, 'results')
     ).then(
       nextAndReturn(next)
@@ -262,6 +274,10 @@ class TableController {
     return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
       (DB) => {
         return DB(TABLE_NAME).where('id', req.params.id).del()
+      }
+    ).then(
+      (results) => {
+        return runHook(TABLE_CONFIG, 'deleteRow', 'after', req, res, database.db, results)
       }
     ).then(
       addToResponse(res, 'results')
