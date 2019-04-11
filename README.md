@@ -12,6 +12,7 @@ The goal is to generate a fully automated back office that can be used to direct
 - MySQL parser
 - Friendly name generator for table names and fields
 
+
 ## Documentation
 
 Just follow the link: https://jwebcoder.github.io/funfunzmc/
