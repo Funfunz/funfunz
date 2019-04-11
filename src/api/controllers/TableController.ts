@@ -116,7 +116,6 @@ class TableController {
             )
           }
         }
-        console.log(QUERY.toQuery())
         return QUERY
       }
     ).then(
