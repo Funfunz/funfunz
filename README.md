@@ -2,9 +2,9 @@
 
 ## What is funfunzmc?
 
-funfunzmc was created due the lack of a functional backoffice generator in the NodeJS community.
+funfunzmc was created due the lack of a functional back office generator in the NodeJS community.
 
-The goal is to generate a fully automated backoffice that can be used to directly handle all the database data.
+The goal is to generate a fully automated back office that can be used to directly handle all the database data.
 
 **Features:**
 - CRUD operations

@@ -16,7 +16,7 @@ import { IColumnRelation, ITableInfo } from '@root/configGenerator'
 import Bluebird from 'bluebird'
 import Debug from 'debug'
 import { NextFunction, Request } from 'express'
-import Knex from 'Knex'
+import Knex from 'knex'
 
 const debug = Debug('funfunzmc:controller-table')
 
@@ -116,7 +116,6 @@ class TableController {
             )
           }
         }
-        console.log(QUERY.toQuery())
         return QUERY
       }
     ).then(

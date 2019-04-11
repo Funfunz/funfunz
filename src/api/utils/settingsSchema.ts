@@ -14,9 +14,9 @@ export default {
             verbose: {type: 'string'},
             type: {type: 'string'},
             allowNull: {type: 'boolean'},
-          }
-        }
-      }
-    }
-  }
+          },
+        },
+      },
+    },
+  },
 }
