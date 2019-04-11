@@ -16,7 +16,7 @@ type IHookFunction = (
   data?: any
 ) => Promise <any>
 
-export type Hooks = 'getTableData' | 'getTableCount'
+export type Hooks = 'getTableData' | 'getTableCount' | 'getRow' | 'insertRow' | 'updateRow' | 'deleteRow'
 
 export interface ITableInfo {
   name: string,
