@@ -3,7 +3,7 @@ import { ITypeAnswers } from '@root/index';
 import express from 'express';
 import knex from 'knex';
 declare type IHookFunction = (req: express.Request, res: express.Response, DB: knex, tableName: string, data?: any) => Promise<any>;
-export declare type Hooks = 'getTableData' | 'getTableCount';
+export declare type Hooks = 'getTableData' | 'getTableCount' | 'getRow' | 'insertRow' | 'updateRow' | 'deleteRow';
 export interface ITableInfo {
     name: string;
     verbose: string;
@@ -31,6 +31,22 @@ export interface ITableInfo {
             after?: IHookFunction;
         };
         getTableCount?: {
+            before?: IHookFunction;
+            after?: IHookFunction;
+        };
+        getRow?: {
+            before?: IHookFunction;
+            after?: IHookFunction;
+        };
+        insertRow?: {
+            before?: IHookFunction;
+            after?: IHookFunction;
+        };
+        updateRow?: {
+            before?: IHookFunction;
+            after?: IHookFunction;
+        };
+        deleteRow?: {
             before?: IHookFunction;
             after?: IHookFunction;
         };
