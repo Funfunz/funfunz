@@ -244,15 +244,29 @@ class TableController {
 
     return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
       (DB) => {
+        const acceptedColumns: string[] = []
         TABLE_CONFIG.columns.forEach(
           (column) => {
             if (column.type === 'datetime') {
               req.body.data[column.name] = new Date(req.body.data[column.name] || null)
             }
+            if (req.body.data[column.name] !== undefined) {
+              acceptedColumns.push(column.name)
+            }
           }
         )
 
-        return DB(TABLE_NAME).where('id', req.params.id).update(req.body.data)
+        const toSave: {
+          [key: string]: any
+        } = {}
+
+        acceptedColumns.forEach(
+          (column) => {
+            toSave[column] = req.body.data[column]
+          }
+        )
+
+        return DB(TABLE_NAME).where('id', req.params.id).update(toSave)
       }
     ).then(
       (results) => {
