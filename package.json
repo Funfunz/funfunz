@@ -8,7 +8,7 @@
   },
   "scripts": {
     "jest": "jest --coverage --forceExit",
-    "test": "npm run lint && npm run build:types",
+    "test": "npm run lint && npm run build:types && npm run jest",
     "lint": "tslint src/*.ts",
     "dev": "DEBUG=funfunzmc:* NODE_ENV=development babel-node --extensions \".js,.ts,.tsx,.json\" ./dev.ts",
     "questions": "DEBUG=funfunzmc:* NODE_ENV=development babel-node --extensions \".js,.ts,.tsx,.json\" ./src/index.ts",
