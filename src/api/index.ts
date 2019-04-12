@@ -2,8 +2,16 @@ import App from '@root/api/app'
 import config, { setConfig } from '@root/api/utils/configLoader'
 import Debug from 'debug'
 
-export default function(configs: any) {
+export default function(configs: {config: any, settings: any, [key: string]: any}) {
   const debug = Debug('funfunzmc:server')
+
+  if (!configs.settings) {
+    throw new Error('Missing object "settings" on the cofiguration')
+  }
+
+  if (!configs.config) {
+    throw new Error('Missing object "config" on the cofiguration')
+  }
 
   setConfig(true, 'defaultInterface')
 

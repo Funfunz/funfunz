@@ -4,14 +4,9 @@ import { Hooks, IColumnInfo, ITableInfo } from '@root/configGenerator'
 import { ErrorRequestHandler, NextFunction } from 'express'
 import Knex from 'knex'
 
-export function catchMiddleware(next: NextFunction) {
-  return (err: HttpException) => {
-    if (next) {
-      next(err)
-    }
-    return Promise.reject({
-      error: err,
-    })
+export function catchMiddleware(next: NextFunction, err: HttpException) {
+  if (next) {
+    next(err)
   }
 }
 
