@@ -3,6 +3,9 @@
   "version": "0.0.14",
   "description": "backoffice generator",
   "main": "lib/api/index.js",
+  "engines": {
+    "node": ">=9.11.1"
+  },
   "scripts": {
     "test": "npm run lint && npm run build:types",
     "lint": "tslint src/*.ts",
@@ -60,7 +63,7 @@
     "@types/dotenv": "^6.1.0",
     "@types/express": "^4.16.1",
     "@types/morgan": "^1.7.35",
-    "@types/node": "^10.12.21",
+    "@types/node": "^11.13.4",
     "@types/pluralize": "0.0.29",
     "babel-plugin-dynamic-import-node": "^2.2.0",
     "babel-plugin-module-resolver": "^3.1.3",
