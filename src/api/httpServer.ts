@@ -1,7 +1,7 @@
-import config from '@root/api/utils/configLoader'
-import Debug from 'debug'
-import express from 'express'
-import http from 'http'
+import config from '@root/api/utils/configLoader';
+import Debug from 'debug';
+import express from 'express';
+import http from 'http';
 
 const debug = Debug('funfunzmc:http-server')
 
@@ -51,9 +51,13 @@ export default function startServer(app: express.Application): void {
    */
   function onListening() {
     const addr = server.address()
-    const bind = typeof addr === 'string'
-      ? 'pipe ' + addr
-      : 'port ' + addr.port
-    debug('Listening on ' + bind)
+    if (addr) {
+      const bind = typeof addr === 'string'
+        ? 'pipe ' + addr
+        : 'port ' + addr.port
+      debug('Listening on ' + bind)
+    } else {
+      debug('addr not set')
+    }
   }
 }
