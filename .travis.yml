@@ -1,3 +1,8 @@
 language: node_js
 node_js:
   - "lts/*"
+services:
+  - mysql
+before_install:
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS test_db;'
+  - mysql -u root --password="" test_db < test/test.sql

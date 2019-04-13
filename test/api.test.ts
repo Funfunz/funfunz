@@ -1,7 +1,7 @@
 import request from 'supertest'
-import config from '../generatedConfigs/MCconfig'
-import settings from '../generatedConfigs/MCsettings'
 import app from '../src/api'
+import config from './configs/MCconfig'
+import settings from './configs/MCsettings'
 
 const application = app({
   config,
@@ -78,7 +78,9 @@ describe('Start server', () => {
 
 describe('routes', () => {
   afterAll(() => {
-    new Promise(resolve => setTimeout(() => resolve(), 500)); // avoid jest open handle error
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(), 500)
+    }) // avoid jest open handle error
   });
 
   it('get tables', () => {

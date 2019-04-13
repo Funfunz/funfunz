@@ -7,15 +7,14 @@
     "node": ">=9.11.1"
   },
   "scripts": {
-    "jest": "jest --coverage --forceExit",
-    "test": "npm run lint && npm run build:types && npm run jest",
+    "test": "jest --coverage --forceExit",
     "lint": "tslint src/*.ts",
     "dev": "DEBUG=funfunzmc:* NODE_ENV=development babel-node --extensions \".js,.ts,.tsx,.json\" ./dev.ts",
     "questions": "DEBUG=funfunzmc:* NODE_ENV=development babel-node --extensions \".js,.ts,.tsx,.json\" ./src/index.ts",
     "clean": "rm -rf lib bin && mkdir lib",
     "type-check": "tsc",
     "type-check:watch": "npm run type-check -- --watch",
-    "build": "npm run clean && npm run build:types && npm run build:js",
+    "build": "npm run lint && npm run clean && npm run build:types && npm run build:js",
     "build:types": "tsc",
     "build:js": "babel src -d lib --extensions \".js,.ts,.tsx\" --source-maps inline && cp -rf ./src/api/public/* ./lib/api/public",
     "start": "NODE_ENV=production node ./lib/index.js",
