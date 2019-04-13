@@ -128,7 +128,6 @@ describe('routes', () => {
   it('get a row by id with relations', () => {
     return request(application).get('/products/1?includeRelations=true').then(
       (response) => {
-        console.log(response)
         return expect(response.status).toBe(200)
       }
     )
