@@ -10,6 +10,7 @@ const application = app({
 })
 
 describe('Start server', () => {
+
   it('should throw an error if no config object set', () => {
     expect(() => {
       app({
@@ -110,6 +111,22 @@ describe('routes', () => {
 
   it('get table config', () => {
     return request(application).get('/table/products/config').then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
+  it('get quantity of items on a table', () => {
+    return request(application).get('/table/products/count?search=asd').then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
+  it('get a row by id with relations', () => {
+    return request(application).get('/products/1?includeRelations=true').then(
       (response) => {
         return expect(response.status).toBe(200)
       }

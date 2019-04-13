@@ -2,6 +2,11 @@ export default {
   "name": "products",
   "verbose": "Products",
   "pk": "id",
+  "relations": {
+    "manyToOne": {
+      "images": "ProductId",
+    },
+  },
   "chips": [
     {
       "verbose": "color",
