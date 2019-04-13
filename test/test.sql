@@ -117,6 +117,7 @@ CREATE TABLE `products` (
   `name` varchar(255) DEFAULT NULL,
   `color` varchar(255) DEFAULT NULL,
   `type` smallint(5) DEFAULT NULL,
+  `active` tinyint(1) DEFAULT NULL,
   `createdAt` datetime NOT NULL,
   `updatedAt` datetime NOT NULL,
   `FamilyId` int(11) DEFAULT NULL,
