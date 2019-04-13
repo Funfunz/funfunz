@@ -7,7 +7,7 @@
     "node": ">=9.11.1"
   },
   "scripts": {
-    "test": "jest --coverage --forceExit",
+    "test": "jest --coverage --forceExit && codecov",
     "lint": "tslint src/*.ts",
     "dev": "DEBUG=funfunzmc:* NODE_ENV=development babel-node --extensions \".js,.ts,.tsx,.json\" ./dev.ts",
     "questions": "DEBUG=funfunzmc:* NODE_ENV=development babel-node --extensions \".js,.ts,.tsx,.json\" ./src/index.ts",
@@ -36,6 +36,7 @@
   "homepage": "https://github.com/JWebCoder/funfunzmc#readme",
   "dependencies": {
     "@types/mysql2": "github:types/mysql2",
+    "codecov": "^3.3.0",
     "cookie-parser": "^1.4.3",
     "cors": "^2.8.5",
     "debug": "^4.1.1",
