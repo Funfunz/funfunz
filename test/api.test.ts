@@ -26,6 +26,31 @@ describe('Start server', () => {
     }).toThrowError('"settings"')
   })
 
+  it('should throw an error if one of the parameters is undefined', () => {
+    expect(() => {
+      app({
+        other: undefined,
+        config,
+        settings,
+      })
+    }).toThrowError('Configuration is missing')
+  })
+
+  it('should throw an error if invalid settings or config', () => {
+    expect(() => {
+      app({
+        config,
+        settings: {},
+      })
+    }).toThrowError('instance')
+    expect(() => {
+      app({
+        config: {},
+        settings,
+      })
+    }).toThrowError('instance')
+  })
+
   it('a valid request should return status 200', () => {
     return request(application).get('/').then(
       (response) => {
@@ -65,7 +90,24 @@ describe('routes', () => {
   })
 
   it('get table data', () => {
-    return request(application).get('/table/products?friendlyData=true').then(
+    return request(application)
+    .get('/table/products?friendlyData=true&order={"column":"id","order":"asc"}&limit=10&search=asd').then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
+  it('get table data unauthorized', () => {
+    return request(application).get('/table/users?friendlyData=true').then(
+      (response) => {
+        return expect(response.status).toBe(401)
+      }
+    )
+  })
+
+  it('get table config', () => {
+    return request(application).get('/table/products/config').then(
       (response) => {
         return expect(response.status).toBe(200)
       }

@@ -2,6 +2,11 @@ export default {
   type: 'array',
   items: {
     type: 'object',
+    required: [
+      'name',
+      'pk',
+      'columns',
+    ],
     properties: {
       name: {type: 'string'},
       pk: {type: 'string'},

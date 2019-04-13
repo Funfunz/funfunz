@@ -33,8 +33,8 @@ function normalizePort(val: string) {
 
 export function setConfig(configs: any, target: string) {
   if (configCheck(configs, target)) {
-    if (config.server && config.server.port) {
-      config.server.port = normalizePort(config.server.port)
+    if (configs.server && configs.server.port) {
+      configs.server.port = normalizePort(configs.server.port)
     }
     config[target] = configs
   }
@@ -43,7 +43,7 @@ export function setConfig(configs: any, target: string) {
 function configCheck(configs: any, target: string) {
   const validator = new Validator();
 
-  if (!configs && configs !== false) {
+  if (configs === undefined) {
     throw new Error('Configuration is missing')
   }
   if (target === 'settings') {
