@@ -3,7 +3,7 @@ export default {
     "host": "localhost",
     "database": "test_db",
     "user": "root",
-    "password": "BlueInfinity1!"
+    "password": ""
   },
   "server": {
     "port": 3004
