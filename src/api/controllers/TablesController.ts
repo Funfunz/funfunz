@@ -15,32 +15,28 @@ class TablesController {
   }
 
   public getTables(req: IMCRequest, res: IMCResponse, next: NextFunction) {
-    if (!this.settings || this.settings.length === 0) {
-      return catchMiddleware(next)(new HttpException(404, 'Tables not found'))
-    } else {
-      const tables = this.settings.map(
-        (table: ITableInfo) => {
-          let isAuthorized: boolean = true
-          if (!table.visible) {
-            return undefined
-          }
-          if (table.roles && table.roles.length) {
-            isAuthorized = hasAuthorization(table.roles, req.user)
-          }
-          if (isAuthorized) {
-            return {
-              name: table.name,
-              verbose: table.verbose,
-            }
-          }
+    const tables = this.settings.map(
+      (table: ITableInfo) => {
+        let isAuthorized: boolean = true
+        if (!table.visible) {
           return undefined
         }
-      ).filter(
-        (table) => table
-      )
-      addToResponse(res, 'tables')(tables)
-      return nextAndReturn(next)(tables)
-    }
+        if (table.roles && table.roles.length) {
+          isAuthorized = hasAuthorization(table.roles, req.user)
+        }
+        if (isAuthorized) {
+          return {
+            name: table.name,
+            verbose: table.verbose,
+          }
+        }
+        return undefined
+      }
+    ).filter(
+      (table) => table
+    )
+    addToResponse(res, 'tables')(tables)
+    return nextAndReturn(next)(tables)
   }
 }
 

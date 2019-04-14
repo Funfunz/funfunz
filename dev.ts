@@ -1,6 +1,6 @@
-import config from './config.json'
-import settings from './settings.json'
-import index from './src/api/index'
+import index from './src/api'
+import config from './test/configs/MCconfig'
+import settings from './test/configs/MCsettings'
 
 index({
   config,
