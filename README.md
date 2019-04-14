@@ -1,6 +1,7 @@
 # funfunzmc
 
 [![Build Status][travis-badge]][travis]
+[![codecov][codecov-badge]][codecov]
 ![node][node]
 [![npm version][npm-badge]][npm]
 [![dependencies Status][dependencies-badge]][dev-dependencies]
@@ -32,6 +33,9 @@ MIT
 
 [travis-badge]: https://travis-ci.com/JWebCoder/funfunzmc.svg?branch=master
 [travis]: https://travis-ci.com/JWebCoder/funfunzmc
+
+[codecov-badge]: https://codecov.io/gh/JWebCoder/funfunzmc/branch/master/graph/badge.svg
+[codecov]: https://codecov.io/gh/JWebCoder/funfunzmc
 
 [node]: https://img.shields.io/node/v/funfunzmc.svg
 

@@ -4,20 +4,10 @@ import { Hooks, IColumnInfo, ITableInfo } from '@root/configGenerator'
 import { ErrorRequestHandler, NextFunction } from 'express'
 import Knex from 'knex'
 
-export function catchMiddleware(next: NextFunction) {
-  return (err: HttpException) => {
-    if (next) {
-      next(err)
-    }
-    return Promise.reject({
-      error: err,
-    })
+export function catchMiddleware(next: NextFunction, err: HttpException) {
+  if (next) {
+    next(err)
   }
-}
-
-export function buildError(message: string, status: number) {
-  const err = new HttpException(status, message)
-  return err
 }
 
 export function addToResponse(res: IMCResponse, target: string) {
@@ -29,7 +19,7 @@ export function addToResponse(res: IMCResponse, target: string) {
       }
       return res
     }
-    throw buildError('Response object not valid', 500)
+    throw new HttpException(500, 'Response object not valid')
   }
 }
 
@@ -50,7 +40,17 @@ export const errorHandler: ErrorRequestHandler = (err, req, res) => {
   })
 }
 
-export function hasAuthorization(tableRoles: string[], user: IUser = {roles: []}): boolean {
+export function hasAuthorization(
+  tableRoles: string[],
+  user: IUser = {
+    roles: [
+      {
+        id: 0,
+        name: 'unauthenticated',
+      },
+    ],
+  }
+): boolean {
   let isAuthorized: string | undefined = 'true'
   if (tableRoles && tableRoles.length) {
     isAuthorized = tableRoles.find(

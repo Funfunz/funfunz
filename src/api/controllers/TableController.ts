@@ -57,7 +57,7 @@ class TableController {
     }
 
     if (!hasAuthorization(TABLE_CONFIG.roles, req.user)) {
-      return catchMiddleware(next)(new HttpException(401, 'Not authorized'))
+      return catchMiddleware(next, new HttpException(401, 'Not authorized'))
     }
     addToResponse(res, 'results')(RESULT)
     return nextAndReturn(next)(RESULT)
@@ -72,10 +72,10 @@ class TableController {
     let LIMIT = 10
 
     if (!hasAuthorization(TABLE_CONFIG.roles, req.user)) {
-      return catchMiddleware(next)(new HttpException(401, 'Not authorized'))
+      return catchMiddleware(next, new HttpException(401, 'Not authorized'))
     }
     if (!database.db) {
-      return catchMiddleware(next)(new HttpException(500, 'No database'))
+      return catchMiddleware(next, new HttpException(500, 'No database'))
     }
     const DB = database.db
     let QUERY = DB.select(COLUMNS).from(TABLE_NAME)
@@ -133,6 +133,10 @@ class TableController {
       addToResponse(res, 'results')
     ).then(
       nextAndReturn(next)
+    ).catch(
+      (err) => {
+        catchMiddleware(next, err)
+      }
     )
   }
 
@@ -157,7 +161,9 @@ class TableController {
     ).then(
       nextAndReturn(next)
     ).catch(
-      catchMiddleware(next)
+      (err) => {
+        catchMiddleware(next, err)
+      }
     )
   }
 
@@ -202,7 +208,9 @@ class TableController {
     ).then(
       nextAndReturn(next)
     ).catch(
-      catchMiddleware(next)
+      (err) => {
+        catchMiddleware(next, err)
+      }
     )
   }
 
@@ -234,7 +242,9 @@ class TableController {
     ).then(
       nextAndReturn(next)
     ).catch(
-      catchMiddleware(next)
+      (err) => {
+        catchMiddleware(next, err)
+      }
     )
   }
 
@@ -277,7 +287,9 @@ class TableController {
     ).then(
       nextAndReturn(next)
     ).catch(
-      catchMiddleware(next)
+      (err) => {
+        catchMiddleware(next, err)
+      }
     )
   }
 
@@ -298,7 +310,9 @@ class TableController {
     ).then(
       nextAndReturn(next)
     ).catch(
-      catchMiddleware(next)
+      (err) => {
+        catchMiddleware(next, err)
+      }
     )
   }
 
@@ -380,7 +394,9 @@ class TableController {
       return Promise.reject(new HttpException(401, 'Not authorized'))
     }
     if (!dbInstance.db) {
-      return catchMiddleware(next)(new HttpException(500, 'No database'))
+      const ERROR = new HttpException(500, 'No database')
+      catchMiddleware(next, ERROR)
+      return Promise.reject(ERROR)
     }
     return Promise.resolve(dbInstance.db)
   }
