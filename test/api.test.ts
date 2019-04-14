@@ -1,5 +1,5 @@
 import request from 'supertest'
-import app from '../lib/api'
+import app from '../src/api'
 import config from './configs/MCconfig'
 import settings from './configs/MCsettings'
 
@@ -101,6 +101,15 @@ describe('routes', () => {
     )
   })
 
+  it('get table data with array order', () => {
+    return request(application)
+    .get('/table/products?friendlyData=true&order=["name", "id"]&limit=10&search=asd').then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
   it('search table data, on a table without searchFields', () => {
     return request(application)
     .get('/table/roles?search=asd').then(
@@ -152,10 +161,75 @@ describe('routes', () => {
     )
   })
 
+  it('get a row by id without relations', () => {
+    return request(application).get('/products/1').then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
   it('get a row by id with relations', () => {
     return request(application).get('/products/1?includeRelations=true').then(
       (response) => {
         return expect(response.status).toBe(200)
+      }
+    )
+  })
+
+  it('update a row by id', () => {
+    return request(application).put('/products/1').send({data: {name: 'nameUpdated'}}).then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
+  it('no data while updating a row', () => {
+    return request(application).put('/products/1').then(
+      (response) => {
+        return expect(response.status).toBe(500)
+      }
+    )
+  })
+
+  it('delete a row by id', () => {
+    return request(application).delete('/products/30').then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
+  it('insert a row', () => {
+    return request(application)
+      .post('/products')
+      .send({
+        data: {
+          id: 30,
+          name: 'nameUpdated',
+          color: 'yellow',
+          active: 1,
+          FamilyId: 2,
+          type: 2,
+        },
+      }).then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
+  it('insert a row without authorization', () => {
+    return request(application)
+      .post('/users')
+      .send({
+        data: {
+          name: 'nameUpdated',
+        },
+      }).then(
+      (response) => {
+        return expect(response.status).toBe(401)
       }
     )
   })
