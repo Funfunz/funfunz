@@ -2,6 +2,10 @@ export default {
   "name": "products",
   "verbose": "Products",
   "pk": "id",
+  "searchFields": [
+    "name",
+    "color",
+  ],
   "relations": {
     "manyToOne": {
       "images": "ProductId",

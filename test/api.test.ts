@@ -101,6 +101,33 @@ describe('routes', () => {
     )
   })
 
+  it('search table data, on a table without searchFields', () => {
+    return request(application)
+    .get('/table/roles?search=asd').then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
+  it('get table data with filters id and name', () => {
+    return request(application)
+    .get('/table/products?friendlyData=true&filter={"id":1,"name":"name"}').then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
+  it('get table data with filters name and id', () => {
+    return request(application)
+    .get('/table/products?friendlyData=true&filter={"name":"name","id":1}').then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
   it('get table data unauthorized', () => {
     return request(application).get('/table/users?friendlyData=true').then(
       (response) => {
