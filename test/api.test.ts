@@ -1,5 +1,5 @@
 import request from 'supertest'
-import app from '../src/api'
+import app from '../lib/api'
 import config from './configs/MCconfig'
 import settings from './configs/MCsettings'
 
