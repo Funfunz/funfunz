@@ -251,7 +251,10 @@ class TableController {
   public updateRow(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
-
+    if (!req.body.data) {
+      next(new HttpException(500, 'Missing data object'))
+      return
+    }
     return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
       (DB) => {
         const acceptedColumns: string[] = []

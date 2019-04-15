@@ -38,15 +38,6 @@ class App {
     const indexRouter = new IndexRouter()
     this.server.use('/', indexRouter.getRouter())
 
-    // catch 404 and forward to error handler
-    this.server.use(
-      (req, res, next) => {
-        const err = new HttpException(404, 'Not Found')
-        err.status = 404
-        next(err)
-      }
-    )
-
     this.server.use(errorHandler)
     debug('end')
   }
