@@ -1,8 +1,10 @@
 import TableController from '@root/api/controllers/TableController'
 import TablesController from '@root/api/controllers/TablesController'
+import GraphQLSchema from '@root/api/graphql/schema'
 import { sendJSON } from '@root/api/middleware/response'
 import config from '@root/api/utils/configLoader'
 import { Router } from 'express'
+import graphqlHTTP from 'express-graphql'
 import fs from 'fs'
 import path from 'path'
 
@@ -13,6 +15,14 @@ class IndexRouter {
     const tableController = new TableController()
 
     this.router = router || Router()
+    this.router.use(
+      '/graphql',
+      graphqlHTTP({
+        graphiql: true,
+        schema: GraphQLSchema(),
+      })
+    )
+
     this.router.get('/tables',
       (req, res, next) => {
         tablesController.getTables(req, res, next)
