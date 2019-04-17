@@ -1,6 +1,6 @@
 import database from '@root/api/db'
 import { IColumnInfo, ITableInfo } from '@root/configGenerator'
-import Bluebird from 'Bluebird';
+import Bluebird from 'bluebird'
 import { GraphQLResolveInfo } from 'graphql'
 
 function getFields(table: ITableInfo, info: GraphQLResolveInfo): string[] {
