@@ -108,7 +108,7 @@ export function runHook(
       const CALLER  = HOOK[instance]
       return CALLER ?
         instance === 'before' ?
-          CALLER(req, res, database, TABLE.name)
+          CALLER(req, res, database, TABLE.name, results)
           :
           CALLER(req, res, database, TABLE.name, results)
         :
