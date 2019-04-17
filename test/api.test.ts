@@ -279,4 +279,31 @@ describe('graphql', () => {
       }
     )
   })
+
+  it('graphql endpoint with deep queries should return 200', (done) => {
+    return request(application)
+      .post('/graphql')
+      .send({
+        query: `{
+          images {
+            id
+            ProductId {
+              id
+              FamilyId {
+                name
+              }
+            }
+          }
+        }`,
+      })
+      .set('Accept', 'application/json').end(
+      (err, response) => {
+        if (err) {
+          return done(err)
+        }
+        expect(response.status).toBe(200)
+        return done()
+      }
+    )
+  })
 })
