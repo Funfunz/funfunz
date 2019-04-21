@@ -2,6 +2,7 @@ import database, { Database } from '@root/api/db'
 import { HttpException, IMCRequest, IMCResponse, IUser } from '@root/api/types'
 import {
   addToResponse,
+  applyPKFilters,
   applyQueryFilters,
   applyQuerySearch,
   catchMiddleware,
@@ -17,6 +18,7 @@ import Bluebird from 'bluebird'
 import Debug from 'debug'
 import { NextFunction, Request } from 'express'
 import Knex from 'knex'
+import { relative } from 'path';
 
 const debug = Debug('funfunzmc:controller-table')
 
@@ -54,6 +56,7 @@ class TableController {
       verbose: TABLE_CONFIG.verbose,
       chips: TABLE_CONFIG.chips || [],
       itemTitle: TABLE_CONFIG.itemTitle,
+      relations: TABLE_CONFIG.relations,
     }
 
     if (!hasAuthorization(TABLE_CONFIG.roles, req.user)) {
@@ -181,20 +184,68 @@ class TableController {
       }
     ).then(
       (results) => {
-        let relationQueries: Array<Bluebird<{}>> = []
+        let manyToOneRelationQueries: Array<Bluebird<{}>> = []
+        let manyToManyRelationQueries: Array<Bluebird<{}>> = []
         if (req.query.includeRelations) {
-          relationQueries = this.getRelationQueries(TABLE_CONFIG, results[0].id)
-        }
-
-        if (relationQueries.length) {
-          return Promise.all([
-            results[0],
-            ...relationQueries,
-          ])
+          manyToOneRelationQueries = this.getManyToOneRelationQueries(TABLE_CONFIG, results[0].id)
+          manyToManyRelationQueries = this.getManyToManyRelationQueries(TABLE_CONFIG, results[0].id)
         }
 
         return Promise.all([
           results[0],
+          Promise.all(manyToOneRelationQueries),
+          Promise.all(manyToManyRelationQueries),
+        ])
+      }
+    ).then(
+      this.mergeRelatedData
+    ).then(
+      (results) => {
+        return runHook(TABLE_CONFIG, 'getRow', 'after', req, res, database.db, results)
+      }
+    ).then(
+      addToResponse(res, 'results')
+    ).then(
+      nextAndReturn(next)
+    ).catch(
+      (err) => {
+        catchMiddleware(next, err)
+      }
+    )
+  }
+
+  /*
+    req.body {
+      pk: {
+        pk1: val1,
+      }
+    }
+  */
+
+  public getRowData(req: IMCRequest, res: IMCResponse, next: NextFunction) {
+    const TABLE_NAME = req.params.table
+    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
+
+    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
+      (DB) => {
+        const requestedColumns = filterVisibleTableColumns(TABLE_CONFIG, 'detail')
+        let QUERY = DB.select(requestedColumns).from(`${req.params.table}`)
+        QUERY = applyPKFilters(QUERY, req.body, TABLE_CONFIG)
+        return QUERY
+      }
+    ).then(
+      (results) => {
+        let manyToOneRelationQueries: Array<Bluebird<{}>> = []
+        let manyToManyRelationQueries: Array<Bluebird<{}>> = []
+        if (req.query.includeRelations) {
+          manyToOneRelationQueries = this.getManyToOneRelationQueries(TABLE_CONFIG, results[0].id)
+          manyToManyRelationQueries = this.getManyToManyRelationQueries(TABLE_CONFIG, results[0].id)
+        }
+
+        return Promise.all([
+          results[0],
+          Promise.all(manyToOneRelationQueries),
+          Promise.all(manyToManyRelationQueries),
         ])
       }
     ).then(
@@ -217,19 +268,27 @@ class TableController {
   public insertRow(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
-
     return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
       (DB) => {
         TABLE_CONFIG.columns.forEach(
           (column) => {
             if (column.type === 'datetime') {
-              req.body.data[column.name] = new Date(req.body.data[column.name] || null)
+              req.body.data[column.name] = req.body.data[column.name]
+                ? new Date(req.body.data[column.name])
+                : new Date()
             } else if (column.type === 'tinyint(1)') {
               req.body.data[column.name] = column.type ? 1 : 0
             }
           }
         )
-        return DB(req.params.table).insert(req.body.data)
+        return Promise.all([
+          DB,
+          runHook(TABLE_CONFIG, 'insertRow', 'before', req, res, DB, req.body.data),
+        ])
+      }
+    ).then(
+      ([DB, data]) => {
+        return DB(req.params.table).insert(data)
       }
     ).then(
       (results) => {
@@ -284,6 +343,106 @@ class TableController {
     ).then(
       (results) => {
         return runHook(TABLE_CONFIG, 'updateRow', 'after', req, res, database.db, results)
+      }
+    ).then(
+      addToResponse(res, 'results')
+    ).then(
+      nextAndReturn(next)
+    ).catch(
+      (err) => {
+        catchMiddleware(next, err)
+      }
+    )
+  }
+
+  public updateRowData(req: IMCRequest, res: IMCResponse, next: NextFunction) {
+    const TABLE_NAME = req.params.table
+    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
+    if (!req.body.data) {
+      next(new HttpException(500, 'Missing data object'))
+      return
+    }
+    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
+      (DB) => {
+        const acceptedColumns: string[] = []
+        TABLE_CONFIG.columns.forEach(
+          (column) => {
+            if (column.type === 'datetime') {
+              req.body.data[column.name] = new Date(req.body.data[column.name] || null)
+            }
+            if (req.body.data[column.name] !== undefined) {
+              acceptedColumns.push(column.name)
+            }
+          }
+        )
+
+        const toSave: {
+          [key: string]: any
+        } = {}
+
+        acceptedColumns.forEach(
+          (column) => {
+            toSave[column] = req.body.data[column]
+          }
+        )
+
+        let QUERY = DB(TABLE_NAME)
+        QUERY = applyPKFilters(QUERY, req.body, TABLE_CONFIG)
+        return QUERY.update(toSave)
+      }
+    ).then(
+      (results) => {
+        return runHook(TABLE_CONFIG, 'updateRow', 'after', req, res, database.db, results)
+      }
+    ).then(
+      addToResponse(res, 'results')
+    ).then(
+      nextAndReturn(next)
+    ).catch(
+      (err) => {
+        catchMiddleware(next, err)
+      }
+    )
+  }
+
+  public removeRelation(req: IMCRequest, res: IMCResponse, next: NextFunction) {
+    const TABLE_NAME = req.params.table
+    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
+
+    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
+      (DB) => {
+        let QUERY = DB(TABLE_NAME)
+        QUERY = applyQueryFilters(QUERY, req.body, TABLE_CONFIG)
+        return QUERY.del()
+      }
+    ).then(
+      (results) => {
+        return runHook(TABLE_CONFIG, 'deleteRow', 'after', req, res, database.db, results)
+      }
+    ).then(
+      addToResponse(res, 'results')
+    ).then(
+      nextAndReturn(next)
+    ).catch(
+      (err) => {
+        catchMiddleware(next, err)
+      }
+    )
+  }
+
+  public deleteRowData(req: IMCRequest, res: IMCResponse, next: NextFunction) {
+    const TABLE_NAME = req.params.table
+    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
+
+    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
+      (DB) => {
+        let QUERY = DB(TABLE_NAME)
+        QUERY = applyPKFilters(QUERY, req.body, TABLE_CONFIG)
+        return QUERY.del()
+      }
+    ).then(
+      (results) => {
+        return runHook(TABLE_CONFIG, 'deleteRow', 'after', req, res, database.db, results)
       }
     ).then(
       addToResponse(res, 'results')
@@ -404,7 +563,7 @@ class TableController {
     return Promise.resolve(dbInstance.db)
   }
 
-  private getRelationQueries(TABLE_CONFIG: ITableInfo, parentId: any) {
+  private getManyToOneRelationQueries(TABLE_CONFIG: ITableInfo, parentId: any) {
     const relationQueries: Array<Bluebird<{}>> = []
     if (TABLE_CONFIG.relations && TABLE_CONFIG.relations.manyToOne) {
       const MANY_TO_ONE = TABLE_CONFIG.relations.manyToOne
@@ -417,6 +576,36 @@ class TableController {
               MANY_TO_ONE[tableName],
               parentId
             )
+          )
+        }
+      )
+    }
+
+    return relationQueries
+  }
+
+  private getManyToManyRelationQueries(TABLE_CONFIG: ITableInfo, parentId: any) {
+    let relationQueries: Array<Bluebird<{}>> = []
+    if (TABLE_CONFIG.relations && TABLE_CONFIG.relations.manyToMany) {
+      if (!database.db) {
+        throw new HttpException(500, 'No database')
+      }
+      const DB = database.db
+      relationQueries = TABLE_CONFIG.relations.manyToMany.map(
+        (relation) => {
+          return DB(relation.relationTable).select().where(relation.foreignKey, parentId).then(
+            (relationResult: any) => {
+              return relationResult.map(
+                (relationRow: any) => relationRow[relation.remoteForeignKey]
+              )
+            }
+          ).then(
+            (relationRemoteIds) => {
+              return Promise.all([
+                relation.remoteTable,
+                DB(relation.remoteTable).select().whereIn(relation.remoteId, relationRemoteIds),
+              ])
+            }
           )
         }
       )
@@ -446,11 +635,19 @@ class TableController {
       )
   }
 
-  private mergeRelatedData([results, ...relations]: any) {
-    if (relations && relations.length) {
-      relations.forEach(
+  private mergeRelatedData([results, manyToOneRelations, manyToManyRelations]: any) {
+    if (manyToOneRelations && manyToOneRelations.length) {
+      manyToOneRelations.forEach(
         (relation: {tableName: string, results: any[]}) => {
           results[relation.tableName] = relation.results
+        }
+      )
+    }
+
+    if (manyToManyRelations && manyToManyRelations.length) {
+      manyToManyRelations.forEach(
+        ([verbose, relationsData]: [string, any[]]) => {
+          results[verbose] = relationsData
         }
       )
     }

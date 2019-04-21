@@ -21,12 +21,23 @@ export type Hooks = 'getTableData' | 'getTableCount' | 'getRow' | 'insertRow' | 
 export interface ITableInfo {
   name: string,
   verbose: string,
-  pk: string,
+  pk: string | string[],
   searchFields?: string[],
   relations?: {
     manyToOne?: {
       [key: string]: string,
     },
+    manyToMany?: [
+      {
+        verbose: string,
+        relationTable: string,
+        foreignKey: string,
+        localId: string,
+        remoteTable: string,
+        remoteForeignKey: string,
+        remoteId: string,
+      }
+    ]
   },
   chips?: [
     {
