@@ -108,7 +108,7 @@ export function runHook(
       const CALLER  = HOOK[instance]
       return CALLER ?
         instance === 'before' ?
-          CALLER(req, res, database, TABLE.name)
+          CALLER(req, res, database, TABLE.name, results)
           :
           CALLER(req, res, database, TABLE.name, results)
         :
@@ -146,7 +146,7 @@ export function getColumnsWithRelations(TABLE_CONFIG: ITableInfo) {
 
 export function applyQueryFilters(QUERY: Knex.QueryBuilder, filters: string, TABLE_CONFIG: ITableInfo) {
   const columnsByName = getColumnsByName(TABLE_CONFIG)
-  const FILTERS = JSON.parse(filters)
+  const FILTERS = typeof filters === 'string' ? JSON.parse(filters) : filters
   Object.keys(FILTERS).forEach(
     (key, index) => {
       if (columnsByName[key].type === 'int(11)') {
@@ -164,6 +164,55 @@ export function applyQueryFilters(QUERY: Knex.QueryBuilder, filters: string, TAB
       }
     }
   )
+
+  return QUERY
+}
+
+interface IBodyWithPK {
+  pk: {
+    [key: string]: string | number
+  }
+}
+
+export function applyPKFilters(QUERY: Knex.QueryBuilder, body: IBodyWithPK, TABLE_CONFIG: ITableInfo) {
+  const columnsByName = getColumnsByName(TABLE_CONFIG)
+  const PKS = Object.keys(body.pk)
+
+  if (Array.isArray(TABLE_CONFIG.pk) && TABLE_CONFIG.pk.length !== PKS.length) {
+    throw new HttpException(412, 'Incorrect set of primary keys')
+  }
+  let index = 0
+  for (const key in PKS) {
+    if (PKS.hasOwnProperty(key)) {
+      let valid = false
+      if (Array.isArray(TABLE_CONFIG.pk)) {
+        if (TABLE_CONFIG.pk.indexOf(key) !== -1) {
+          valid = true
+        }
+      } else if (TABLE_CONFIG.pk === key) {
+        valid = true
+      }
+
+      if (!valid) {
+        throw new HttpException(412, `Primary key ${key} missing on table`)
+      }
+
+      if (columnsByName[key].type === 'int(11)') {
+        index === 0 ?
+          QUERY.where({
+            [key]: PKS[key],
+          }) :
+          QUERY.andWhere({
+            [key]: PKS[key],
+          })
+      } else {
+        index === 0 ?
+          QUERY.where(key, 'like', '%' + PKS[key] + '%') :
+          QUERY.andWhere(key, 'like', '%' + PKS[key] + '%')
+      }
+      index += 1
+    }
+  }
 
   return QUERY
 }
