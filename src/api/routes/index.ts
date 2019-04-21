@@ -47,6 +47,24 @@ class IndexRouter {
       },
       sendJSON('results')
     )
+    this.router.post('/relation/:table/remove',
+      (req, res, next) => {
+        tableController.removeRelation(req, res, next)
+      },
+      sendJSON('results')
+    )
+    this.router.get('/tableData/:table',
+      (req, res, next) => {
+        tableController.getRowData(req, res, next)
+      },
+      sendJSON('results')
+    )
+    this.router.put('/tableData/:table',
+      (req, res, next) => {
+        tableController.updateRowData(req, res, next)
+      },
+      sendJSON('results')
+    )
     this.router.get('/:table/:id',
       (req, res, next) => {
         tableController.getRow(req, res, next)
