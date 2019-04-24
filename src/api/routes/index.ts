@@ -53,7 +53,7 @@ class IndexRouter {
       },
       sendJSON('results')
     )
-    this.router.get('/tableData/:table',
+    this.router.post('/tableData/:table',
       (req, res, next) => {
         tableController.getRowData(req, res, next)
       },

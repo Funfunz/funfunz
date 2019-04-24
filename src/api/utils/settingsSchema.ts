@@ -9,7 +9,19 @@ export default {
     ],
     properties: {
       name: {type: 'string'},
-      pk: {type: 'string'},
+      pk: {
+        anyOf: [
+          {
+              type: 'string',
+          },
+          {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+          },
+      ]
+      },
       columns: {
         type: 'array',
         items: {

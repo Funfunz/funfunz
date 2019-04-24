@@ -57,6 +57,7 @@ class TableController {
       chips: TABLE_CONFIG.chips || [],
       itemTitle: TABLE_CONFIG.itemTitle,
       relations: TABLE_CONFIG.relations,
+      actions: TABLE_CONFIG.actions,
     }
 
     if (!hasAuthorization(TABLE_CONFIG.roles, req.user)) {
@@ -237,9 +238,10 @@ class TableController {
       (results) => {
         let manyToOneRelationQueries: Array<Bluebird<{}>> = []
         let manyToManyRelationQueries: Array<Bluebird<{}>> = []
+        const pk = typeof TABLE_CONFIG.pk === 'string' ? TABLE_CONFIG.pk : TABLE_CONFIG.pk[0]
         if (req.query.includeRelations) {
-          manyToOneRelationQueries = this.getManyToOneRelationQueries(TABLE_CONFIG, results[0].id)
-          manyToManyRelationQueries = this.getManyToManyRelationQueries(TABLE_CONFIG, results[0].id)
+          manyToOneRelationQueries = this.getManyToOneRelationQueries(TABLE_CONFIG, results[0][pk])
+          manyToManyRelationQueries = this.getManyToManyRelationQueries(TABLE_CONFIG, results[0][pk])
         }
 
         return Promise.all([
@@ -281,6 +283,19 @@ class TableController {
             }
           }
         )
+        if (Array.isArray(TABLE_CONFIG.pk)) {
+          TABLE_CONFIG.pk.forEach(
+            (pk) => {
+              if (req.body.data[pk] === '' || req.body.data[pk] === undefined) {
+                delete req.body.data[pk]
+              }
+            }
+          )
+        } else {
+          if (req.body.data[TABLE_CONFIG.pk] === '' || req.body.data[TABLE_CONFIG.pk] === undefined) {
+            delete req.body.data[TABLE_CONFIG.pk]
+          }
+        }
         return Promise.all([
           DB,
           runHook(TABLE_CONFIG, 'insertRow', 'before', req, res, DB, req.body.data),
@@ -412,7 +427,7 @@ class TableController {
     return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
       (DB) => {
         let QUERY = DB(TABLE_NAME)
-        QUERY = applyQueryFilters(QUERY, req.body, TABLE_CONFIG)
+        QUERY = applyPKFilters(QUERY, req.body, TABLE_CONFIG)
         return QUERY.del()
       }
     ).then(

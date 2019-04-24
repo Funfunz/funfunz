@@ -22,6 +22,10 @@ export interface ITableInfo {
   name: string,
   verbose: string,
   pk: string | string[],
+  actions: {
+    delete: boolean,
+    edit: boolean,
+  },
   searchFields?: string[],
   relations?: {
     manyToOne?: {
@@ -107,6 +111,10 @@ function buildTableInfo(): ITableInfo {
     name: '',
     verbose: '',
     pk: '',
+    actions: {
+      delete: true,
+      edit: true,
+    },
     columns: [],
     visible: true,
     roles: ['all'],
@@ -148,7 +156,15 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
           columnData.allowNull = column.Null === 'NO' ? false : true
 
           if (column.Key === 'PRI') {
-            table.pk = column.Field
+            if (table.pk !== '' && !Array.isArray(table.pk)) {
+              table.pk = [table.pk]
+            }
+
+            if (Array.isArray(table.pk)) {
+              table.pk.push(column.Field)
+            } else {
+              table.pk = column.Field
+            }
           }
           tableData.schema.forEach(
             (schemaData) => {
