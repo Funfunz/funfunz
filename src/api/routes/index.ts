@@ -53,6 +53,12 @@ class IndexRouter {
       },
       sendJSON('results')
     )
+    this.router.post('/tableData/:table/delete',
+      (req, res, next) => {
+        tableController.deleteRowData(req, res, next)
+      },
+      sendJSON('results')
+    )
     this.router.post('/tableData/:table',
       (req, res, next) => {
         tableController.getRowData(req, res, next)
