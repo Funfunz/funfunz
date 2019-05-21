@@ -34,6 +34,7 @@ class App {
     this.server.use(/\/((?!graphql).)*/, express.json())
     // this.server.use(fileUpload())
     this.server.use(cookieParser())
+    this.server.disable('x-powered-by')
     this.server.use('/', express.static(path.join(__dirname, './public')))
     const indexRouter = new IndexRouter()
     this.server.use('/', indexRouter.getRouter())

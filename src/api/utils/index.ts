@@ -35,9 +35,13 @@ export function nextAndReturn(next: NextFunction) {
 // error handler
 export const errorHandler: ErrorRequestHandler = (err, req, res) => {
   res.status(err.status || 500)
-  res.json({
-    message: err.message,
-  })
+  if (process.env.NODE_ENV !== 'developement') {
+    res.send('Error')
+  } else {
+    res.json({
+      message: err.message,
+    })
+  }
 }
 
 export function hasAuthorization(
