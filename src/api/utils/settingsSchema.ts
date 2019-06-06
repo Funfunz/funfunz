@@ -20,7 +20,7 @@ export default {
                 type: 'string',
               },
           },
-      ]
+        ],
       },
       columns: {
         type: 'array',
