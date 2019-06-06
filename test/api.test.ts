@@ -100,6 +100,7 @@ describe('routes', () => {
       }
     )
   })
+  
 
   it('get table data with array order', () => {
     return request(application)
@@ -154,7 +155,7 @@ describe('routes', () => {
   })
 
   it('get quantity of items on a table', () => {
-    return request(application).get('/table/products/count?search=asd').then(
+    return request(application).get('/table/products/count?search=asd&filter={"name":"name"}').then(
       (response) => {
         return expect(response.status).toBe(200)
       }
@@ -177,8 +178,47 @@ describe('routes', () => {
     )
   })
 
+  it('get a row by id without, multiple pk', () => {
+    return request(application).post('/tableData/products').send({
+      pk: {
+        id: 1,
+      },
+    }).then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
+  it('get a row by id with relations, multiple pk', () => {
+    return request(application).post('/tableData/products?includeRelations=true').send({
+      pk: {
+        id: 1,
+      },
+    }).then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
   it('update a row by id', () => {
     return request(application).put('/products/1').send({data: {name: 'nameUpdated'}}).then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
+  it('update a row by id, multiple pk', () => {
+    return request(application).put('/tableData/products').send({
+      pk: {
+        id: 30,
+      },
+      data: {
+        name: 'nameUpdated',
+      }
+    }).then(
       (response) => {
         return expect(response.status).toBe(200)
       }
@@ -195,6 +235,18 @@ describe('routes', () => {
 
   it('delete a row by id', () => {
     return request(application).delete('/products/30').then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
+  it('delete a row by id, multiple pk', () => {
+    return request(application).post('/tableData/products/delete').send({
+      pk: {
+        id: 30,
+      },
+    }).then(
       (response) => {
         return expect(response.status).toBe(200)
       }

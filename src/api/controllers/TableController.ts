@@ -151,6 +151,9 @@ class TableController {
     return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
       (DB) => {
         let QUERY = DB(TABLE_NAME).select('*')
+        if (req.query.filter) {
+          QUERY = applyQueryFilters(QUERY, req.query.filter, TABLE_CONFIG)
+        }
         if (req.query.search) {
           QUERY = applyQuerySearch(QUERY, req.query.search, TABLE_CONFIG)
         }
