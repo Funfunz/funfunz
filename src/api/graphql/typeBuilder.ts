@@ -4,17 +4,10 @@ import { ITableInfo } from '@root/configGenerator'
 import Debug from 'debug'
 import {
   GraphQLBoolean,
-  GraphQLFieldResolver,
-  GraphQLFloat,
   GraphQLID,
-  GraphQLInputObjectType,
   GraphQLInt,
-  GraphQLInterfaceType,
-  GraphQLList,
-  GraphQLNonNull,
   GraphQLObjectType,
   GraphQLString,
-  GraphQLUnionType,
 } from 'graphql'
 
 const debug = Debug('funfunzmc:graphql-type-builder')

@@ -16,9 +16,8 @@ import {
 import { IColumnRelation, ITableInfo } from '@root/configGenerator'
 import Bluebird from 'bluebird'
 import Debug from 'debug'
-import { NextFunction, Request } from 'express'
+import { NextFunction } from 'express'
 import Knex from 'knex'
-import { relative } from 'path';
 
 const debug = Debug('funfunzmc:controller-table')
 
