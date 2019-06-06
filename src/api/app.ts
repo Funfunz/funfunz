@@ -1,7 +1,6 @@
 import database from '@root/api/db'
 import IndexRouter from '@root/api/routes'
 // import fileUpload from 'express-fileupload'
-import { HttpException } from '@root/api/types'
 import { errorHandler } from '@root/api/utils'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'

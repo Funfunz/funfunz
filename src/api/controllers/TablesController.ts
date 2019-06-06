@@ -1,5 +1,5 @@
-import { HttpException, IMCRequest, IMCResponse } from '@root/api/types';
-import { addToResponse, catchMiddleware, hasAuthorization, nextAndReturn } from '@root/api/utils'
+import { IMCRequest, IMCResponse } from '@root/api/types';
+import { addToResponse, hasAuthorization, nextAndReturn } from '@root/api/utils'
 import config from '@root/api/utils/configLoader'
 import { ITableInfo } from '@root/configGenerator'
 import Debug from 'debug'

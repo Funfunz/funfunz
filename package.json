@@ -9,7 +9,7 @@
   "scripts": {
     "test": "jest --coverage --forceExit && codecov",
     "lint": "tslint src/*.ts",
-    "dev": "DEBUG=funfunzmc:* NODE_ENV=development DB_PASSWORD=BlueInfinity1! babel-node --extensions \".js,.ts,.tsx,.json\" ./dev.ts",
+    "dev": "DEBUG=funfunzmc:* NODE_ENV=development babel-node --extensions \".js,.ts,.tsx,.json\" ./dev.ts",
     "questions": "DEBUG=funfunzmc:* NODE_ENV=development babel-node --extensions \".js,.ts,.tsx,.json\" ./src/index.ts",
     "clean": "rm -rf lib bin && mkdir lib",
     "type-check": "tsc",
