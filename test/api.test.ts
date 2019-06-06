@@ -100,7 +100,6 @@ describe('routes', () => {
       }
     )
   })
-  
 
   it('get table data with array order', () => {
     return request(application)
@@ -217,7 +216,7 @@ describe('routes', () => {
       },
       data: {
         name: 'nameUpdated',
-      }
+      },
     }).then(
       (response) => {
         return expect(response.status).toBe(200)
