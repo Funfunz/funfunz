@@ -4,7 +4,7 @@
 [![codecov][codecov-badge]][codecov]
 ![node][node]
 [![npm version][npm-badge]][npm]
-[![dependencies Status][dependencies-badge]][dev-dependencies]
+[![dependencies Status][dependencies-badge]][dependencies]
 [![devDependencies Status][dev-dependencies-badge]][dev-dependencies]
 [![PRs Welcome][prs-badge]][prs]
 [![GitHub][license-badge]][license]
