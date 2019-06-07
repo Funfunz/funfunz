@@ -422,31 +422,6 @@ class TableController {
     )
   }
 
-  public removeRelation(req: IMCRequest, res: IMCResponse, next: NextFunction) {
-    const TABLE_NAME = req.params.table
-    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
-
-    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
-      (DB) => {
-        let QUERY = DB(TABLE_NAME)
-        QUERY = applyPKFilters(QUERY, req.body, TABLE_CONFIG)
-        return QUERY.del()
-      }
-    ).then(
-      (results) => {
-        return runHook(TABLE_CONFIG, 'deleteRow', 'after', req, res, database.db, results)
-      }
-    ).then(
-      addToResponse(res, 'results')
-    ).then(
-      nextAndReturn(next)
-    ).catch(
-      (err) => {
-        catchMiddleware(next, err)
-      }
-    )
-  }
-
   public deleteRowData(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
