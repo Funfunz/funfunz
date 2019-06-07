@@ -281,7 +281,9 @@ class TableController {
                 ? new Date(req.body.data[column.name])
                 : new Date()
             } else if (column.type === 'tinyint(1)') {
-              req.body.data[column.name] = column.type ? 1 : 0
+              req.body.data[column.name] = (
+                req.body.data[column.name] === '1' || req.body.data[column.name] === 1
+              ) ? 1 : 0
             }
           }
         )

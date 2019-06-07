@@ -201,6 +201,18 @@ describe('routes', () => {
     )
   })
 
+  it('get a row by id with many to many relations, multiple pk', () => {
+    return request(application).post('/tableData/roles?includeRelations=true').send({
+      pk: {
+        id: 1,
+      },
+    }).then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
   it('update a row by id', () => {
     return request(application).put('/products/1').send({data: {name: 'nameUpdated'}}).then(
       (response) => {
@@ -258,11 +270,32 @@ describe('routes', () => {
       .send({
         data: {
           id: 30,
-          name: 'nameUpdated',
+          name: 'nameInserted',
+          color: 'yellow',
+          active: 0,
+          FamilyId: 2,
+          type: 2,
+          createdAt: new Date().getTime(),
+        },
+      }).then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
+  it('insert a row, testing tinyint with true value and no id', () => {
+    return request(application)
+      .post('/products')
+      .send({
+        data: {
+          id: '',
+          name: 'nameInserted',
           color: 'yellow',
           active: 1,
           FamilyId: 2,
           type: 2,
+          createdAt: new Date().getTime(),
         },
       }).then(
       (response) => {
@@ -276,7 +309,7 @@ describe('routes', () => {
       .post('/users')
       .send({
         data: {
-          name: 'nameUpdated',
+          name: 'nameInserted',
         },
       }).then(
       (response) => {

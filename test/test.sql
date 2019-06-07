@@ -16,13 +16,13 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `UsersRoles`
+-- Table structure for table `usersroles`
 --
 
-DROP TABLE IF EXISTS `UsersRoles`;
+DROP TABLE IF EXISTS `usersroles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `UsersRoles` (
+CREATE TABLE `usersroles` (
   `createdAt` datetime NOT NULL,
   `updatedAt` datetime NOT NULL,
   `userId` int(11) NOT NULL,
@@ -35,13 +35,13 @@ CREATE TABLE `UsersRoles` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `UsersRoles`
+-- Dumping data for table `usersroles`
 --
 
-LOCK TABLES `UsersRoles` WRITE;
-/*!40000 ALTER TABLE `UsersRoles` DISABLE KEYS */;
-INSERT INTO `UsersRoles` VALUES ('2019-04-05 11:10:00','2019-04-05 11:10:00',1,1),('2019-04-05 12:10:30','2019-04-05 12:10:30',1,2),('2019-04-05 12:10:36','2019-04-05 12:10:36',1,3),('2019-04-05 14:14:59','2019-04-05 14:14:59',2,1);
-/*!40000 ALTER TABLE `UsersRoles` ENABLE KEYS */;
+LOCK TABLES `usersroles` WRITE;
+/*!40000 ALTER TABLE `usersroles` DISABLE KEYS */;
+INSERT INTO `usersroles` VALUES ('2019-04-05 11:10:00','2019-04-05 11:10:00',1,1),('2019-04-05 12:10:30','2019-04-05 12:10:30',1,2),('2019-04-05 12:10:36','2019-04-05 12:10:36',1,3),('2019-04-05 14:14:59','2019-04-05 14:14:59',2,1);
+/*!40000 ALTER TABLE `usersroles` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -113,7 +113,7 @@ DROP TABLE IF EXISTS `products`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `products` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
   `color` varchar(255) DEFAULT NULL,
   `type` smallint(5) DEFAULT NULL,
@@ -124,7 +124,7 @@ CREATE TABLE `products` (
   PRIMARY KEY (`id`),
   KEY `FamilyId` (`FamilyId`),
   CONSTRAINT `products_ibfk_1` FOREIGN KEY (`FamilyId`) REFERENCES `families` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
