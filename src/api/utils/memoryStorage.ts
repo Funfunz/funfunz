@@ -19,13 +19,7 @@ export class Memory {
     }
   }
   public setItem(key: string, value: any, TTL?: number) {
-    const timeoutId = setTimeout(
-      () => {
-        this.removeItem(key)
-      },
-      (TTL || TTL === 0) ? TTL * 60 * 1000 : this.TTL
-    )
-    console.log((TTL || TTL === 0) ? TTL * 60 * 1000 : this.TTL)
+    const timeoutId = this.createTimeout(key, TTL)
     this.storage[key] = {
       requestCounter: 0,
       value,
@@ -63,12 +57,7 @@ export class Memory {
 
     clearTimeout(this.storage[key].timeoutId)
     this.storage[key].requestCounter = 0
-    this.storage[key].timeoutId = setTimeout(
-      () => {
-        this.removeItem(key)
-      },
-      (TTL || TTL === 0) ? TTL * 60 * 1000 : this.TTL
-    )
+    this.storage[key].timeoutId = this.createTimeout(key, TTL)
     return true
   }
 
@@ -76,6 +65,15 @@ export class Memory {
     clearTimeout(this.storage[key].timeoutId)
     delete this.storage[key]
     return true
+  }
+
+  private createTimeout(key: string, TTL?: number) {
+    return setTimeout(
+      () => {
+        this.removeItem(key)
+      },
+      (TTL || TTL === 0) ? TTL * 60 * 1000 : this.TTL
+    )
   }
 }
 
