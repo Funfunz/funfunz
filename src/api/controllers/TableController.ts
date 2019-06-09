@@ -3,8 +3,7 @@ import { HttpException, IMCRequest, IMCResponse, IUser } from '@root/api/types'
 import {
   addToResponse,
   applyPKFilters,
-  applyQueryFilters,
-  applyQuerySearch,
+  applyQueryFiltersSearch,
   catchMiddleware,
   filterVisibleTableColumns,
   getColumnsWithRelations,
@@ -13,6 +12,7 @@ import {
   nextAndReturn,
   runHook
 } from '@root/api/utils'
+import memory from '@root/api/utils/memoryStorage'
 import { IColumnRelation, ITableInfo } from '@root/configGenerator'
 import Bluebird from 'bluebird'
 import Debug from 'debug'
@@ -82,13 +82,7 @@ class TableController {
     }
     const DB = database.db
     let QUERY = DB.select(COLUMNS).from(TABLE_NAME)
-    if (req.query.filter) {
-      QUERY = applyQueryFilters(QUERY, req.query.filter, TABLE_CONFIG)
-    }
-
-    if (req.query.search) {
-      QUERY = applyQuerySearch(QUERY, req.query.search, TABLE_CONFIG)
-    }
+    QUERY = applyQueryFiltersSearch(QUERY, req.query, TABLE_CONFIG)
 
     if (ORDER) {
       const ORDER_OBJ = JSON.parse(ORDER)
@@ -143,6 +137,92 @@ class TableController {
     )
   }
 
+  public getDistinctTableData(req: IMCRequest, res: IMCResponse, next: NextFunction) {
+    const TABLE_NAME = req.params.table
+    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
+
+    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
+      (DB) => {
+        const columns: {
+          toRequest: string[],
+          toAdd: Array<{
+            name: string,
+            value: string[],
+          }>
+        } = {
+          toRequest: [],
+          toAdd: [],
+        }
+        req.query.columns.forEach(
+          (column: string) => {
+            if (memory.hasItem('distinct_' + column)) {
+              columns.toAdd.push({
+                name: column,
+                value: memory.getItem('distinct_' + column),
+              })
+            } else {
+              columns.toRequest.push(column)
+            }
+          }
+        )
+        let QUERY = DB(TABLE_NAME).distinct(columns.toRequest)
+        QUERY = applyQueryFiltersSearch(QUERY, req.query, TABLE_CONFIG)
+        return runHook(TABLE_CONFIG, 'getDistinctTableData', 'before', req, res, DB).then(
+          (hookResult) => {
+            if (hookResult) {
+              if (hookResult.filter) {
+                Object.keys(hookResult.filter).forEach(
+                  (column) => {
+                    if (Array.isArray(hookResult.filter[column])) {
+                      QUERY.whereIn(column, hookResult.filter[column])
+                    }
+                  }
+                )
+              }
+            }
+            return Promise.all([DB, QUERY, columns.toAdd])
+          }
+        )
+      }
+    ).then(
+      ([DB, queryResults, columnsToAdd]) => {
+        const results = queryResults.reduce(
+          (result, entry) => {
+            const key = Object.keys(entry)[0]
+            if (!result[key]) {
+              result[key] = []
+            }
+            result[key].push(entry[key])
+            return result
+          },
+          {}
+        )
+
+        Object.keys(results).forEach(
+          (column: string) => {
+            memory.setItem('distinct_' + column, results[column])
+          }
+        )
+
+        columnsToAdd.forEach(
+          (column) => {
+            results[column.name] = column.value
+          }
+        )
+
+        return runHook(TABLE_CONFIG, 'getDistinctTableData', 'after', req, res, DB, results)
+      }
+    ).then(
+      addToResponse(res, 'results')
+    ).then(
+      nextAndReturn(next)
+    ).catch(
+      (err) => {
+        catchMiddleware(next, err)
+      }
+    )
+  }
+
   public getTableCount(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
@@ -150,12 +230,7 @@ class TableController {
     return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
       (DB) => {
         let QUERY = DB(TABLE_NAME).select('*')
-        if (req.query.filter) {
-          QUERY = applyQueryFilters(QUERY, req.query.filter, TABLE_CONFIG)
-        }
-        if (req.query.search) {
-          QUERY = applyQuerySearch(QUERY, req.query.search, TABLE_CONFIG)
-        }
+        QUERY = applyQueryFiltersSearch(QUERY, req.query, TABLE_CONFIG)
         return Promise.all([DB, QUERY])
       }
     ).then(
@@ -172,58 +247,6 @@ class TableController {
       }
     )
   }
-
-  public getRow(req: IMCRequest, res: IMCResponse, next: NextFunction) {
-    const TABLE_NAME = req.params.table
-    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
-
-    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
-      (DB) => {
-        const requestedColumns = filterVisibleTableColumns(TABLE_CONFIG, 'detail')
-
-        return DB.select(requestedColumns)
-          .from(`${req.params.table}`)
-          .where('id', req.params.id)
-      }
-    ).then(
-      (results) => {
-        let manyToOneRelationQueries: Array<Bluebird<{}>> = []
-        let manyToManyRelationQueries: Array<Bluebird<{}>> = []
-        if (req.query.includeRelations) {
-          manyToOneRelationQueries = this.getManyToOneRelationQueries(TABLE_CONFIG, results[0].id)
-          manyToManyRelationQueries = this.getManyToManyRelationQueries(TABLE_CONFIG, results[0].id)
-        }
-
-        return Promise.all([
-          results[0],
-          Promise.all(manyToOneRelationQueries),
-          Promise.all(manyToManyRelationQueries),
-        ])
-      }
-    ).then(
-      this.mergeRelatedData
-    ).then(
-      (results) => {
-        return runHook(TABLE_CONFIG, 'getRow', 'after', req, res, database.db, results)
-      }
-    ).then(
-      addToResponse(res, 'results')
-    ).then(
-      nextAndReturn(next)
-    ).catch(
-      (err) => {
-        catchMiddleware(next, err)
-      }
-    )
-  }
-
-  /*
-    req.body {
-      pk: {
-        pk1: val1,
-      }
-    }
-  */
 
   public getRowData(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     const TABLE_NAME = req.params.table
@@ -269,7 +292,7 @@ class TableController {
     )
   }
 
-  public insertRow(req: IMCRequest, res: IMCResponse, next: NextFunction) {
+  public insertRowData(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
     return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
@@ -317,54 +340,6 @@ class TableController {
       (results) => {
         addToResponse(res, 'results')(results)
       }
-    ).then(
-      nextAndReturn(next)
-    ).catch(
-      (err) => {
-        catchMiddleware(next, err)
-      }
-    )
-  }
-
-  public updateRow(req: IMCRequest, res: IMCResponse, next: NextFunction) {
-    const TABLE_NAME = req.params.table
-    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
-    if (!req.body.data) {
-      next(new HttpException(500, 'Missing data object'))
-      return
-    }
-    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
-      (DB) => {
-        const acceptedColumns: string[] = []
-        TABLE_CONFIG.columns.forEach(
-          (column) => {
-            if (column.type === 'datetime') {
-              req.body.data[column.name] = new Date(req.body.data[column.name] || null)
-            }
-            if (req.body.data[column.name] !== undefined) {
-              acceptedColumns.push(column.name)
-            }
-          }
-        )
-
-        const toSave: {
-          [key: string]: any
-        } = {}
-
-        acceptedColumns.forEach(
-          (column) => {
-            toSave[column] = req.body.data[column]
-          }
-        )
-
-        return DB(TABLE_NAME).where('id', req.params.id).update(toSave)
-      }
-    ).then(
-      (results) => {
-        return runHook(TABLE_CONFIG, 'updateRow', 'after', req, res, database.db, results)
-      }
-    ).then(
-      addToResponse(res, 'results')
     ).then(
       nextAndReturn(next)
     ).catch(
@@ -433,29 +408,6 @@ class TableController {
         let QUERY = DB(TABLE_NAME)
         QUERY = applyPKFilters(QUERY, req.body, TABLE_CONFIG)
         return QUERY.del()
-      }
-    ).then(
-      (results) => {
-        return runHook(TABLE_CONFIG, 'deleteRow', 'after', req, res, database.db, results)
-      }
-    ).then(
-      addToResponse(res, 'results')
-    ).then(
-      nextAndReturn(next)
-    ).catch(
-      (err) => {
-        catchMiddleware(next, err)
-      }
-    )
-  }
-
-  public deleteRow(req: IMCRequest, res: IMCResponse, next: NextFunction) {
-    const TABLE_NAME = req.params.table
-    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
-
-    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
-      (DB) => {
-        return DB(TABLE_NAME).where('id', req.params.id).del()
       }
     ).then(
       (results) => {

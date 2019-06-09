@@ -148,26 +148,79 @@ export function getColumnsWithRelations(TABLE_CONFIG: ITableInfo) {
   )
 }
 
-export function applyQueryFilters(QUERY: Knex.QueryBuilder, filters: string, TABLE_CONFIG: ITableInfo) {
+export function applyQueryFiltersSearch(
+  DB_QUERY: Knex.QueryBuilder,
+  reqQuery: {[key: string]: any},
+  TABLE_CONFIG: ITableInfo
+) {
+  if (reqQuery.filter) {
+    DB_QUERY = applyQueryFilters(DB_QUERY, reqQuery.filter, TABLE_CONFIG)
+  }
+  if (reqQuery.search) {
+    DB_QUERY = applyQuerySearch(DB_QUERY, reqQuery.search, TABLE_CONFIG)
+  }
+  return DB_QUERY
+}
+
+export function applyQueryFilters(
+  QUERY: Knex.QueryBuilder,
+  filters: string | {[key: string]: any},
+  TABLE_CONFIG: ITableInfo
+) {
   const columnsByName = getColumnsByName(TABLE_CONFIG)
   const FILTERS = typeof filters === 'string' ? JSON.parse(filters) : filters
   Object.keys(FILTERS).forEach(
     (key, index) => {
       if (columnsByName[key].type === 'int(11)' || columnsByName[key].type === 'datetime') {
         index === 0 ?
-          QUERY.where({
-            [key]: FILTERS[key],
-          }) :
-          QUERY.andWhere({
-            [key]: FILTERS[key],
-          })
+          (
+            FILTERS[key] === null ?
+              QUERY.whereNull(key) :
+              QUERY.where({
+                [key]: FILTERS[key],
+              })
+          ) :
+          (
+            FILTERS[key] === null ?
+              QUERY.andWhere((innerQuery) => {
+                innerQuery.whereNull(key)
+              }) :
+              QUERY.andWhere({
+                [key]: FILTERS[key],
+              })
+          )
       } else {
         index === 0 ?
-          QUERY.where(key, 'like', '%' + FILTERS[key] + '%') :
-          QUERY.andWhere(key, 'like', '%' + FILTERS[key] + '%')
+          (
+            FILTERS[key] === null ?
+              QUERY.whereNull(key) :
+              QUERY.where(key, 'like', '%' + FILTERS[key] + '%')
+          ) :
+          (
+            FILTERS[key] === null ?
+              QUERY.andWhere((innerQuery) => {
+                innerQuery.whereNull(key)
+              }) :
+              QUERY.andWhere(key, 'like', '%' + FILTERS[key] + '%')
+          )
       }
     }
   )
+
+  return QUERY
+}
+
+export function applyQuerySearch(QUERY: Knex.QueryBuilder, search: string, TABLE_CONFIG: ITableInfo) {
+  const searchFields = TABLE_CONFIG.searchFields || []
+  QUERY.where(function() {
+    searchFields.forEach(
+      (searchField, index) => {
+        index === 0 ?
+          this.where(searchField, 'like', '%' + search + '%') :
+          this.orWhere(searchField, 'like', '%' + search + '%')
+      }
+    )
+  })
 
   return QUERY
 }
@@ -214,21 +267,6 @@ export function applyPKFilters(QUERY: Knex.QueryBuilder, body: IBodyWithPK, TABL
         QUERY.andWhere(PKS[index], 'like', '%' + body.pk[PKS[index]] + '%')
     }
   }
-
-  return QUERY
-}
-
-export function applyQuerySearch(QUERY: Knex.QueryBuilder, search: string, TABLE_CONFIG: ITableInfo) {
-  const searchFields = TABLE_CONFIG.searchFields || []
-  QUERY.where(function() {
-    searchFields.forEach(
-      (searchField, index) => {
-        index === 0 ?
-          this.where(searchField, 'like', '%' + search + '%') :
-          this.orWhere(searchField, 'like', '%' + search + '%')
-      }
-    )
-  })
 
   return QUERY
 }

@@ -101,6 +101,39 @@ describe('routes', () => {
     )
   })
 
+  it('get distinct table data', () => {
+    return request(application)
+    .get('/table/products/distinct?' +
+      'columns[]=color' +
+      '&search=e&filter:{"color":"e"}'
+    ).then(
+      (response) => {
+        console.log(response.body)
+        return expect(response.body && response.body.color && response.body.color.length === 3).toBe(true)
+      }
+    )
+  })
+
+  it('get distinct table data multiple order and columns using memory', () => {
+    return request(application)
+    .get('/table/products/distinct?' +
+      'columns[]=color' +
+      '&search=e&filter:{"color":"e"}'
+    ).then(
+      () => {
+        return request(application)
+        .get('/table/products/distinct?' +
+          'columns[]=color&columns[]=name' +
+          '&search=e&filter:{"color":"e"}'
+        )
+      }
+    ).then(
+      (response) => {
+        return expect(response.body && response.body.color && response.body.color.length === 3).toBe(true)
+      }
+    )
+  })
+
   it('get table data with array order', () => {
     return request(application)
     .get('/table/products?friendlyData=true&order=["name", "id"]&limit=10&search=asd').then(
@@ -161,22 +194,6 @@ describe('routes', () => {
     )
   })
 
-  it('get a row by id without relations', () => {
-    return request(application).get('/products/1').then(
-      (response) => {
-        return expect(response.status).toBe(200)
-      }
-    )
-  })
-
-  it('get a row by id with relations', () => {
-    return request(application).get('/products/1?includeRelations=true').then(
-      (response) => {
-        return expect(response.status).toBe(200)
-      }
-    )
-  })
-
   it('get a row by id without, multiple pk', () => {
     return request(application).post('/tableData/products').send({
       pk: {
@@ -213,14 +230,6 @@ describe('routes', () => {
     )
   })
 
-  it('update a row by id', () => {
-    return request(application).put('/products/1').send({data: {name: 'nameUpdated'}}).then(
-      (response) => {
-        return expect(response.status).toBe(200)
-      }
-    )
-  })
-
   it('update a row by id, multiple pk', () => {
     return request(application).put('/tableData/products').send({
       pk: {
@@ -240,14 +249,6 @@ describe('routes', () => {
     return request(application).put('/products/1').then(
       (response) => {
         return expect(response.status).toBe(500)
-      }
-    )
-  })
-
-  it('delete a row by id', () => {
-    return request(application).delete('/products/30').then(
-      (response) => {
-        return expect(response.status).toBe(200)
       }
     )
   })
