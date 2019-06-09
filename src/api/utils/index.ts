@@ -155,16 +155,36 @@ export function applyQueryFilters(QUERY: Knex.QueryBuilder, filters: string, TAB
     (key, index) => {
       if (columnsByName[key].type === 'int(11)' || columnsByName[key].type === 'datetime') {
         index === 0 ?
-          QUERY.where({
-            [key]: FILTERS[key],
-          }) :
-          QUERY.andWhere({
-            [key]: FILTERS[key],
-          })
+          (
+            FILTERS[key] === null ?
+              QUERY.whereNull(key) :
+              QUERY.where({
+                [key]: FILTERS[key],
+              })
+          ) :
+          (
+            FILTERS[key] === null ?
+              QUERY.andWhere((innerQuery) => {
+                innerQuery.whereNull(key)
+              }) :
+              QUERY.andWhere({
+                [key]: FILTERS[key],
+              })
+          )
       } else {
         index === 0 ?
-          QUERY.where(key, 'like', '%' + FILTERS[key] + '%') :
-          QUERY.andWhere(key, 'like', '%' + FILTERS[key] + '%')
+          (
+            FILTERS[key] === null ?
+              QUERY.whereNull(key) :
+              QUERY.where(key, 'like', '%' + FILTERS[key] + '%')
+          ) :
+          (
+            FILTERS[key] === null ?
+              QUERY.andWhere((innerQuery) => {
+                innerQuery.whereNull(key)
+              }) :
+              QUERY.andWhere(key, 'like', '%' + FILTERS[key] + '%')
+          )
       }
     }
   )

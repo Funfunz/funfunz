@@ -16,7 +16,13 @@ type IHookFunction = (
   data?: any
 ) => Promise <any>
 
-export type Hooks = 'getTableData' | 'getTableCount' | 'getRow' | 'insertRow' | 'updateRow' | 'deleteRow'
+export type Hooks = 'getTableData'
+  | 'getDistinctTableData'
+  | 'getTableCount'
+  | 'getRow'
+  | 'insertRow'
+  | 'updateRow'
+  | 'deleteRow'
 
 export interface ITableInfo {
   name: string,
@@ -59,30 +65,10 @@ export interface ITableInfo {
   visible: boolean,
   roles: string[],
   hooks?: {
-    getTableData?: {
+    [key in Hooks]?: {
       before?: IHookFunction,
       after?: IHookFunction,
-    },
-    getTableCount?: {
-      before?: IHookFunction,
-      after?: IHookFunction,
-    },
-    getRow?: {
-      before?: IHookFunction,
-      after?: IHookFunction,
-    },
-    insertRow?: {
-      before?: IHookFunction,
-      after?: IHookFunction,
-    },
-    updateRow?: {
-      before?: IHookFunction,
-      after?: IHookFunction,
-    },
-    deleteRow?: {
-      before?: IHookFunction,
-      after?: IHookFunction,
-    },
+    }
   },
 }
 

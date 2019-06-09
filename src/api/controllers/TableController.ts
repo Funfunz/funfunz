@@ -13,6 +13,7 @@ import {
   nextAndReturn,
   runHook
 } from '@root/api/utils'
+import memory from '@root/api/utils/memoryStorage'
 import { IColumnRelation, ITableInfo } from '@root/configGenerator'
 import Bluebird from 'bluebird'
 import Debug from 'debug'
@@ -131,6 +132,92 @@ class TableController {
     ).then(
       (results) => {
         return runHook(TABLE_CONFIG, 'getTableData', 'after', req, res, database.db, results)
+      }
+    ).then(
+      addToResponse(res, 'results')
+    ).then(
+      nextAndReturn(next)
+    ).catch(
+      (err) => {
+        catchMiddleware(next, err)
+      }
+    )
+  }
+
+  public getDistinctTableData(req: IMCRequest, res: IMCResponse, next: NextFunction) {
+    const TABLE_NAME = req.params.table
+    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
+
+    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
+      (DB) => {
+        const columns: {
+          toRequest: string[],
+          toAdd: Array<{
+            name: string,
+            value: string[],
+          }>
+        } = {
+          toRequest: [],
+          toAdd: [],
+        }
+        req.query.columns.forEach(
+          (column: string) => {
+            if (memory.hasItem('distinct_' + column)) {
+              columns.toAdd.push({
+                name: column,
+                value: memory.getItem('distinct_' + column),
+              })
+            } else {
+              columns.toRequest.push(column)
+            }
+          }
+        )
+        let QUERY = DB(TABLE_NAME).distinct(columns.toRequest)
+        QUERY = applyQueryFiltersSearch(QUERY, req.query, TABLE_CONFIG)
+        return runHook(TABLE_CONFIG, 'getDistinctTableData', 'before', req, res, DB).then(
+          (hookResult) => {
+            if (hookResult) {
+              if (hookResult.filter) {
+                Object.keys(hookResult.filter).forEach(
+                  (column) => {
+                    if (Array.isArray(hookResult.filter[column])) {
+                      QUERY.whereIn(column, hookResult.filter[column])
+                    }
+                  }
+                )
+              }
+            }
+            return Promise.all([DB, QUERY, columns.toAdd])
+          }
+        )
+      }
+    ).then(
+      ([DB, queryResults, columnsToAdd]) => {
+        const results = queryResults.reduce(
+          (result, entry) => {
+            const key = Object.keys(entry)[0]
+            if (!result[key]) {
+              result[key] = []
+            }
+            result[key].push(entry[key])
+            return result
+          },
+          {}
+        )
+
+        Object.keys(results).forEach(
+          (column: string) => {
+            memory.setItem('distinct_' + column, results[column])
+          }
+        )
+
+        columnsToAdd.forEach(
+          (column) => {
+            results[column.name] = column.value
+          }
+        )
+
+        return runHook(TABLE_CONFIG, 'getDistinctTableData', 'after', req, res, DB, results)
       }
     ).then(
       addToResponse(res, 'results')

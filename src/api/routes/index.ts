@@ -41,12 +41,19 @@ class IndexRouter {
       },
       sendJSON('count')
     )
+    this.router.get('/table/:table/distinct',
+      (req, res, next) => {
+        tableController.getDistinctTableData(req, res, next)
+      },
+      sendJSON('results')
+    )
     this.router.get('/table/:table',
       (req, res, next) => {
         tableController.getTableData(req, res, next)
       },
       sendJSON('results')
     )
+
     this.router.post('/tableData/:table/delete',
       (req, res, next) => {
         tableController.deleteRowData(req, res, next)
