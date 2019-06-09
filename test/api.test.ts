@@ -108,6 +108,7 @@ describe('routes', () => {
       '&search=e&filter:{"color":"e"}'
     ).then(
       (response) => {
+        console.log(response.body)
         return expect(response.body && response.body.color && response.body.color.length === 3).toBe(true)
       }
     )
