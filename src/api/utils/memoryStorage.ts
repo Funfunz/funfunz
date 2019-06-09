@@ -3,19 +3,33 @@ export class Memory {
     [key: string]: {
       requestCounter: number,
       value: any
+      timeoutId: NodeJS.Timeout
     }
   } = {}
   private totalRequests: number = 10
+  private TTL: number = 10 * 60 * 1000
 
-  constructor(totalRequests?: number) {
+  constructor(totalRequests?: number, TTL?: number) {
     if (totalRequests || totalRequests === 0) {
       this.totalRequests = totalRequests
     }
+
+    if (TTL || TTL === 0) {
+      this.TTL = TTL * 60 * 1000
+    }
   }
-  public setItem(key: string, value: any) {
+  public setItem(key: string, value: any, TTL?: number) {
+    const timeoutId = setTimeout(
+      () => {
+        this.removeItem(key)
+      },
+      (TTL || TTL === 0) ? TTL * 60 * 1000 : this.TTL
+    )
+    console.log((TTL || TTL === 0) ? TTL * 60 * 1000 : this.TTL)
     this.storage[key] = {
       requestCounter: 0,
       value,
+      timeoutId,
     }
     return true
   }
@@ -28,6 +42,7 @@ export class Memory {
     this.storage[key].requestCounter += 1
     const item = this.storage[key]
     if (item.requestCounter >= this.totalRequests) {
+      clearTimeout(this.storage[key].timeoutId)
       delete this.storage[key]
     }
 
@@ -41,16 +56,24 @@ export class Memory {
     return true
   }
 
-  public resetItemCounter(key: string) {
+  public resetItemCounter(key: string, TTL?: number) {
     if (!this.storage[key]) {
       return false
     }
 
+    clearTimeout(this.storage[key].timeoutId)
     this.storage[key].requestCounter = 0
+    this.storage[key].timeoutId = setTimeout(
+      () => {
+        this.removeItem(key)
+      },
+      (TTL || TTL === 0) ? TTL * 60 * 1000 : this.TTL
+    )
     return true
   }
 
   public removeItem(key: string) {
+    clearTimeout(this.storage[key].timeoutId)
     delete this.storage[key]
     return true
   }

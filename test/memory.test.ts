@@ -1,6 +1,6 @@
 import { Memory } from '../src/api/utils/memoryStorage'
 
-const memory = new Memory(2)
+const memory = new Memory(2, 1)
 
 describe('Memory storage', () => {
 
@@ -26,6 +26,7 @@ describe('Memory storage', () => {
 
   it('Should answer true on resetItemCount if item present', () => {
     expect(memory.resetItemCounter('stuff')).toBe(true)
+    expect(memory.resetItemCounter('stuff', 1)).toBe(true)
   })
 
   it('Should answer true on removeItem', () => {
@@ -37,10 +38,29 @@ describe('Memory storage', () => {
   })
 
   it('Should remove item after resetCounter is reached', () => {
-    memory.setItem('stuff', true)
+    memory.setItem('stuff', true, 1)
     memory.getItem('stuff')
     memory.getItem('stuff')
     const result = memory.hasItem('stuff')
     expect(result).toBe(false)
+  })
+
+  it('Item should be remove after TTL', (done) => {
+    memory.setItem('test', true, 0)
+    return new Promise(
+      (res, rej) => {
+        setTimeout(
+          () => {
+            res(true)
+          },
+          100
+        )
+      }
+    ).then(
+      () => {
+        expect(memory.getItem('test')).toBe(undefined)
+        done()
+      }
+    )
   })
 })
