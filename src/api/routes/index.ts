@@ -72,27 +72,9 @@ class IndexRouter {
       },
       sendJSON('results')
     )
-    this.router.get('/:table/:id',
-      (req, res, next) => {
-        tableController.getRow(req, res, next)
-      },
-      sendJSON('results')
-    )
-    this.router.put('/:table/:id',
-      (req, res, next) => {
-        tableController.updateRow(req, res, next)
-      },
-      sendJSON('results')
-    )
     this.router.post('/:table',
       (req, res, next) => {
-        tableController.insertRow(req, res, next)
-      },
-      sendJSON('results')
-    )
-    this.router.delete('/:table/:id',
-      (req, res, next) => {
-        tableController.deleteRow(req, res, next)
+        tableController.insertRowData(req, res, next)
       },
       sendJSON('results')
     )

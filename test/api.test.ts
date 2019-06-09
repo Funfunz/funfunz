@@ -193,22 +193,6 @@ describe('routes', () => {
     )
   })
 
-  it('get a row by id without relations', () => {
-    return request(application).get('/products/1').then(
-      (response) => {
-        return expect(response.status).toBe(200)
-      }
-    )
-  })
-
-  it('get a row by id with relations', () => {
-    return request(application).get('/products/1?includeRelations=true').then(
-      (response) => {
-        return expect(response.status).toBe(200)
-      }
-    )
-  })
-
   it('get a row by id without, multiple pk', () => {
     return request(application).post('/tableData/products').send({
       pk: {
@@ -245,14 +229,6 @@ describe('routes', () => {
     )
   })
 
-  it('update a row by id', () => {
-    return request(application).put('/products/1').send({data: {name: 'nameUpdated'}}).then(
-      (response) => {
-        return expect(response.status).toBe(200)
-      }
-    )
-  })
-
   it('update a row by id, multiple pk', () => {
     return request(application).put('/tableData/products').send({
       pk: {
@@ -272,14 +248,6 @@ describe('routes', () => {
     return request(application).put('/products/1').then(
       (response) => {
         return expect(response.status).toBe(500)
-      }
-    )
-  })
-
-  it('delete a row by id', () => {
-    return request(application).delete('/products/30').then(
-      (response) => {
-        return expect(response.status).toBe(200)
       }
     )
   })
