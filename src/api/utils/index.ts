@@ -6,8 +6,9 @@ import Knex from 'knex'
 
 export function catchMiddleware(next: NextFunction, err: HttpException) {
   if (next) {
-    next(err)
+    return next(err)
   }
+  throw err
 }
 
 export function addToResponse(res: IMCResponse, target: string) {
@@ -35,7 +36,7 @@ export function nextAndReturn(next: NextFunction) {
 // error handler
 export const errorHandler: ErrorRequestHandler = (err, req, res) => {
   res.status(err.status || 500)
-  if (process.env.NODE_ENV !== 'developement') {
+  if (process.env.NODE_ENV !== 'developement' && process.env.NODE_ENV !== 'test') {
     res.send('Error')
   } else {
     res.json({
