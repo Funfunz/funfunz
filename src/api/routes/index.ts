@@ -117,7 +117,7 @@ class IndexRouter {
               }
             }
             memory.setItem('layout_homePage', newHomePage)
-            sendHomePage(res, homePage)
+            sendHomePage(res, newHomePage)
           })
         }
       })
