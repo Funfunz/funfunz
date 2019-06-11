@@ -120,6 +120,6 @@ export default {
   ],
   "visible": true,
   "roles": [
-    "all"
+    "unauthenticated"
   ]
 }
