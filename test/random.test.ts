@@ -57,7 +57,7 @@ describe('Utils', () => {
         this.data = payload
       },
     }
-    errorHandler(new HttpException(404, 'not found'), req, res, () => {})
+    errorHandler(new HttpException(404, 'not found'), req, res, () => {return})
     expect(res.code).toBeDefined()
     expect(res.code).toBe(404)
 

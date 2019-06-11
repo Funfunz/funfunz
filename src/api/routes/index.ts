@@ -3,7 +3,8 @@ import TablesController from '@root/api/controllers/TablesController'
 import GraphQLSchema from '@root/api/graphql/schema'
 import { sendJSON } from '@root/api/middleware/response'
 import config from '@root/api/utils/configLoader'
-import { Router } from 'express'
+import memory from '@root/api/utils/memoryStorage'
+import { Response, Router } from 'express'
 import graphqlHTTP from 'express-graphql'
 import fs from 'fs'
 import path from 'path'
@@ -80,15 +81,45 @@ class IndexRouter {
     )
 
     if (config().defaultInterface) {
+      interface ILayout {
+        status: number,
+        contentType: string,
+        data: any
+      }
+      function sendHomePage(res: Response, homePage: ILayout) {
+        res.status(homePage.status)
+        res.set('Content-Type', homePage.contentType)
+        homePage.contentType === 'application/json'
+        ? res.json(homePage.data)
+        : res.send(homePage.data)
+      }
+
       this.router.get('*', function(req, res) {
-        fs.readFile(path.join(__dirname, '../public/index.html'), function(err, data) {
-          if (err) {
-            res.status(500).send({error: 'No html available'})
-          } else {
-            res.set('Content-Type', 'text/html')
-            res.send(data)
-          }
-        })
+        const homePage: ILayout = memory.getItem('layout_homePage')
+        if (homePage) {
+          sendHomePage(res, homePage)
+        } else {
+          fs.readFile(path.join(__dirname, '../public/index.html'), function(err, data) {
+            let newHomePage: ILayout
+            if (err) {
+              newHomePage = {
+                status: 500,
+                contentType: 'application/json',
+                data: {
+                  error: 'No html available',
+                },
+              }
+            } else {
+              newHomePage = {
+                status: 200,
+                contentType: 'text/html',
+                data,
+              }
+            }
+            memory.setItem('layout_homePage', newHomePage)
+            sendHomePage(res, homePage)
+          })
+        }
       })
     }
   }
