@@ -1,7 +1,7 @@
 export default {
   "name": "roles",
   "verbose": "Roles",
-  "pk": "id",
+  "pk": ["id"],
   "relations": {
     "manyToMany": [
       {

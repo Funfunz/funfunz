@@ -4,7 +4,7 @@ import Bluebird from 'bluebird'
 import { GraphQLResolveInfo } from 'graphql'
 
 function getFields(table: ITableInfo, info: GraphQLResolveInfo): string[] {
-  let fields = Array.isArray(table.pk) ? table.pk : [table.pk]
+  let fields = table.pk
 
   if (info.fieldNodes[0].selectionSet) {
     fields = []

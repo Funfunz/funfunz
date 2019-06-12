@@ -1,7 +1,7 @@
 export default {
   "name": "families",
   "verbose": "Families",
-  "pk": "id",
+  "pk": ["id"],
   "columns": [
     {
       "name": "id",

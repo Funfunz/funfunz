@@ -24,10 +24,15 @@ export type Hooks = 'getTableData'
   | 'updateRow'
   | 'deleteRow'
 
+export interface IManyToOneRelation {
+  fk: string,
+  target: string,
+}
+
 export interface ITableInfo {
   name: string,
   verbose: string,
-  pk: string | string[],
+  pk: string[],
   actions: {
     delete: boolean,
     edit: boolean,
@@ -35,7 +40,7 @@ export interface ITableInfo {
   searchFields?: string[],
   relations?: {
     manyToOne?: {
-      [key: string]: string,
+      [key: string]: IManyToOneRelation[],
     },
     manyToMany?: [
       {
@@ -96,7 +101,7 @@ function buildTableInfo(): ITableInfo {
   return {
     name: '',
     verbose: '',
-    pk: '',
+    pk: [],
     actions: {
       delete: true,
       edit: true,
@@ -142,15 +147,7 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
           columnData.allowNull = column.Null === 'NO' ? false : true
 
           if (column.Key === 'PRI') {
-            if (table.pk !== '' && !Array.isArray(table.pk)) {
-              table.pk = [table.pk]
-            }
-
-            if (Array.isArray(table.pk)) {
-              table.pk.push(column.Field)
-            } else {
-              table.pk = column.Field
-            }
+            table.pk.push(column.Field)
           }
           tableData.schema.forEach(
             (schemaData) => {

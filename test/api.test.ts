@@ -251,12 +251,13 @@ describe('routes', () => {
       },
     }).then(
       (response) => {
+        expect(response.body).toBe(1)
         return expect(response.status).toBe(200)
       }
     )
   })
 
-  it('no data while updating a row', () => {
+  it('no data while updating a row should throw an error 500', () => {
     return request(application).put('/tableData/products').send({
       pk: {
         id: 30,

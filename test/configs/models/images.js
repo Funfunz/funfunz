@@ -1,7 +1,7 @@
 export default {
   "name": "images",
   "verbose": "Images",
-  "pk": "id",
+  "pk": ["id"],
   "columns": [
     {
       "name": "id",

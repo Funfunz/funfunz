@@ -1,14 +1,17 @@
 export default {
   "name": "products",
   "verbose": "Products",
-  "pk": "id",
+  "pk": ["id"],
   "searchFields": [
     "name",
     "color",
   ],
   "relations": {
     "manyToOne": {
-      "images": "ProductId",
+      "images": [{
+        "fk": "ProductId",
+        "target": "id"
+      }],
     },
   },
   "chips": [

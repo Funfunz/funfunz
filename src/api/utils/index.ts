@@ -92,7 +92,7 @@ export function filterVisibleTableColumns(table: ITableInfo, target: 'main' | 'd
     )
   }
   return table.columns.filter(
-    (column) => column.visible[target] || column.name === table.pk || toKeep[column.name]
+    (column) => column.visible[target] || table.pk.indexOf(column.name) >= 0  || toKeep[column.name]
   ).map(
     (column) => column.name
   )
@@ -270,4 +270,8 @@ export function applyPKFilters(QUERY: Knex.QueryBuilder, body: IBodyWithPK, TABL
   }
 
   return QUERY
+}
+
+export function isNull(val: any) {
+  return val === '' || val === undefined || val === null
 }
