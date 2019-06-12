@@ -1,9 +1,20 @@
+interface ITimers {
+  TTL?: number,
+  maxRequest?: number,
+}
+
+interface ITimersFinal {
+  TTL: number,
+  maxRequest: number,
+}
+
 export class Memory {
   private storage: {
     [key: string]: {
       requestCounter: number,
       value: any
-      timeoutId: NodeJS.Timeout
+      timeoutId: NodeJS.Timeout,
+      maxRequest: number,
     }
   } = {}
   private totalRequests: number = 10
@@ -18,12 +29,14 @@ export class Memory {
       this.TTL = TTL * 60 * 1000
     }
   }
-  public setItem(key: string, value: any, TTL?: number) {
-    const timeoutId = this.createTimeout(key, TTL)
+  public setItem(key: string, value: any, timers?: ITimers) {
+    const timersFinal = this.getTimers(timers)
+    const timeoutId = this.createTimeout(key, timersFinal.TTL)
     this.storage[key] = {
       requestCounter: 0,
       value,
       timeoutId,
+      maxRequest: timersFinal.maxRequest,
     }
     return true
   }
@@ -35,9 +48,8 @@ export class Memory {
 
     this.storage[key].requestCounter += 1
     const item = this.storage[key]
-    if (item.requestCounter >= this.totalRequests) {
-      clearTimeout(this.storage[key].timeoutId)
-      delete this.storage[key]
+    if (item.requestCounter >= this.storage[key].maxRequest) {
+      this.removeItem(key)
     }
 
     return item.value
@@ -50,14 +62,17 @@ export class Memory {
     return true
   }
 
-  public resetItemCounter(key: string, TTL?: number) {
+  public resetItemCounter(key: string, timers?: ITimers) {
     if (!this.storage[key]) {
       return false
     }
 
+    const timersFinal = this.getTimers(timers)
+
     clearTimeout(this.storage[key].timeoutId)
     this.storage[key].requestCounter = 0
-    this.storage[key].timeoutId = this.createTimeout(key, TTL)
+    this.storage[key].maxRequest = timersFinal.maxRequest
+    this.storage[key].timeoutId = this.createTimeout(key, timersFinal.TTL)
     return true
   }
 
@@ -67,13 +82,33 @@ export class Memory {
     return true
   }
 
-  private createTimeout(key: string, TTL?: number) {
+  private createTimeout(key: string, TTL: number): NodeJS.Timeout {
     return setTimeout(
       () => {
         this.removeItem(key)
       },
-      (TTL || TTL === 0) ? TTL * 60 * 1000 : this.TTL
+      TTL
     )
+  }
+
+  private getTimers(timers?: ITimers) {
+    const result: ITimersFinal = {
+      TTL: this.TTL,
+      maxRequest: this.totalRequests,
+    }
+
+    if (!timers) {
+      return result
+    }
+
+    if (timers.TTL || timers.TTL === 0) {
+      result.TTL = timers.TTL * 60 * 1000
+    }
+    if (timers.maxRequest || timers.maxRequest === 0) {
+      result.maxRequest = timers.maxRequest
+    }
+
+    return result
   }
 }
 

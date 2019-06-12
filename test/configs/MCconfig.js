@@ -6,6 +6,6 @@ export default {
     "password": process.env.DB_PASSWORD || ""
   },
   "server": {
-    "port": 3004
+    "port": process.env.PORT || 3004
   }
 }

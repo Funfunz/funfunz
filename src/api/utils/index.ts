@@ -6,8 +6,9 @@ import Knex from 'knex'
 
 export function catchMiddleware(next: NextFunction, err: HttpException) {
   if (next) {
-    next(err)
+    return next(err)
   }
+  throw err
 }
 
 export function addToResponse(res: IMCResponse, target: string) {
@@ -35,7 +36,7 @@ export function nextAndReturn(next: NextFunction) {
 // error handler
 export const errorHandler: ErrorRequestHandler = (err, req, res) => {
   res.status(err.status || 500)
-  if (process.env.NODE_ENV !== 'developement') {
+  if (process.env.NODE_ENV !== 'developement' && process.env.NODE_ENV !== 'test') {
     res.send('Error')
   } else {
     res.json({
@@ -91,7 +92,7 @@ export function filterVisibleTableColumns(table: ITableInfo, target: 'main' | 'd
     )
   }
   return table.columns.filter(
-    (column) => column.visible[target] || column.name === table.pk || toKeep[column.name]
+    (column) => column.visible[target] || table.pk.indexOf(column.name) >= 0  || toKeep[column.name]
   ).map(
     (column) => column.name
   )
@@ -269,4 +270,8 @@ export function applyPKFilters(QUERY: Knex.QueryBuilder, body: IBodyWithPK, TABL
   }
 
   return QUERY
+}
+
+export function isNull(val: any) {
+  return val === '' || val === undefined || val === null
 }
