@@ -12,8 +12,9 @@ import {
   nextAndReturn,
   runHook
 } from '@root/api/utils'
+import { normalize as normalizeData } from '@root/api/utils/data'
 import memory from '@root/api/utils/memoryStorage'
-import { IColumnRelation, ITableInfo } from '@root/configGenerator'
+import { IColumnRelation, IManyToOneRelation, ITableInfo } from '@root/configGenerator'
 import Bluebird from 'bluebird'
 import Debug from 'debug'
 import { NextFunction } from 'express'
@@ -67,41 +68,34 @@ class TableController {
   }
 
   public getTableData(req: IMCRequest, res: IMCResponse, next: NextFunction) {
-    const PAGE_NUMBER = req.query.page || 0
     const TABLE_NAME = req.params.table
     const ORDER = req.query.order || null
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
     const COLUMNS = filterVisibleTableColumns(TABLE_CONFIG, 'main')
-    let LIMIT = 10
 
-    if (!hasAuthorization(TABLE_CONFIG.roles, req.user)) {
-      return catchMiddleware(next, new HttpException(401, 'Not authorized'))
-    }
-    if (!database.db) {
-      return catchMiddleware(next, new HttpException(500, 'No database'))
-    }
-    const DB = database.db
-    let QUERY = DB.select(COLUMNS).from(TABLE_NAME)
-    QUERY = applyQueryFiltersSearch(QUERY, req.query, TABLE_CONFIG)
-
-    if (ORDER) {
-      const ORDER_OBJ = JSON.parse(ORDER)
-      if (Array.isArray(ORDER_OBJ)) {
-        QUERY.orderBy(ORDER_OBJ)
-      } else {
-        QUERY.orderBy(ORDER_OBJ.column, ORDER_OBJ.order)
+    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
+      (DB) => {
+        return Promise.all([
+          DB,
+          runHook(TABLE_CONFIG, 'getTableData', 'before', req, res, DB),
+        ])
       }
-    }
+    ).then(
+      ([DB, hookResult]) => {
+        let QUERY = DB.select(COLUMNS).from(TABLE_NAME)
+        QUERY = applyQueryFiltersSearch(QUERY, req.query, TABLE_CONFIG)
 
-    if (req.query.limit) {
-      LIMIT = parseInt(req.query.limit, 10)
-    }
-    if (LIMIT > 0) {
-      QUERY.offset((PAGE_NUMBER) * LIMIT).limit(LIMIT)
-    }
+        if (ORDER) {
+          const ORDER_OBJ = JSON.parse(ORDER)
+          if (Array.isArray(ORDER_OBJ)) {
+            QUERY.orderBy(ORDER_OBJ)
+          } else {
+            QUERY.orderBy(ORDER_OBJ.column, ORDER_OBJ.order)
+          }
+        }
 
-    return runHook(TABLE_CONFIG, 'getTableData', 'before', req, res, database.db).then(
-      (hookResult) => {
+        QUERY = this.paginate(QUERY, req.query.page , req.query.limit)
+
         if (hookResult) {
           if (hookResult.filter) {
             Object.keys(hookResult.filter).forEach(
@@ -113,18 +107,28 @@ class TableController {
             )
           }
         }
-        return QUERY
+
+        return Promise.all([
+          QUERY,
+          DB,
+        ])
       }
     ).then(
-      (results) => {
+      ([results, DB]) => {
         if (req.query.friendlyData) {
-          return this.addVerboseRelatedData(results, TABLE_CONFIG, DB)
+          return Promise.all([
+            this.addVerboseRelatedData(results, TABLE_CONFIG, DB),
+            DB,
+          ])
         }
-        return results
+        return Promise.all([
+          results,
+          DB,
+        ])
       }
     ).then(
-      (results) => {
-        return runHook(TABLE_CONFIG, 'getTableData', 'after', req, res, database.db, results)
+      ([results, DB]) => {
+        return runHook(TABLE_CONFIG, 'getTableData', 'after', req, res, DB, results)
       }
     ).then(
       addToResponse(res, 'results')
@@ -209,7 +213,6 @@ class TableController {
             results[column.name] = column.value
           }
         )
-
         return runHook(TABLE_CONFIG, 'getDistinctTableData', 'after', req, res, DB, results)
       }
     ).then(
@@ -218,7 +221,7 @@ class TableController {
       nextAndReturn(next)
     ).catch(
       (err) => {
-        catchMiddleware(next, err)
+        catchMiddleware(next, new HttpException(500, err.message))
       }
     )
   }
@@ -263,14 +266,14 @@ class TableController {
       (results) => {
         let manyToOneRelationQueries: Array<Bluebird<{}>> = []
         let manyToManyRelationQueries: Array<Bluebird<{}>> = []
-        const pk = typeof TABLE_CONFIG.pk === 'string' ? TABLE_CONFIG.pk : TABLE_CONFIG.pk[0]
+        const result = results[0]
         if (req.query.includeRelations) {
-          manyToOneRelationQueries = this.getManyToOneRelationQueries(TABLE_CONFIG, results[0][pk])
-          manyToManyRelationQueries = this.getManyToManyRelationQueries(TABLE_CONFIG, results[0][pk])
+          manyToOneRelationQueries = this.getManyToOneRelationQueries(TABLE_CONFIG, result)
+          manyToManyRelationQueries = this.getManyToManyRelationQueries(TABLE_CONFIG, result)
         }
 
         return Promise.all([
-          results[0],
+          result,
           Promise.all(manyToOneRelationQueries),
           Promise.all(manyToManyRelationQueries),
         ])
@@ -297,35 +300,10 @@ class TableController {
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
     return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
       (DB) => {
-        TABLE_CONFIG.columns.forEach(
-          (column) => {
-            if (column.type === 'datetime') {
-              req.body.data[column.name] = req.body.data[column.name]
-                ? new Date(req.body.data[column.name])
-                : new Date()
-            } else if (column.type === 'tinyint(1)') {
-              req.body.data[column.name] = (
-                req.body.data[column.name] === '1' || req.body.data[column.name] === 1
-              ) ? 1 : 0
-            }
-          }
-        )
-        if (Array.isArray(TABLE_CONFIG.pk)) {
-          TABLE_CONFIG.pk.forEach(
-            (pk) => {
-              if (req.body.data[pk] === '' || req.body.data[pk] === undefined) {
-                delete req.body.data[pk]
-              }
-            }
-          )
-        } else {
-          if (req.body.data[TABLE_CONFIG.pk] === '' || req.body.data[TABLE_CONFIG.pk] === undefined) {
-            delete req.body.data[TABLE_CONFIG.pk]
-          }
-        }
+        const data = normalizeData(req.body.data, TABLE_CONFIG)
         return Promise.all([
           DB,
-          runHook(TABLE_CONFIG, 'insertRow', 'before', req, res, DB, req.body.data),
+          runHook(TABLE_CONFIG, 'insertRow', 'before', req, res, DB, data),
         ])
       }
     ).then(
@@ -337,9 +315,7 @@ class TableController {
         return runHook(TABLE_CONFIG, 'insertRow', 'after', req, res, database.db, results)
       }
     ).then(
-      (results) => {
-        addToResponse(res, 'results')(results)
-      }
+      addToResponse(res, 'results')
     ).then(
       nextAndReturn(next)
     ).catch(
@@ -352,6 +328,7 @@ class TableController {
   public updateRowData(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
+
     if (!req.body.data) {
       next(new HttpException(500, 'Missing data object'))
       return
@@ -370,19 +347,11 @@ class TableController {
           }
         )
 
-        const toSave: {
-          [key: string]: any
-        } = {}
-
-        acceptedColumns.forEach(
-          (column) => {
-            toSave[column] = req.body.data[column]
-          }
-        )
+        const newData = normalizeData(req.body.data, TABLE_CONFIG)
 
         let QUERY = DB(TABLE_NAME)
         QUERY = applyPKFilters(QUERY, req.body, TABLE_CONFIG)
-        return QUERY.update(toSave)
+        return QUERY.update(newData)
       }
     ).then(
       (results) => {
@@ -422,6 +391,23 @@ class TableController {
         catchMiddleware(next, err)
       }
     )
+  }
+
+  private paginate(query: Knex.QueryBuilder, page: string | number, limit: string | number) {
+    let LIMIT = 10
+    let PAGE_NUMBER = 0
+    if (page) {
+      PAGE_NUMBER = typeof page === 'string' ? parseInt(page, 10) : page
+    }
+    if (limit) {
+      LIMIT = typeof limit === 'string' ? parseInt(limit, 10) : limit
+    }
+
+    if (LIMIT > 0) {
+      query.offset((PAGE_NUMBER) * LIMIT).limit(LIMIT)
+    }
+
+    return query
   }
 
   private addVerboseRelatedData(results: any[], TABLE_CONFIG: ITableInfo, DB: Knex) {
@@ -509,7 +495,7 @@ class TableController {
     return Promise.resolve(dbInstance.db)
   }
 
-  private getManyToOneRelationQueries(TABLE_CONFIG: ITableInfo, parentId: any) {
+  private getManyToOneRelationQueries(TABLE_CONFIG: ITableInfo, parentData: any) {
     const relationQueries: Array<Bluebird<{}>> = []
     if (TABLE_CONFIG.relations && TABLE_CONFIG.relations.manyToOne) {
       const MANY_TO_ONE = TABLE_CONFIG.relations.manyToOne
@@ -520,7 +506,7 @@ class TableController {
             this.getRelatedRow(
               tableName,
               MANY_TO_ONE[tableName],
-              parentId
+              parentData
             )
           )
         }
@@ -530,7 +516,7 @@ class TableController {
     return relationQueries
   }
 
-  private getManyToManyRelationQueries(TABLE_CONFIG: ITableInfo, parentId: any) {
+  private getManyToManyRelationQueries(TABLE_CONFIG: ITableInfo, parentData: any) {
     let relationQueries: Array<Bluebird<{}>> = []
     if (TABLE_CONFIG.relations && TABLE_CONFIG.relations.manyToMany) {
       if (!database.db) {
@@ -539,7 +525,7 @@ class TableController {
       const DB = database.db
       relationQueries = TABLE_CONFIG.relations.manyToMany.map(
         (relation) => {
-          return DB(relation.relationTable).select().where(relation.foreignKey, parentId).then(
+          return DB(relation.relationTable).select().where(relation.foreignKey, parentData[relation.localId]).then(
             (relationResult: any) => {
               return relationResult.map(
                 (relationRow: any) => relationRow[relation.remoteForeignKey]
@@ -560,7 +546,7 @@ class TableController {
     return relationQueries
   }
 
-  private getRelatedRow(tableName: string, columnName: string, parentId: any) {
+  private getRelatedRow(tableName: string, columnNames: IManyToOneRelation[], parentData: any) {
     if (!database.db) {
       throw new HttpException(500, 'No database')
     }
@@ -568,17 +554,24 @@ class TableController {
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
 
     const requestedColumns = filterVisibleTableColumns(TABLE_CONFIG, 'detail').filter(
-      (column) => column !== columnName
+      (column) => !columnNames.find((relatedData) => relatedData.fk.indexOf(column) >= 0)
     )
 
-    return database.db.select(requestedColumns)
-      .from(tableName)
-      .where(columnName, parentId).then(
-        (results) => ({
-          results,
-          tableName,
-        })
-      )
+    const QUERY = database.db.select(requestedColumns).from(tableName)
+
+    columnNames.forEach(
+      (columnName, index) => {
+        index === 0
+          ? QUERY.where(columnName.fk, parentData[columnName.target])
+          : QUERY.andWhere(columnName.fk, parentData[columnName.target])
+      }
+    )
+    return QUERY.then(
+      (results) => ({
+        results,
+        tableName,
+      })
+    )
   }
 
   private mergeRelatedData([results, manyToOneRelations, manyToManyRelations]: any) {

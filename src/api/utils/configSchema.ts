@@ -23,7 +23,12 @@ export default {
     server: {
       type: 'object',
       properties: {
-        port: {type: 'number'},
+        port: {
+          oneOf: [
+            {type: 'string'},
+            {type: 'number'},
+          ],
+        },
       },
       required: [
         'port',

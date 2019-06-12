@@ -36,9 +36,10 @@ export function buildType(table: ITableInfo) {
         } = {}
         table.columns.forEach(
           (column) => {
-            if (!column.relation && (table.pk === column.name || MATCHER[column.type])) {
+            const isPk = table.pk.indexOf(column.name) >= 0
+            if (!column.relation && (table.pk.indexOf(column.name) >= 0 || MATCHER[column.type])) {
               result[column.name] = {
-                type: table.pk === column.name ? GraphQLID : MATCHER[column.type],
+                type: isPk ? GraphQLID : MATCHER[column.type],
                 description: column.verbose,
               }
             }
