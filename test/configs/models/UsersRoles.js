@@ -1,7 +1,7 @@
 export default {
   "name": "UsersRoles",
   "verbose": "UsersRoles",
-  "pk": "roleId",
+  "pk": ["roleId"],
   "columns": [
     {
       "name": "createdAt",

@@ -1,7 +1,7 @@
 export default {
   "name": "users",
   "verbose": "Users",
-  "pk": "id",
+  "pk": ["id"],
   "columns": [
     {
       "name": "id",

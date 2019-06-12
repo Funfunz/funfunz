@@ -26,7 +26,7 @@ describe('Memory storage', () => {
 
   it('Should answer true on resetItemCount if item present', () => {
     expect(memory.resetItemCounter('stuff')).toBe(true)
-    expect(memory.resetItemCounter('stuff', 1)).toBe(true)
+    expect(memory.resetItemCounter('stuff', {TTL: 1})).toBe(true)
   })
 
   it('Should answer true on removeItem', () => {
@@ -38,7 +38,7 @@ describe('Memory storage', () => {
   })
 
   it('Should remove item after resetCounter is reached', () => {
-    memory.setItem('stuff', true, 1)
+    memory.setItem('stuff', true, {TTL: 1, maxRequest: 2})
     memory.getItem('stuff')
     memory.getItem('stuff')
     const result = memory.hasItem('stuff')
@@ -46,7 +46,7 @@ describe('Memory storage', () => {
   })
 
   it('Item should be remove after TTL', (done) => {
-    memory.setItem('test', true, 0)
+    memory.setItem('test', true, {TTL: 0})
     return new Promise(
       (res, rej) => {
         setTimeout(

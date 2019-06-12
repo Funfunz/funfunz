@@ -108,8 +108,19 @@ describe('routes', () => {
       '&search=e&filter:{"color":"e"}'
     ).then(
       (response) => {
-        console.log(response.body)
         return expect(response.body && response.body.color && response.body.color.length === 3).toBe(true)
+      }
+    )
+  })
+
+  it('get distinct table data wrong column', () => {
+    return request(application)
+    .get('/table/products/distinct?' +
+      'columns[]=colors' +
+      '&search=e&filter:{"colors":"e"}'
+    ).then(
+      (response) => {
+        return expect(response.status).toBe(500)
       }
     )
   })
@@ -240,13 +251,18 @@ describe('routes', () => {
       },
     }).then(
       (response) => {
+        expect(response.body).toBe(1)
         return expect(response.status).toBe(200)
       }
     )
   })
 
-  it('no data while updating a row', () => {
-    return request(application).put('/products/1').then(
+  it('no data while updating a row should throw an error 500', () => {
+    return request(application).put('/tableData/products').send({
+      pk: {
+        id: 30,
+      },
+    }).then(
       (response) => {
         return expect(response.status).toBe(500)
       }
@@ -315,79 +331,6 @@ describe('routes', () => {
       }).then(
       (response) => {
         return expect(response.status).toBe(401)
-      }
-    )
-  })
-})
-
-describe('graphql', () => {
-  it('graphql endpoint should return status 200', (done) => {
-    return request(application)
-      .post('/graphql')
-      .send({
-        query: `{
-          families {
-            id
-          }
-        }`,
-      })
-      .set('Accept', 'application/json').end(
-      (err, response) => {
-        if (err) {
-          return done(err)
-        }
-        expect(response.status).toBe(200)
-        return done()
-      }
-    )
-  })
-  it('graphql endpoint with deep queries should return 200', (done) => {
-    return request(application)
-      .post('/graphql')
-      .send({
-        query: `{
-          products {
-            id
-            FamilyId {
-              id
-            }
-          }
-        }`,
-      })
-      .set('Accept', 'application/json').end(
-      (err, response) => {
-        if (err) {
-          return done(err)
-        }
-        expect(response.status).toBe(200)
-        return done()
-      }
-    )
-  })
-
-  it('graphql endpoint with deep queries should return 200', (done) => {
-    return request(application)
-      .post('/graphql')
-      .send({
-        query: `{
-          images {
-            id
-            ProductId {
-              id
-              FamilyId {
-                name
-              }
-            }
-          }
-        }`,
-      })
-      .set('Accept', 'application/json').end(
-      (err, response) => {
-        if (err) {
-          return done(err)
-        }
-        expect(response.status).toBe(200)
-        return done()
       }
     )
   })
