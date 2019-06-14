@@ -77,8 +77,10 @@ export class Memory {
   }
 
   public removeItem(key: string) {
-    clearTimeout(this.storage[key].timeoutId)
-    delete this.storage[key]
+    if (this.storage[key]) {
+      clearTimeout(this.storage[key].timeoutId)
+      delete this.storage[key]
+    }
     return true
   }
 
