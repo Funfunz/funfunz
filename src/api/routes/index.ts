@@ -3,10 +3,10 @@ import TablesController from '@root/api/controllers/TablesController'
 import GraphQLSchema from '@root/api/graphql/schema'
 import { sendJSON } from '@root/api/middleware/response'
 import config from '@root/api/utils/configLoader'
-import memory from '@root/api/utils/memoryStorage'
 import { Response, Router } from 'express'
 import graphqlHTTP from 'express-graphql'
 import fs from 'fs'
+import metle from 'metle'
 import path from 'path'
 
 class IndexRouter {
@@ -95,7 +95,7 @@ class IndexRouter {
       }
 
       this.router.get('*', function(req, res) {
-        const homePage: ILayout = memory.getItem('layout_homePage')
+        const homePage: ILayout = metle.getItem('layout_homePage')
         if (homePage) {
           sendHomePage(res, homePage)
         } else {
@@ -116,7 +116,7 @@ class IndexRouter {
                 data,
               }
             }
-            memory.setItem('layout_homePage', newHomePage)
+            metle.setItem('layout_homePage', newHomePage)
             sendHomePage(res, newHomePage)
           })
         }

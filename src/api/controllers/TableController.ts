@@ -13,12 +13,12 @@ import {
   runHook
 } from '@root/api/utils'
 import { normalize as normalizeData } from '@root/api/utils/data'
-import memory from '@root/api/utils/memoryStorage'
 import { IColumnRelation, IManyToOneRelation, ITableInfo } from '@root/configGenerator'
 import Bluebird from 'bluebird'
 import Debug from 'debug'
 import { NextFunction } from 'express'
 import Knex from 'knex'
+import metle from 'metle'
 
 const debug = Debug('funfunzmc:controller-table')
 
@@ -159,10 +159,10 @@ class TableController {
         }
         req.query.columns.forEach(
           (column: string) => {
-            if (memory.hasItem('distinct_' + column)) {
+            if (metle.hasItem('distinct_' + column)) {
               columns.toAdd.push({
                 name: column,
-                value: memory.getItem('distinct_' + column),
+                value: metle.getItem('distinct_' + column),
               })
             } else {
               columns.toRequest.push(column)
@@ -204,7 +204,7 @@ class TableController {
 
         Object.keys(results).forEach(
           (column: string) => {
-            memory.setItem('distinct_' + column, results[column])
+            metle.setItem('distinct_' + column, results[column])
           }
         )
 
