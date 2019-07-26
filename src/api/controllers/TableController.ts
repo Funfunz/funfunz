@@ -348,10 +348,16 @@ class TableController {
         )
 
         const newData = normalizeData(req.body.data, TABLE_CONFIG)
-
+        return Promise.all([
+          DB,
+          runHook(TABLE_CONFIG, 'updateRow', 'before', req, res, DB, newData),
+        ])
+      }
+    ).then(
+      ([DB, data]) => {
         let QUERY = DB(TABLE_NAME)
         QUERY = applyPKFilters(QUERY, req.body, TABLE_CONFIG)
-        return QUERY.update(newData)
+        return QUERY.update(data)
       }
     ).then(
       (results) => {
@@ -374,6 +380,13 @@ class TableController {
 
     return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
       (DB) => {
+        return Promise.all([
+          DB,
+          runHook(TABLE_CONFIG, 'deleteRow', 'before', req, res, database.db),
+        ])
+      }
+    ).then(
+      ([DB]) => {
         let QUERY = DB(TABLE_NAME)
         QUERY = applyPKFilters(QUERY, req.body, TABLE_CONFIG)
         return QUERY.del()
