@@ -1,6 +1,6 @@
 {
   "name": "funfunzmc",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "description": "backoffice generator",
   "main": "lib/api/index.js",
   "engines": {
