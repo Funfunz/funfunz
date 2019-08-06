@@ -2,6 +2,8 @@ import database from '@root/api/db'
 import { IColumnInfo, ITableInfo } from '@root/configGenerator'
 import Bluebird from 'bluebird'
 import { GraphQLResolveInfo } from 'graphql'
+import { applyQueryFilters } from '@root/api/utils';
+import { singular } from 'pluralize';
 
 function getFields(table: ITableInfo, info: GraphQLResolveInfo): string[] {
   let fields = table.pk
@@ -10,7 +12,18 @@ function getFields(table: ITableInfo, info: GraphQLResolveInfo): string[] {
     fields = []
     info.fieldNodes[0].selectionSet.selections.forEach(
       (selection: any) => {
-        fields.push(selection.name.value)
+        const columnName = selection.name.value
+        if (table.columns.find((c) => c.name === columnName)) {
+          fields.push(columnName)
+        } else {
+          const column = table.columns.find((c) => {
+            return (c.relation && c.relation.type === 'oneToMany' &&
+              singular(c.relation.table) === columnName) ? true : false
+          })
+          if (column) {
+            fields.push(column.name)
+          }
+        }
       }
     )
   }
@@ -54,7 +67,9 @@ export function resolver(table: ITableInfo) {
     const DB = database.db
 
     const fields = getFields(table, info)
-    return DB(table.name).select(fields).then(
+    let QUERY = DB(table.name).select(fields)
+    QUERY = applyQueryFilters(QUERY, args, table)
+    return QUERY.then(
       (res) => {
         const promises: Array<Bluebird<any>> = []
         table.columns.forEach(
