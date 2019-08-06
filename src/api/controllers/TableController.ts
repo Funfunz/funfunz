@@ -115,6 +115,36 @@ class TableController {
       }
     ).then(
       ([results, DB]) => {
+        if (req.query.includeRelations) {
+          let manyToOneRelationQueries: Array<Bluebird<{}>> = []
+          let manyToManyRelationQueries: Array<Bluebird<{}>> = []
+
+          results.forEach(
+            (result, index) => {
+              manyToOneRelationQueries = this.getManyToOneRelationQueries(TABLE_CONFIG, result)
+              manyToManyRelationQueries = this.getManyToManyRelationQueries(TABLE_CONFIG, result)
+
+              results[index] = Promise.all([
+                result,
+                Promise.all(manyToOneRelationQueries),
+                Promise.all(manyToManyRelationQueries),
+              ]).then(
+                this.mergeRelatedData
+              )
+            }
+          )
+          return Promise.all([
+            Promise.all(results),
+            DB,
+          ])
+        }
+        return Promise.all([
+          results,
+          DB,
+        ])
+      }
+    ).then(
+      ([results, DB]) => {
         if (req.query.friendlyData) {
           return Promise.all([
             this.addVerboseRelatedData(results, TABLE_CONFIG, DB),
@@ -430,16 +460,18 @@ class TableController {
       (row: any, index: number) => {
         COLUMNS_WITH_RELATIONS.forEach(
           (column) => {
-            if (!column.relation) {
-              throw new HttpException(500, 'Column should have a relation')
-            }
-            const RELATION_TABLE_NAME = column.relation.table
+            if (row[column.name]) {
+              if (!column.relation) {
+                throw new HttpException(500, 'Column should have a relation')
+              }
+              const RELATION_TABLE_NAME = column.relation.table
 
-            if (!toRequest[RELATION_TABLE_NAME]) {
-              toRequest[RELATION_TABLE_NAME] = toRequestBuilder(column.relation, column.name)
-            }
+              if (!toRequest[RELATION_TABLE_NAME]) {
+                toRequest[RELATION_TABLE_NAME] = toRequestBuilder(column.relation, column.name)
+              }
 
-            toRequest[RELATION_TABLE_NAME].values.add(row[column.name])
+              toRequest[RELATION_TABLE_NAME].values.add(row[column.name])
+            }
           }
         )
       }
@@ -563,8 +595,7 @@ class TableController {
     if (!database.db) {
       throw new HttpException(500, 'No database')
     }
-    const TABLE_NAME = tableName
-    const TABLE_CONFIG = getTableConfig(TABLE_NAME)
+    const TABLE_CONFIG = getTableConfig(tableName)
 
     const requestedColumns = filterVisibleTableColumns(TABLE_CONFIG, 'detail').filter(
       (column) => !columnNames.find((relatedData) => relatedData.fk.indexOf(column) >= 0)
@@ -579,11 +610,14 @@ class TableController {
           : QUERY.andWhere(columnName.fk, parentData[columnName.target])
       }
     )
+
     return QUERY.then(
-      (results) => ({
-        results,
-        tableName,
-      })
+      (results) => {
+        return {
+          results,
+          tableName,
+        }
+      }
     )
   }
 
