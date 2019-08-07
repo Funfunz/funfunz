@@ -94,7 +94,7 @@ describe('routes', () => {
 
   it('get table data', () => {
     return request(application)
-    .get('/table/products?friendlyData=true&order={"column":"id","order":"asc"}&limit=10&search=asd').then(
+    .get('/table/products?friendlyData=true&includeRelations=true&order={"column":"id","order":"asc"}&limit=10&search=asd').then(
       (response) => {
         return expect(response.status).toBe(200)
       }
