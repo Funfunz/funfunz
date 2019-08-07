@@ -94,7 +94,7 @@ describe('routes', () => {
 
   it('get table data', () => {
     return request(application)
-    .get('/table/products?friendlyData=true&includeRelations=true&order={"column":"id","order":"asc"}&limit=10&search=asd').then(
+    .get('/table/products?friendlyData=true&order={"column":"id","order":"asc"}&limit=10&search=asd').then(
       (response) => {
         return expect(response.status).toBe(200)
       }
@@ -148,6 +148,15 @@ describe('routes', () => {
   it('get table data with array order', () => {
     return request(application)
     .get('/table/products?friendlyData=true&order=["name", "id"]&limit=10&search=asd').then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
+  it('get table data with included relations', () => {
+    return request(application)
+    .get('/table/products?includeRelations=true').then(
       (response) => {
         return expect(response.status).toBe(200)
       }

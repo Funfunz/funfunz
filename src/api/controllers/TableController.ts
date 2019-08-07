@@ -116,13 +116,10 @@ class TableController {
     ).then(
       ([results, DB]) => {
         if (req.query.includeRelations) {
-          let manyToOneRelationQueries: Array<Bluebird<{}>> = []
-          let manyToManyRelationQueries: Array<Bluebird<{}>> = []
-
           results.forEach(
             (result, index) => {
-              manyToOneRelationQueries = this.getManyToOneRelationQueries(TABLE_CONFIG, result)
-              manyToManyRelationQueries = this.getManyToManyRelationQueries(TABLE_CONFIG, result)
+              const manyToOneRelationQueries = this.getManyToOneRelationQueries(TABLE_CONFIG, result)
+              const manyToManyRelationQueries = this.getManyToManyRelationQueries(TABLE_CONFIG, result)
 
               results[index] = Promise.all([
                 result,
