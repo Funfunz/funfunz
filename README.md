@@ -1,5 +1,6 @@
 # funfunzmc
 
+[![Donate on patreon](https://img.shields.io/badge/donate-patreon-F96854.svg)](https://patreon.com/jwebcoder)
 [![Build Status][travis-badge]][travis]
 [![codecov][codecov-badge]][codecov]
 ![node][node]

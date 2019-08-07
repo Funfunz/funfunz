@@ -154,6 +154,15 @@ describe('routes', () => {
     )
   })
 
+  it('get table data with included relations', () => {
+    return request(application)
+    .get('/table/products?includeRelations=true').then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
   it('search table data, on a table without searchFields', () => {
     return request(application)
     .get('/table/roles?search=asd').then(
