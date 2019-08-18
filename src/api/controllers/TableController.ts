@@ -1,5 +1,5 @@
 import database from '@root/api/db'
-import { HttpException, IMCRequest, IMCResponse, IUser } from '@root/api/types'
+import { HttpException, IMCRequest, IMCResponse } from '@root/api/types'
 import {
   addToResponse,
   applyPKFilters,
