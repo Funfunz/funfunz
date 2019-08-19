@@ -247,6 +247,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#relations-object" title="Relations object" class="md-nav__link">
+    Relations object
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#hooks-object" title="Hooks Object" class="md-nav__link">
     Hooks Object
   </a>
@@ -266,6 +273,18 @@
         
       </ul>
     </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../endgoals/" title="End Goals" class="md-nav__link">
+      End Goals
+    </a>
   </li>
 
     
@@ -309,6 +328,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#relations-object" title="Relations object" class="md-nav__link">
+    Relations object
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#hooks-object" title="Hooks Object" class="md-nav__link">
     Hooks Object
   </a>
@@ -342,12 +368,15 @@
   <span class="nx">searchFields</span><span class="o">:</span> <span class="p">[</span><span class="nx">string</span><span class="p">],</span> <span class="c1">// array of columns where the default search should happen</span>
   <span class="nx">relations</span><span class="o">:</span> <span class="nx">relationsObject</span><span class="p">,</span> <span class="c1">// explained bellow</span>
   <span class="nx">visible</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span> <span class="c1">// table visible on the frontend</span>
-  <span class="nx">roles</span><span class="o">:</span> <span class="p">[</span><span class="nx">string</span><span class="p">],</span> <span class="c1">// array of roles with authorization to view the table, all | admin | authenticaded | ...</span>
+  <span class="nx">roles</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">read</span><span class="o">:</span> <span class="p">[</span><span class="nx">string</span><span class="p">],</span> <span class="c1">// array of roles with authorization to read from the table, all | admin | authenticaded | ...</span>
+    <span class="nx">write</span><span class="o">:</span> <span class="p">[</span><span class="nx">string</span><span class="p">],</span> <span class="c1">// array of roles with authorization to read from the table, all | admin | authenticaded | ...</span>
+  <span class="p">},</span>
   <span class="nx">columns</span><span class="o">:</span> <span class="p">[</span> <span class="c1">// array of columns</span>
     <span class="p">{</span>
       <span class="nx">name</span><span class="o">:</span> <span class="nx">string</span><span class="p">,</span> <span class="c1">// column name</span>
-      <span class="nx">verbose</span><span class="o">:</span> <span class="c1">// name shown on the frontend,</span>
-      <span class="nx">type</span><span class="o">:</span> <span class="c1">// data type, int(11) | varchar(255) | tinyint(1) | ...,</span>
+      <span class="nx">verbose</span><span class="o">:</span> <span class="c1">// name shown on the frontend</span>
+      <span class="nx">type</span><span class="o">:</span> <span class="c1">// data type, int(11) | varchar(255) | tinyint(1) | ...</span>
       <span class="nx">allowNull</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span> <span class="c1">// if the column allows null values</span>
       <span class="nx">visible</span><span class="o">:</span> <span class="p">{</span>
         <span class="nx">main</span><span class="o">:</span> <span class="kr">boolean</span><span class="p">,</span> <span class="c1">// visible on the table view</span>
@@ -362,7 +391,49 @@
 </pre></div>
 
 
+<h2 id="relations-object">Relations object</h2>
+<div class="codehilite"><pre><span></span>  <span class="nx">relations</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">manyToMany</span><span class="o">:</span> <span class="p">[</span> <span class="c1">// array of many to many relations</span>
+      <span class="p">{</span>
+        <span class="nx">verbose</span><span class="o">:</span> <span class="nx">string</span><span class="p">,</span> <span class="c1">// name shown on the frontend</span>
+        <span class="nx">relationTable</span><span class="o">:</span> <span class="nx">string</span><span class="p">,</span> <span class="c1">// name of the relation table</span>
+        <span class="nx">foreignKey</span><span class="o">:</span> <span class="nx">string</span><span class="p">,</span> <span class="c1">// foreignKey of the current table on the relation table</span>
+        <span class="nx">localId</span><span class="o">:</span> <span class="nx">string</span><span class="p">,</span> <span class="c1">// relation field for the current table</span>
+        <span class="nx">remoteTable</span><span class="o">:</span> <span class="nx">string</span><span class="p">,</span> <span class="c1">// name of the remote table</span>
+        <span class="nx">remoteForeignKey</span><span class="o">:</span> <span class="nx">string</span><span class="p">,</span> <span class="c1">// foreignKey of the remote table on the relation table</span>
+        <span class="nx">remoteId</span><span class="o">:</span> <span class="nx">string</span> <span class="c1">// relation field for the remote table</span>
+      <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="nx">manyToOne</span><span class="o">:</span> <span class="p">{</span> <span class="c1">// each key is a name of a related table</span>
+      <span class="nx">string</span> <span class="cm">/*table name*/</span><span class="o">:</span> <span class="p">[</span> <span class="c1">// array of keys used for the relation</span>
+        <span class="p">{</span>
+          <span class="nx">fk</span><span class="o">:</span> <span class="nx">string</span><span class="p">,</span> <span class="c1">// foreign key on the related table</span>
+          <span class="nx">target</span><span class="o">:</span> <span class="nx">string</span> <span class="c1">// key in the current table</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+</pre></div>
+
+
 <h2 id="hooks-object">Hooks Object</h2>
+<div class="codehilite"><pre><span></span>  <span class="nx">hooks</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">getTableData</span><span class="o">:</span> <span class="nx">hookDefinition</span><span class="p">,</span>
+    <span class="nx">getTableCount</span><span class="o">:</span> <span class="nx">hookDefinition</span><span class="p">,</span>
+    <span class="nx">updateRow</span><span class="o">:</span> <span class="nx">hookDefinition</span><span class="p">,</span>
+    <span class="nx">insertRow</span><span class="o">:</span> <span class="nx">hookDefinition</span><span class="p">,</span>
+    <span class="nx">deleteRow</span><span class="o">:</span> <span class="nx">hookDefinition</span>
+  <span class="p">}</span>
+
+  <span class="nx">hookDefinition</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">after</span><span class="o">:</span> <span class="nx">async</span> <span class="p">(</span><span class="nx">req</span> <span class="cm">/* express request */</span><span class="p">,</span> <span class="nx">res</span> <span class="cm">/* express response */</span><span class="p">,</span> <span class="nx">DB</span> <span class="cm">/* Knex instance */</span><span class="p">,</span> <span class="nx">tableName</span> <span class="cm">/* table name */</span><span class="p">,</span> <span class="nx">data</span> <span class="cm">/* current result */</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">data</span>
+    <span class="p">},</span>
+    <span class="nx">before</span><span class="o">:</span> <span class="nx">async</span> <span class="p">(</span><span class="nx">req</span><span class="o">:</span> <span class="cm">/* express request */</span><span class="p">,</span> <span class="nx">res</span> <span class="cm">/* express response */</span><span class="p">,</span> <span class="nx">DB</span> <span class="cm">/* Knex instance */</span><span class="p">,</span> <span class="nx">tableName</span> <span class="cm">/* table name */</span><span class="p">,</span> <span class="nx">payload</span> <span class="cm">/* payload from the request */</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">payload</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+</pre></div>
                 
                   
                 
@@ -398,13 +469,13 @@
           </a>
         
         
-          <a href="../../contributing/" title="Contributing" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../../endgoals/" title="End Goals" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                Contributing
+                End Goals
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">
