@@ -71,7 +71,8 @@ export default {
     }
   ],
   "visible": true,
-  "roles": [
-    "admin"
-  ]
+  "roles": {
+    "read": ["admin"],
+    "write": ["admin"]
+  }
 }

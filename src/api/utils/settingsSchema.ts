@@ -6,6 +6,7 @@ export default {
       'name',
       'pk',
       'columns',
+      'roles',
     ],
     properties: {
       name: {type: 'string'},
@@ -24,6 +25,27 @@ export default {
             verbose: {type: 'string'},
             type: {type: 'string'},
             allowNull: {type: 'boolean'},
+          },
+        },
+      },
+      roles: {
+        type: 'object',
+        required: [
+          'read',
+          'write',
+        ],
+        properties: {
+          read: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+          write: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
           },
         },
       },
