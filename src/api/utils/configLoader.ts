@@ -36,6 +36,13 @@ export function setConfig(configs: any, target: string) {
     if (configs.server && configs.server.port) {
       configs.server.port = normalizePort(configs.server.port)
     }
+    if (target === 'settings') {
+      configs.forEach(
+        (table: ITableInfo) => {
+          table.roles.read = Array.from(new Set<string>([...table.roles.read, ...table.roles.write]))
+        }
+      )
+    }
     config[target] = configs
   }
 }
