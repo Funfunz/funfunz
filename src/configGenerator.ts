@@ -68,7 +68,10 @@ export interface ITableInfo {
   itemTitle?: string,
   columns: IColumnInfo[],
   visible: boolean,
-  roles: string[],
+  roles: {
+    read: string[],
+    write: string[],
+  },
   hooks?: {
     [key in Hooks]?: {
       before?: IHookFunction,
@@ -108,7 +111,10 @@ function buildTableInfo(): ITableInfo {
     },
     columns: [],
     visible: true,
-    roles: ['all'],
+    roles: {
+      read: ['all'],
+      write: ['all'],
+    },
   }
 }
 

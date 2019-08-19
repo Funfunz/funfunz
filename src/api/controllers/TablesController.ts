@@ -21,8 +21,8 @@ class TablesController {
         if (!table.visible) {
           return undefined
         }
-        if (table.roles && table.roles.length) {
-          isAuthorized = hasAuthorization(table.roles, req.user)
+        if (table.roles && table.roles.read && table.roles.read.length) {
+          isAuthorized = hasAuthorization(table.roles.read, req.user)
         }
         if (isAuthorized) {
           return {

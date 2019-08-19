@@ -1,46 +1,28 @@
-import database, { Database } from '@root/api/db'
-import { HttpException, IMCRequest, IMCResponse, IUser } from '@root/api/types'
+import database from '@root/api/db'
+import { HttpException, IMCRequest, IMCResponse } from '@root/api/types'
 import {
   addToResponse,
   applyPKFilters,
   applyQueryFiltersSearch,
   catchMiddleware,
   filterVisibleTableColumns,
-  getColumnsWithRelations,
   getTableConfig,
   hasAuthorization,
   nextAndReturn,
-  runHook
+  requirementsCheck,
+  runHook,
 } from '@root/api/utils'
 import { normalize as normalizeData } from '@root/api/utils/data'
-import { IColumnRelation, IManyToOneRelation, ITableInfo } from '@root/configGenerator'
-import Bluebird from 'bluebird'
+import {
+  addVerboseRelatedData,
+  getRelatedData,
+} from '@root/api/utils/relations'
 import Debug from 'debug'
 import { NextFunction } from 'express'
 import Knex from 'knex'
 import metle from 'metle'
 
 const debug = Debug('funfunzmc:controller-table')
-
-interface IToRequestItem {
-  values: Set<number>,
-  key: string,
-  display: string,
-  foreignKeyColumn: string
-}
-
-interface IToRequest {
-  [key: string]: IToRequestItem,
-}
-
-function toRequestBuilder(relation: IColumnRelation, columnName: string): IToRequestItem {
-  return {
-    values: new Set<number>(),
-    key: relation.key,
-    display: relation.display,
-    foreignKeyColumn: columnName,
-  }
-}
 
 class TableController {
   constructor() {
@@ -60,7 +42,7 @@ class TableController {
       actions: TABLE_CONFIG.actions,
     }
 
-    if (!hasAuthorization(TABLE_CONFIG.roles, req.user)) {
+    if (!hasAuthorization(TABLE_CONFIG.roles.read, req.user)) {
       return catchMiddleware(next, new HttpException(401, 'Not authorized'))
     }
     addToResponse(res, 'results')(RESULT)
@@ -73,7 +55,7 @@ class TableController {
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
     const COLUMNS = filterVisibleTableColumns(TABLE_CONFIG, 'main')
 
-    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
+    return requirementsCheck(TABLE_CONFIG, 'read', req.user, database, next).then(
       (DB) => {
         return Promise.all([
           DB,
@@ -118,16 +100,7 @@ class TableController {
         if (req.query.includeRelations) {
           results.forEach(
             (result, index) => {
-              const manyToOneRelationQueries = this.getManyToOneRelationQueries(TABLE_CONFIG, result)
-              const manyToManyRelationQueries = this.getManyToManyRelationQueries(TABLE_CONFIG, result)
-
-              results[index] = Promise.all([
-                result,
-                Promise.all(manyToOneRelationQueries),
-                Promise.all(manyToManyRelationQueries),
-              ]).then(
-                this.mergeRelatedData
-              )
+              results[index] = getRelatedData(TABLE_CONFIG, result)
             }
           )
           return Promise.all([
@@ -144,7 +117,7 @@ class TableController {
       ([results, DB]) => {
         if (req.query.friendlyData) {
           return Promise.all([
-            this.addVerboseRelatedData(results, TABLE_CONFIG, DB),
+            addVerboseRelatedData(results, TABLE_CONFIG, DB),
             DB,
           ])
         }
@@ -172,7 +145,7 @@ class TableController {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
 
-    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
+    return requirementsCheck(TABLE_CONFIG, 'read', req.user, database, next).then(
       (DB) => {
         const columns: {
           toRequest: string[],
@@ -257,7 +230,7 @@ class TableController {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
 
-    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
+    return requirementsCheck(TABLE_CONFIG, 'read', req.user, database, next).then(
       (DB) => {
         let QUERY = DB(TABLE_NAME).select('*')
         QUERY = applyQueryFiltersSearch(QUERY, req.query, TABLE_CONFIG)
@@ -282,7 +255,7 @@ class TableController {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
 
-    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
+    return requirementsCheck(TABLE_CONFIG, 'read', req.user, database, next).then(
       (DB) => {
         const requestedColumns = filterVisibleTableColumns(TABLE_CONFIG, 'detail')
         let QUERY = DB.select(requestedColumns).from(`${req.params.table}`)
@@ -291,22 +264,12 @@ class TableController {
       }
     ).then(
       (results) => {
-        let manyToOneRelationQueries: Array<Bluebird<{}>> = []
-        let manyToManyRelationQueries: Array<Bluebird<{}>> = []
         const result = results[0]
         if (req.query.includeRelations) {
-          manyToOneRelationQueries = this.getManyToOneRelationQueries(TABLE_CONFIG, result)
-          manyToManyRelationQueries = this.getManyToManyRelationQueries(TABLE_CONFIG, result)
+          return getRelatedData(TABLE_CONFIG, result)
         }
-
-        return Promise.all([
-          result,
-          Promise.all(manyToOneRelationQueries),
-          Promise.all(manyToManyRelationQueries),
-        ])
+        return result
       }
-    ).then(
-      this.mergeRelatedData
     ).then(
       (results) => {
         return runHook(TABLE_CONFIG, 'getRow', 'after', req, res, database.db, results)
@@ -325,7 +288,7 @@ class TableController {
   public insertRowData(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
-    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
+    return requirementsCheck(TABLE_CONFIG, 'write', req.user, database, next).then(
       (DB) => {
         const data = normalizeData(req.body.data, TABLE_CONFIG)
         return Promise.all([
@@ -360,7 +323,7 @@ class TableController {
       next(new HttpException(500, 'Missing data object'))
       return
     }
-    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
+    return requirementsCheck(TABLE_CONFIG, 'write', req.user, database, next).then(
       (DB) => {
         const acceptedColumns: string[] = []
         TABLE_CONFIG.columns.forEach(
@@ -405,7 +368,7 @@ class TableController {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
 
-    return this.requirementsCheck(TABLE_CONFIG, req.user, database, next).then(
+    return requirementsCheck(TABLE_CONFIG, 'write', req.user, database, next).then(
       (DB) => {
         return Promise.all([
           DB,
@@ -448,194 +411,6 @@ class TableController {
     }
 
     return query
-  }
-
-  private addVerboseRelatedData(results: any[], TABLE_CONFIG: ITableInfo, DB: Knex) {
-    const toRequest: IToRequest = {}
-    const COLUMNS_WITH_RELATIONS = getColumnsWithRelations(TABLE_CONFIG)
-    results.forEach(
-      (row: any, index: number) => {
-        COLUMNS_WITH_RELATIONS.forEach(
-          (column) => {
-            if (row[column.name]) {
-              if (!column.relation) {
-                throw new HttpException(500, 'Column should have a relation')
-              }
-              const RELATION_TABLE_NAME = column.relation.table
-
-              if (!toRequest[RELATION_TABLE_NAME]) {
-                toRequest[RELATION_TABLE_NAME] = toRequestBuilder(column.relation, column.name)
-              }
-
-              toRequest[RELATION_TABLE_NAME].values.add(row[column.name])
-            }
-          }
-        )
-      }
-    )
-
-    const relationQueries: Knex.QueryBuilder[] = []
-    Object.keys(toRequest).forEach(
-      (tableName) => {
-        relationQueries.push(
-          DB.select(toRequest[tableName].display, toRequest[tableName].key)
-            .from(tableName)
-            .whereIn(toRequest[tableName].key, Array.from(toRequest[tableName].values.values()))
-        )
-      }
-    )
-
-    return Promise.all<any[]>(relationQueries).then(
-      (relationResults) => {
-        const MATCHER: {
-          [foreignKeyColumn: string]: {
-            [value: string]: string
-          }
-        } = {}
-        Object.values(toRequest).forEach(
-          (requestedTable, index) => {
-            const FOREIGN_KEY_COLUMN = requestedTable.foreignKeyColumn
-            MATCHER[FOREIGN_KEY_COLUMN] = {}
-            relationResults[index].forEach(
-              (relationRow: any) => {
-                const CURRENT_VALUE = relationRow[requestedTable.key]
-                const VALUE_TO_DISPLAY = relationRow[requestedTable.display]
-                MATCHER[FOREIGN_KEY_COLUMN][CURRENT_VALUE] = VALUE_TO_DISPLAY
-              }
-            )
-          }
-        )
-        return results.map(
-          (row: any) => {
-            Object.values(toRequest).forEach(
-              (requestedTable) => {
-                const ROW_KEY = requestedTable.foreignKeyColumn
-                row[ROW_KEY] = MATCHER[ROW_KEY][row[ROW_KEY]]
-              }
-            )
-            return row
-          }
-        )
-      }
-    )
-  }
-
-  private requirementsCheck(
-    tableConfig: ITableInfo,
-    user: IUser | undefined,
-    dbInstance: Database,
-    next: (param?: any) => void
-  ) {
-    if (!hasAuthorization(tableConfig.roles, user)) {
-      return Promise.reject(new HttpException(401, 'Not authorized'))
-    }
-    if (!dbInstance.db) {
-      const ERROR = new HttpException(500, 'No database')
-      catchMiddleware(next, ERROR)
-      return Promise.reject(ERROR)
-    }
-    return Promise.resolve(dbInstance.db)
-  }
-
-  private getManyToOneRelationQueries(TABLE_CONFIG: ITableInfo, parentData: any) {
-    const relationQueries: Array<Bluebird<{}>> = []
-    if (TABLE_CONFIG.relations && TABLE_CONFIG.relations.manyToOne) {
-      const MANY_TO_ONE = TABLE_CONFIG.relations.manyToOne
-      const KEYS: string[] = Object.keys(MANY_TO_ONE)
-      KEYS.forEach(
-        (tableName) => {
-          relationQueries.push(
-            this.getRelatedRow(
-              tableName,
-              MANY_TO_ONE[tableName],
-              parentData
-            )
-          )
-        }
-      )
-    }
-
-    return relationQueries
-  }
-
-  private getManyToManyRelationQueries(TABLE_CONFIG: ITableInfo, parentData: any) {
-    let relationQueries: Array<Bluebird<{}>> = []
-    if (TABLE_CONFIG.relations && TABLE_CONFIG.relations.manyToMany) {
-      if (!database.db) {
-        throw new HttpException(500, 'No database')
-      }
-      const DB = database.db
-      relationQueries = TABLE_CONFIG.relations.manyToMany.map(
-        (relation) => {
-          return DB(relation.relationTable).select().where(relation.foreignKey, parentData[relation.localId]).then(
-            (relationResult: any) => {
-              return relationResult.map(
-                (relationRow: any) => relationRow[relation.remoteForeignKey]
-              )
-            }
-          ).then(
-            (relationRemoteIds) => {
-              return Promise.all([
-                relation.remoteTable,
-                DB(relation.remoteTable).select().whereIn(relation.remoteId, relationRemoteIds),
-              ])
-            }
-          )
-        }
-      )
-    }
-
-    return relationQueries
-  }
-
-  private getRelatedRow(tableName: string, columnNames: IManyToOneRelation[], parentData: any) {
-    if (!database.db) {
-      throw new HttpException(500, 'No database')
-    }
-    const TABLE_CONFIG = getTableConfig(tableName)
-
-    const requestedColumns = filterVisibleTableColumns(TABLE_CONFIG, 'detail').filter(
-      (column) => !columnNames.find((relatedData) => relatedData.fk.indexOf(column) >= 0)
-    )
-
-    const QUERY = database.db.select(requestedColumns).from(tableName)
-
-    columnNames.forEach(
-      (columnName, index) => {
-        index === 0
-          ? QUERY.where(columnName.fk, parentData[columnName.target])
-          : QUERY.andWhere(columnName.fk, parentData[columnName.target])
-      }
-    )
-
-    return QUERY.then(
-      (results) => {
-        return {
-          results,
-          tableName,
-        }
-      }
-    )
-  }
-
-  private mergeRelatedData([results, manyToOneRelations, manyToManyRelations]: any) {
-    if (manyToOneRelations && manyToOneRelations.length) {
-      manyToOneRelations.forEach(
-        (relation: {tableName: string, results: any[]}) => {
-          results[relation.tableName] = relation.results
-        }
-      )
-    }
-
-    if (manyToManyRelations && manyToManyRelations.length) {
-      manyToManyRelations.forEach(
-        ([verbose, relationsData]: [string, any[]]) => {
-          results[verbose] = relationsData
-        }
-      )
-    }
-
-    return results
   }
 }
 
