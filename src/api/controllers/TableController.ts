@@ -89,7 +89,6 @@ class TableController {
             )
           }
         }
-
         return Promise.all([
           QUERY,
           DB,

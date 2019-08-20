@@ -1,6 +1,5 @@
 import database from '@root/api/db'
 import { IColumnInfo, ITableInfo } from '@root/configGenerator'
-import Bluebird from 'bluebird'
 import { GraphQLResolveInfo } from 'graphql'
 
 function getFields(table: ITableInfo, info: GraphQLResolveInfo): string[] {
@@ -56,7 +55,7 @@ export function resolver(table: ITableInfo) {
     const fields = getFields(table, info)
     return DB(table.name).select(fields).then(
       (res) => {
-        const promises: Array<Bluebird<any>> = []
+        const promises: Array<Promise<any>> = []
         table.columns.forEach(
           (column) => {
             if (column.relation && fields.indexOf(column.name) !== -1) {
