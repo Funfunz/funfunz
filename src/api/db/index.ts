@@ -15,6 +15,7 @@ class Database {
       this.db = knex({
         client: 'mysql2',
         connection: {
+          dateStrings: true,
           ...configuration.mysql,
         },
       })
