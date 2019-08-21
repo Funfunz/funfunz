@@ -47,7 +47,7 @@
     "express-graphql": "^0.8.0",
     "graphql": "^14.2.1",
     "jsonschema": "^1.2.4",
-    "knex": "^0.17.3",
+    "knex": "^0.19.2",
     "metle": "^1.0.0",
     "morgan": "^1.9.1",
     "mysql2": "^1.6.4",

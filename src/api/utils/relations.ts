@@ -6,7 +6,6 @@ import {
   getTableConfig,
 } from '@root/api/utils'
 import { IColumnRelation, IManyToOneRelation, ITableInfo } from '@root/configGenerator'
-import Bluebird from 'Bluebird'
 import Knex from 'knex'
 
 interface IToRequestItem {
@@ -100,7 +99,10 @@ export function  addVerboseRelatedData(results: any[], TABLE_CONFIG: ITableInfo,
 }
 
 export function  getManyToOneRelationQueries(TABLE_CONFIG: ITableInfo, parentData: any) {
-  const relationQueries: Array<Bluebird<{}>> = []
+  const relationQueries: Array<Promise<{
+    results: any[];
+    tableName: string;
+  }>> = []
   if (TABLE_CONFIG.relations && TABLE_CONFIG.relations.manyToOne) {
     const MANY_TO_ONE = TABLE_CONFIG.relations.manyToOne
     const KEYS: string[] = Object.keys(MANY_TO_ONE)
@@ -121,7 +123,7 @@ export function  getManyToOneRelationQueries(TABLE_CONFIG: ITableInfo, parentDat
 }
 
 export function  getManyToManyRelationQueries(TABLE_CONFIG: ITableInfo, parentData: any) {
-  let relationQueries: Array<Bluebird<{}>> = []
+  let relationQueries: Array<Promise<{}>> = []
   if (TABLE_CONFIG.relations && TABLE_CONFIG.relations.manyToMany) {
     if (!database.db) {
       throw new HttpException(500, 'No database')
