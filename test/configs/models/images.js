@@ -12,7 +12,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "number"
+      }
     },
     {
       "name": "name",
@@ -23,7 +26,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "text"
+      }
     },
     {
       "name": "main",
@@ -34,7 +40,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "checkbox"
+      }
     },
     {
       "name": "createdAt",
@@ -45,7 +54,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "date"
+      }
     },
     {
       "name": "updatedAt",
@@ -56,7 +68,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "date"
+      }
     },
     {
       "name": "ProductId",
@@ -68,6 +83,9 @@ export default {
         "detail": true
       },
       "editable": true,
+      "input": {
+        "type": "number"
+      },
       "relation": {
         "type": "oneToMany",
         "table": "products",
