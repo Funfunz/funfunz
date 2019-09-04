@@ -12,7 +12,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "number"
+      }
     },
     {
       "name": "order",
@@ -23,7 +26,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "numbeer"
+      }
     },
     {
       "name": "imageUrl",
@@ -34,7 +40,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "file"
+      }
     },
     {
       "name": "name",
@@ -45,7 +54,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "text"
+      }
     },
     {
       "name": "email",
@@ -56,7 +68,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "text"
+      }
     },
     {
       "name": "createdAt",
@@ -67,7 +82,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "date"
+      }
     },
     {
       "name": "updatedAt",
@@ -78,7 +96,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "date"
+      }
     }
   ],
   "visible": true,
