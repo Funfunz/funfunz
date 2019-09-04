@@ -20,11 +20,27 @@ export default {
         type: 'array',
         items: {
           type: 'object',
+          required: [
+            'name',
+            'verbose',
+            'type',
+            'allowNull',
+            'input',
+          ],
           properties: {
             name: {type: 'string'},
             verbose: {type: 'string'},
             type: {type: 'string'},
             allowNull: {type: 'boolean'},
+            input: {
+              type: 'object',
+              required: [
+                'type',
+              ],
+              properties: {
+                type: {type: 'string'},
+              },
+            },
           },
         },
       },

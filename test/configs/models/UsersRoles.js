@@ -12,7 +12,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "date"
+      }
     },
     {
       "name": "updatedAt",
@@ -23,7 +26,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "date"
+      }
     },
     {
       "name": "userId",
@@ -35,6 +41,9 @@ export default {
         "detail": true
       },
       "editable": true,
+      "input": {
+        "type": "number"
+      },
       "relation": {
         "type": "oneToMany",
         "table": "users",
@@ -52,6 +61,9 @@ export default {
         "detail": true
       },
       "editable": true,
+      "input": {
+        "type": "number"
+      },
       "relation": {
         "type": "oneToMany",
         "table": "roles",

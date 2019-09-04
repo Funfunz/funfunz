@@ -35,7 +35,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "number"
+      }
     },
     {
       "name": "name",
@@ -46,7 +49,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "text"
+      }
     },
     {
       "name": "color",
@@ -57,7 +63,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "text"
+      }
     },
     {
       "name": "active",
@@ -68,7 +77,10 @@ export default {
         "main": false,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "checkbox"
+      }
     },
     {
       "name": "type",
@@ -79,7 +91,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "number"
+      }
     },
     {
       "name": "createdAt",
@@ -90,7 +105,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "date"
+      }
     },
     {
       "name": "updatedAt",
@@ -101,7 +119,10 @@ export default {
         "main": true,
         "detail": true
       },
-      "editable": true
+      "editable": true,
+      "input": {
+        "type": "date"
+      }
     },
     {
       "name": "FamilyId",
@@ -113,6 +134,9 @@ export default {
         "detail": true
       },
       "editable": true,
+      "input": {
+        "type": "number"
+      },
       "relation": {
         "type": "oneToMany",
         "table": "families",

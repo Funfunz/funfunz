@@ -3,6 +3,21 @@ import { generateConfig, generateSettings } from '@root/configGenerator'
 import describe from '@root/describeTable'
 import getTableList from '@root/listTables'
 import { prompt } from 'enquirer'
+import fs from 'fs'
+
+function deleteFolderRecursive(path: string) {
+  if (fs.existsSync(path)) {
+    fs.readdirSync(path).forEach((file, index) => {
+      const curPath = path + '/' + file
+      if (fs.lstatSync(curPath).isDirectory()) {
+        deleteFolderRecursive(curPath)
+      } else {
+        fs.unlinkSync(curPath)
+      }
+    })
+    fs.rmdirSync(path)
+  }
+}
 
 export interface ITypeAnswers {
   DBType: string,
@@ -64,11 +79,12 @@ prompt(question).then(
       ...process.env,
       ...compiledAnswers,
     }
+    deleteFolderRecursive('generatedConfigs')
     Promise.all([
-      generateConfig(compiledAnswers),
       getTableList(),
+      generateConfig(compiledAnswers),
     ]).then(
-      ([config, tableNames]) => {
+      ([tableNames]) => {
         describe(tableNames).then(
           (results) => {
             generateSettings(results)
