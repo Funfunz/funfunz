@@ -25,6 +25,12 @@ export default {
             verbose: {type: 'string'},
             type: {type: 'string'},
             allowNull: {type: 'boolean'},
+            input: {
+              type: 'object',
+              properties: {
+                type: {type: 'string'},
+              },
+            },
           },
         },
       },

@@ -97,7 +97,19 @@ export interface IColumnInfo {
     detail: boolean,
   },
   editable: boolean,
-  relation?: IColumnRelation
+  input: {
+    type: 'text' | 'checkbox' | 'date' | 'number',
+  },
+  relation?: IColumnRelation,
+}
+
+const INPUT_TYPES: {
+  [key: string]: 'text' | 'checkbox' | 'number' | 'date'
+} = {
+  'varchar(255)': 'text',
+  'tinyint(1)': 'checkbox',
+  'int(11)': 'number',
+  'datetime': 'date',
 }
 
 function buildTableInfo(): ITableInfo {
@@ -129,11 +141,24 @@ function buildColumnInfo(): IColumnInfo {
       detail: true,
     },
     editable: true,
+    input: {
+      type: 'text',
+    },
   }
+}
+
+function isEditable(fieldName: string) {
+  switch (fieldName) {
+    case 'createdAt':
+    case 'updatedAt':
+      return false
+  }
+  return true
 }
 
 export function generateSettings(DBData: Array<{schema: schemaInfo, describe: describeInfo}>): any {
   const resultData: any[] = []
+  fs.mkdirSync('generatedConfigs/models/')
   DBData.forEach(
     (tableData) => {
       const table = buildTableInfo()
@@ -150,8 +175,9 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
           columnData.name = column.Field
           columnData.verbose = column.Field
           columnData.type = column.Type
+          columnData.input.type = INPUT_TYPES[column.Type]
           columnData.allowNull = column.Null === 'NO' ? false : true
-
+          columnData.editable = isEditable(column.Field)
           if (column.Key === 'PRI') {
             table.pk.push(column.Field)
           }
@@ -171,6 +197,7 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
           table.columns.push(columnData)
         }
       )
+
       fs.writeFile(
         'generatedConfigs/models/' + table.name + '.js',
         'export default ' + JSON.stringify(table, null, 2),
@@ -216,6 +243,8 @@ export function generateConfig(answers: ITypeAnswers) {
         port: 3004,
     },
   }
+
+  fs.mkdirSync('generatedConfigs/')
   fs.writeFile(
     'generatedConfigs/MCconfig.js',
     'export default ' + JSON.stringify(finalConfig, null, 2),
