@@ -33,6 +33,7 @@ export interface ITableInfo {
   name: string,
   verbose: string,
   pk: string[],
+  order?: number,
   actions: {
     delete: boolean,
     edit: boolean,

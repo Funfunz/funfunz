@@ -28,6 +28,7 @@ class TablesController {
           return {
             name: table.name,
             verbose: table.verbose,
+            order: table.order || undefined,
           }
         }
         return undefined
