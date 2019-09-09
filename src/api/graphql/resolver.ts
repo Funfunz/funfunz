@@ -1,6 +1,5 @@
 import database from '@root/api/db'
 import { IColumnInfo, ITableInfo } from '@root/configGenerator'
-import Bluebird from 'bluebird'
 import { GraphQLResolveInfo } from 'graphql'
 import { applyQueryFilters } from '@root/api/utils';
 import { singular } from 'pluralize';
@@ -71,7 +70,7 @@ export function resolver(table: ITableInfo) {
     QUERY = applyQueryFilters(QUERY, args, table)
     return QUERY.then(
       (res) => {
-        const promises: Array<Bluebird<any>> = []
+        const promises: Array<Promise<any>> = []
         table.columns.forEach(
           (column) => {
             if (column.relation && fields.indexOf(column.name) !== -1) {

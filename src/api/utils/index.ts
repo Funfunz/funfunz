@@ -1,3 +1,4 @@
+import { Database } from '@root/api/db'
 import { HttpException, IMCRequest, IMCResponse, IUser } from '@root/api/types'
 import config from '@root/api/utils/configLoader'
 import { Hooks, IColumnInfo, ITableInfo } from '@root/configGenerator'
@@ -56,24 +57,23 @@ export function hasAuthorization(
     ],
   }
 ): boolean {
-  let isAuthorized: string | undefined = 'true'
+  let isAuthorized: boolean = true
   if (tableRoles && tableRoles.length) {
-    isAuthorized = tableRoles.find(
+    isAuthorized = !!tableRoles.find(
       (tableRole: string) => {
         if (tableRole === 'all') {
           return true
         }
-        const userHasAuthorization = user.roles.find(
+        return !!user.roles.find(
           (userRole) => {
             return (userRole.name === tableRole);
           }
         )
-        return userHasAuthorization ? true : false
       }
     )
   }
 
-  return isAuthorized ? true : false
+  return isAuthorized
 }
 
 export function filterVisibleTableColumns(table: ITableInfo, target: 'main' | 'detail') {
@@ -274,4 +274,22 @@ export function applyPKFilters(QUERY: Knex.QueryBuilder, body: IBodyWithPK, TABL
 
 export function isNull(val: any) {
   return val === '' || val === undefined || val === null
+}
+
+export function requirementsCheck(
+  tableConfig: ITableInfo,
+  accessType: 'read' | 'write',
+  user: IUser | undefined,
+  dbInstance: Database,
+  next: (param?: any) => void
+) {
+  if (!hasAuthorization(tableConfig.roles[accessType], user)) {
+    return Promise.reject(new HttpException(401, 'Not authorized'))
+  }
+  if (!dbInstance.db) {
+    const ERROR = new HttpException(500, 'No database')
+    catchMiddleware(next, ERROR)
+    return Promise.reject(ERROR)
+  }
+  return Promise.resolve(dbInstance.db)
 }
