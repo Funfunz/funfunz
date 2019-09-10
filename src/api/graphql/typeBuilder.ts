@@ -1,4 +1,4 @@
-import { resolverById, resolver } from '@root/api/graphql/resolver'
+import { resolver, resolverById } from '@root/api/graphql/resolver'
 import config from '@root/api/utils/configLoader'
 import { ITableInfo } from '@root/configGenerator'
 import Debug from 'debug'
@@ -6,6 +6,7 @@ import {
   GraphQLBoolean,
   GraphQLID,
   GraphQLInt,
+  GraphQLList,
   GraphQLObjectType,
   GraphQLString,
 } from 'graphql'
@@ -43,14 +44,16 @@ export function buildFields(table: ITableInfo, relations: boolean = true) {
         if (relations) {
           const relation = column.relation
           const columnName = relation.type === 'oneToMany'
-            ? singular(relation.table)
+            ? relation.table
             : column.name
+          const relatedTable = config().settings.filter(
+            (settingsTable) => settingsTable.name === relation.table
+          )[0]
           result[columnName] = {
-            type: buildType(config().settings.filter(
-              (settingsTable) => settingsTable.name === relation.table
-            )[0]),
+            type: buildType(relatedTable),
             description: column.verbose,
             resolve: resolverById(table, column),
+            args: buildFields(relatedTable, false),
           }
         } else {
           result[column.name] = {
@@ -63,22 +66,28 @@ export function buildFields(table: ITableInfo, relations: boolean = true) {
   )
   if (table.relations && relations) {
     if (table.relations.manyToOne) {
-      Object.keys(table.relations.manyToOne).forEach((tableName) => {
-        const relation = ((table.relations || {}).manyToOne || {})[tableName]
-        if (relation) {
-          const columnName = singular(tableName)
-          const relationTable = config().settings.filter(
-            (settingsTable) => settingsTable.name === tableName
-          )[0]
-          result[columnName] = {
-            type: buildType(relationTable),
-            description: relationTable.verbose,
-            resolve: resolver(relationTable),
+      Object.keys(table.relations.manyToOne).forEach(
+        (tableName) => {
+          const relation = ((table.relations || {}).manyToOne || {})[tableName]
+          if (relation) {
+            const columnName = tableName
+            const relationTable = config().settings.filter(
+              (settingsTable) => settingsTable.name === tableName
+            )[0]
+            result[columnName] = {
+              type: new GraphQLList(buildType(relationTable)),
+              description: relationTable.verbose,
+              resolve: (parent: any, args: any, context: any, info: any) => {
+                return resolver(relationTable)(parent, args, context, info)
+              },
+              args: buildFields(relationTable, false),
+            }
           }
         }
-      })
+      )
     }
   }
+
   return result
 }
 

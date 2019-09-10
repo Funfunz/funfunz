@@ -1,14 +1,14 @@
 import database from '@root/api/db'
+import { applyQueryFilters } from '@root/api/utils';
+import config from '@root/api/utils/configLoader'
 import { IColumnInfo, ITableInfo } from '@root/configGenerator'
 import { GraphQLResolveInfo } from 'graphql'
-import { applyQueryFilters } from '@root/api/utils';
 import { singular } from 'pluralize';
 
 function getFields(table: ITableInfo, info: GraphQLResolveInfo): string[] {
-  let fields = table.pk
+  const fields = table.pk
 
   if (info.fieldNodes[0].selectionSet) {
-    fields = []
     info.fieldNodes[0].selectionSet.selections.forEach(
       (selection: any) => {
         const columnName = selection.name.value
@@ -17,7 +17,7 @@ function getFields(table: ITableInfo, info: GraphQLResolveInfo): string[] {
         } else {
           const column = table.columns.find((c) => {
             return (c.relation && c.relation.type === 'oneToMany' &&
-              singular(c.relation.table) === columnName) ? true : false
+              c.relation.table === columnName) ? true : false
           })
           if (column) {
             fields.push(column.name)
@@ -26,7 +26,6 @@ function getFields(table: ITableInfo, info: GraphQLResolveInfo): string[] {
       }
     )
   }
-
   return fields
 }
 
@@ -43,9 +42,12 @@ export function resolverById(table: ITableInfo, column: IColumnInfo) {
     if (typeof parent[column.name] === 'object') {
       return parent[column.name]
     }
+    const relationTable = column.relation.table
     const query = database
     .db(column.relation.table)
-    .select(getFields(table, info))
+    .select(getFields(config().settings.filter(
+      (settingsTable) => settingsTable.name === relationTable
+    )[0], info))
     .where({ id: parent[column.name]})
 
     return query
@@ -62,9 +64,7 @@ export function resolver(table: ITableInfo) {
     if (!database.db) {
       return {}
     }
-
     const DB = database.db
-
     const fields = getFields(table, info)
     let QUERY = DB(table.name).select(fields)
     QUERY = applyQueryFilters(QUERY, args, table)

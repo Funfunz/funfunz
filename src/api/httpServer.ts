@@ -1,7 +1,7 @@
-import config from '@root/api/utils/configLoader';
-import Debug from 'debug';
-import express from 'express';
-import http from 'http';
+import config from '@root/api/utils/configLoader'
+import Debug from 'debug'
+import express from 'express'
+import http from 'http'
 
 const debug = Debug('funfunzmc:http-server')
 
