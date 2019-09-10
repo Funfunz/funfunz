@@ -61,6 +61,7 @@
     "@babel/plugin-proposal-object-rest-spread": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
     "@babel/preset-typescript": "^7.3.3",
+    "@types/bluebird": "^3.5.27",
     "@types/cookie-parser": "^1.4.1",
     "@types/cors": "^2.8.4",
     "@types/debug": "^4.1.0",

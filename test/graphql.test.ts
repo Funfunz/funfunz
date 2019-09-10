@@ -37,7 +37,7 @@ describe('graphql', () => {
         query: `{
           products {
             id
-            FamilyId {
+            families {
               id
             }
           }
@@ -61,9 +61,9 @@ describe('graphql', () => {
         query: `{
           images {
             id
-            ProductId {
+            products {
               id
-              FamilyId {
+              families {
                 name
               }
             }
