@@ -1,6 +1,6 @@
 'use strict'
 import { resolver } from '@root/api/graphql/resolver'
-import { buildType } from '@root/api/graphql/typeBuilder'
+import { buildFields, buildType } from '@root/api/graphql/typeBuilder'
 import config from '@root/api/utils/configLoader'
 import { ITableInfo } from '@root/configGenerator'
 import Debug from 'debug'
@@ -29,6 +29,7 @@ function buildQuery(table: ITableInfo) {
     type: new GraphQLList(buildType(table)),
     description: `This will return all the ${pluralize(table.name)}.`,
     resolve: resolver(table),
+    args: buildFields(table, false),
   }
   debug(`Created ${table.name} query`)
   return query

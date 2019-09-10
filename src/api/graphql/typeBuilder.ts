@@ -1,4 +1,4 @@
-import { resolverById } from '@root/api/graphql/resolver'
+import { resolver, resolverById } from '@root/api/graphql/resolver'
 import config from '@root/api/utils/configLoader'
 import { ITableInfo } from '@root/configGenerator'
 import Debug from 'debug'
@@ -6,6 +6,7 @@ import {
   GraphQLBoolean,
   GraphQLID,
   GraphQLInt,
+  GraphQLList,
   GraphQLObjectType,
   GraphQLString,
 } from 'graphql'
@@ -24,6 +25,69 @@ const types: {
   [key: string]: GraphQLObjectType,
 } = {}
 
+export function buildFields(table: ITableInfo, relations: boolean = true) {
+  const result: {
+    [key: string]: any
+  } = {}
+  table.columns.forEach(
+    (column) => {
+      const isPk = table.pk.indexOf(column.name) >= 0
+      if (!column.relation && (table.pk.indexOf(column.name) >= 0 || MATCHER[column.type])) {
+        result[column.name] = {
+          type: isPk ? GraphQLID : MATCHER[column.type],
+          description: column.verbose,
+        }
+      }
+
+      if (column.relation) {
+        if (relations) {
+          const relation = column.relation
+          const columnName = relation.type === 'oneToMany'
+            ? relation.table
+            : column.name
+          const relatedTable = config().settings.filter(
+            (settingsTable) => settingsTable.name === relation.table
+          )[0]
+          result[columnName] = {
+            type: buildType(relatedTable),
+            description: column.verbose,
+            resolve: resolverById(table, column),
+            args: buildFields(relatedTable, false),
+          }
+        } else {
+          result[column.name] = {
+            type: GraphQLID,
+            description: column.verbose,
+          }
+        }
+      }
+    }
+  )
+  if (table.relations && relations) {
+    if (table.relations.manyToOne) {
+      Object.keys(table.relations.manyToOne).forEach(
+        (tableName) => {
+          const relation = ((table.relations || {}).manyToOne || {})[tableName]
+          if (relation) {
+            const columnName = tableName
+            const relationTable = config().settings.filter(
+              (settingsTable) => settingsTable.name === tableName
+            )[0]
+            result[columnName] = {
+              type: new GraphQLList(buildType(relationTable)),
+              description: relationTable.verbose,
+              resolve: resolver(relationTable),
+              args: buildFields(relationTable, false),
+            }
+          }
+        }
+      )
+    }
+  }
+
+  return result
+}
+
 export function buildType(table: ITableInfo) {
   debug(`Creating ${table.name}`)
   if (!types[table.name]) {
@@ -31,32 +95,7 @@ export function buildType(table: ITableInfo) {
       name: table.name,
       description: `${table.name} Type`,
       fields: () => {
-        const result: {
-          [key: string]: any
-        } = {}
-        table.columns.forEach(
-          (column) => {
-            const isPk = table.pk.indexOf(column.name) >= 0
-            if (!column.relation && (table.pk.indexOf(column.name) >= 0 || MATCHER[column.type])) {
-              result[column.name] = {
-                type: isPk ? GraphQLID : MATCHER[column.type],
-                description: column.verbose,
-              }
-            }
-
-            if (column.relation) {
-              const relation = column.relation
-              result[column.verbose] = {
-                type: buildType(config().settings.filter(
-                  (settingsTable) => settingsTable.name === relation.table
-                )[0]),
-                description: column.verbose,
-                resolve: resolverById(table, column),
-              }
-            }
-          }
-        )
-        return result
+        return buildFields(table, true)
       },
     })
     debug(`Created ${table.name}`)
