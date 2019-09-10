@@ -10,7 +10,6 @@ import {
   GraphQLObjectType,
   GraphQLString,
 } from 'graphql'
-import { singular } from 'pluralize'
 
 const debug = Debug('funfunzmc:graphql-type-builder')
 
@@ -77,9 +76,7 @@ export function buildFields(table: ITableInfo, relations: boolean = true) {
             result[columnName] = {
               type: new GraphQLList(buildType(relationTable)),
               description: relationTable.verbose,
-              resolve: (parent: any, args: any, context: any, info: any) => {
-                return resolver(relationTable)(parent, args, context, info)
-              },
+              resolve: resolver(relationTable),
               args: buildFields(relationTable, false),
             }
           }

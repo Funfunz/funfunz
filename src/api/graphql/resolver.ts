@@ -1,12 +1,11 @@
 import database from '@root/api/db'
-import { applyQueryFilters } from '@root/api/utils';
+import { applyQueryFilters } from '@root/api/utils'
 import config from '@root/api/utils/configLoader'
 import { IColumnInfo, ITableInfo } from '@root/configGenerator'
 import { GraphQLResolveInfo } from 'graphql'
-import { singular } from 'pluralize';
 
 function getFields(table: ITableInfo, info: GraphQLResolveInfo): string[] {
-  const fields = table.pk
+  const fields = [...table.pk]
 
   if (info.fieldNodes[0].selectionSet) {
     info.fieldNodes[0].selectionSet.selections.forEach(
@@ -31,7 +30,7 @@ function getFields(table: ITableInfo, info: GraphQLResolveInfo): string[] {
 
 export function resolverById(table: ITableInfo, column: IColumnInfo) {
   return (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
-    if (!database.db || !column.relation) {
+    if (!database.db || !column.relation || Object.keys(parent).length === 0) {
       return {}
     }
 
@@ -43,14 +42,17 @@ export function resolverById(table: ITableInfo, column: IColumnInfo) {
       return parent[column.name]
     }
     const relationTable = column.relation.table
-    const query = database
-    .db(column.relation.table)
-    .select(getFields(config().settings.filter(
+    const relationTableConfig = config().settings.filter(
       (settingsTable) => settingsTable.name === relationTable
-    )[0], info))
-    .where({ id: parent[column.name]})
+    )[0]
+    let QUERY = database
+    .db(relationTable)
+    .select(getFields(relationTableConfig, info))
 
-    return query
+    QUERY = applyQueryFilters(QUERY, args, relationTableConfig)
+    QUERY.andWhere({ id: parent[column.name]})
+
+    return QUERY
     .then(
       (res) => {
         return res[0] || {}
@@ -70,45 +72,50 @@ export function resolver(table: ITableInfo) {
     QUERY = applyQueryFilters(QUERY, args, table)
     return QUERY.then(
       (res) => {
-        const promises: Array<Promise<any>> = []
-        table.columns.forEach(
-          (column) => {
-            if (column.relation && fields.indexOf(column.name) !== -1) {
-              const values = res.map(
-                (row: any) => row[column.name]
-              )
-              promises.push(
-                DB(column.relation.table).select().whereIn(column.relation.key, values).then(
-                  (relationResponse) => ({
-                    results: relationResponse,
-                    column,
-                  })
-                )
-              )
-            }
-          }
-        )
-        return Promise.all([
-          res,
-          Promise.all(promises),
-        ])
-      }
-    ).then(
-      ([result, relations]) => {
-        const results =  result.map(
-          (row: any) => {
-            relations.forEach(
-              (relation) => {
-                row[relation.column.name] = relation.results.find(
-                  (relationRow: any) => relationRow.id === row[relation.column.name]
-                ) || row[relation.column.name]
-              }
-            )
-            return row
-          }
-        )
-        return results
+        return res
       }
     )
+    // return QUERY.then(
+    //   (res) => {
+    //     const promises: Array<Promise<any>> = []
+    //     table.columns.forEach(
+    //       (column) => {
+    //         if (column.relation && fields.indexOf(column.name) !== -1) {
+    //           const values = res.map(
+    //             (row: any) => row[column.name]
+    //           )
+    //           promises.push(
+    //             DB(column.relation.table).select().whereIn(column.relation.key, values).then(
+    //               (relationResponse) => ({
+    //                 results: relationResponse,
+    //                 column,
+    //               })
+    //             )
+    //           )
+    //         }
+    //       }
+    //     )
+    //     return Promise.all([
+    //       res,
+    //       Promise.all(promises),
+    //     ])
+    //   }
+    // ).then(
+    //   ([result, relations]) => {
+    //     const results =  result.map(
+    //       (row: any) => {
+    //         relations.forEach(
+    //           (relation) => {
+    //             row[relation.column.name] = relation.results.find(
+    //               (relationRow: any) => relationRow.id === row[relation.column.name]
+    //             ) || row[relation.column.name]
+    //           }
+    //         )
+    //         return row
+    //       }
+    //     )
+    //     return results
+    //   }
+    // )
   }
 }
