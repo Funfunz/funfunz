@@ -112,9 +112,9 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `{
-          images {
+          products {
             id
-            products {
+            families {
               id
             }
           }
