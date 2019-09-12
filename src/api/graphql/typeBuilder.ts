@@ -1,4 +1,4 @@
-import { resolver, resolverById } from '@root/api/graphql/resolver'
+import { resolver } from '@root/api/graphql/resolver'
 import config from '@root/api/utils/configLoader'
 import { ITableInfo } from '@root/configGenerator'
 import Debug from 'debug'
@@ -51,7 +51,7 @@ export function buildFields(table: ITableInfo, relations: boolean = true) {
           result[columnName] = {
             type: buildType(relatedTable),
             description: column.verbose,
-            resolve: resolverById(table, column),
+            resolve: resolver(relatedTable, table),
             args: buildFields(relatedTable, false),
           }
         } else {
@@ -76,9 +76,25 @@ export function buildFields(table: ITableInfo, relations: boolean = true) {
             result[columnName] = {
               type: new GraphQLList(buildType(relationTable)),
               description: relationTable.verbose,
-              resolve: resolver(relationTable),
+              resolve: resolver(relationTable, table),
               args: buildFields(relationTable, false),
             }
+          }
+        }
+      )
+    }
+    if (table.relations.manyToMany) {
+      table.relations.manyToMany.forEach(
+        (relation) => {
+          const columnName = relation.remoteTable
+          const remoteTable = config().settings.filter(
+            (settingsTable) => settingsTable.name === relation.remoteTable
+          )[0]
+          result[columnName] = {
+            type: new GraphQLList(buildType(remoteTable)),
+            description: relation.verbose,
+            resolve: resolver(remoteTable, table),
+            args: buildFields(remoteTable, false),
           }
         }
       )
