@@ -2,6 +2,14 @@ export default {
   "name": "families",
   "verbose": "Families",
   "pk": ["id"],
+  "relations": {
+    "manyToOne": {
+      "products": [{
+        "fk": "id",
+        "target": "id",
+      }],
+    },
+  },
   "columns": [
     {
       "name": "id",
