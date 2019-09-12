@@ -2,6 +2,19 @@ export default {
   "name": "users",
   "verbose": "Users",
   "pk": ["id"],
+  "relations": {
+    "manyToMany": [
+      {
+        "verbose": "Roles",
+        "relationTable": "usersroles",
+        "foreignKey": "userId",
+        "localId": "id",
+        "remoteTable": "roles",
+        "remoteForeignKey": "roleId",
+        "remoteId": "id"
+      }
+    ]
+  },
   "columns": [
     {
       "name": "id",
