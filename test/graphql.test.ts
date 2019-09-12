@@ -128,7 +128,7 @@ describe('graphql', () => {
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
-        expect(data.images[0].products[0]).toBeTruthy()
+        expect(data.products[0].families).toBeTruthy()
         return done()
       }
     )
@@ -138,9 +138,9 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `{
-          products {
+          families {
             id
-            images {
+            products {
               id
             }
           }
@@ -154,7 +154,7 @@ describe('graphql', () => {
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
-        expect(data.products[0].images[0]).toBeTruthy()
+        expect(data.families[0].products[0]).toBeTruthy()
         return done()
       }
     )
