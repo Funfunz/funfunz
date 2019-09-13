@@ -54,7 +54,7 @@ describe('graphql', () => {
     )
   })
 
-  it('graphql endpoint with deep queries should return 200', (done) => {
+  it('graphql endpoint with recursive deep queries should return 200', (done) => {
     return request(application)
       .post('/graphql')
       .send({
@@ -64,7 +64,13 @@ describe('graphql', () => {
             products {
               id
               families {
-                name
+                id
+                products {
+                  id
+                  images {
+                    id
+                  }
+                }
               }
             }
           }
@@ -102,7 +108,10 @@ describe('graphql', () => {
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
+        expect(data.users[0]).toBeTruthy()
+        expect(data.users[0].id).toBeGreaterThanOrEqual(1)
         expect(data.users[0].roles[0]).toBeTruthy()
+        expect(data.users[0].roles[0].id).toBeGreaterThanOrEqual(1)
         return done()
       }
     )
@@ -128,7 +137,10 @@ describe('graphql', () => {
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
+        expect(data.products[0]).toBeTruthy()
+        expect(data.products[0].id).toBeGreaterThanOrEqual(1)
         expect(data.products[0].families).toBeTruthy()
+        expect(data.products[0].families.id).toBeGreaterThanOrEqual(1)
         return done()
       }
     )
@@ -154,7 +166,10 @@ describe('graphql', () => {
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
+        expect(data.families[0]).toBeTruthy()
+        expect(data.families[0].id).toBeGreaterThanOrEqual(1)
         expect(data.families[0].products[0]).toBeTruthy()
+        expect(data.families[0].products[0].id).toBeGreaterThanOrEqual(1)
         return done()
       }
     )
