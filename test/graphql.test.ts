@@ -174,4 +174,32 @@ describe('graphql', () => {
       }
     )
   })
+  it('graphql endpoint with one to many relations with child filter', (done) => {
+    return request(application)
+      .post('/graphql')
+      .send({
+        query: `{
+          families {
+            id
+            products (id: 1) {
+              id
+            }
+          }
+        }`,
+      })
+      .set('Accept', 'application/json').end(
+      (err, response) => {
+        if (err) {
+          return done(err)
+        }
+        expect(response.status).toBe(200)
+        expect(response.body).toBeTruthy()
+        const data = response.body.data
+        expect(data.families[0]).toBeTruthy()
+        expect(data.families[0].id).toBeTruthy()
+        expect(data.families[0].products).toBeTruthy()
+        return done()
+      }
+    )
+  })
 })
