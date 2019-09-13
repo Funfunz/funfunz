@@ -109,9 +109,9 @@ describe('graphql', () => {
         expect(response.body).toBeTruthy()
         const data = response.body.data
         expect(data.users[0]).toBeTruthy()
-        expect(data.users[0].id).toBeGreaterThanOrEqual(1)
+        expect(data.users[0].id).toBeTruthy()
         expect(data.users[0].roles[0]).toBeTruthy()
-        expect(data.users[0].roles[0].id).toBeGreaterThanOrEqual(1)
+        expect(data.users[0].roles[0].id).toBeTruthy()
         return done()
       }
     )
@@ -138,9 +138,9 @@ describe('graphql', () => {
         expect(response.body).toBeTruthy()
         const data = response.body.data
         expect(data.products[0]).toBeTruthy()
-        expect(data.products[0].id).toBeGreaterThanOrEqual(1)
+        expect(data.products[0].id).toBeTruthy()
         expect(data.products[0].families).toBeTruthy()
-        expect(data.products[0].families.id).toBeGreaterThanOrEqual(1)
+        expect(data.products[0].families.id).toBeTruthy()
         return done()
       }
     )
@@ -167,9 +167,9 @@ describe('graphql', () => {
         expect(response.body).toBeTruthy()
         const data = response.body.data
         expect(data.families[0]).toBeTruthy()
-        expect(data.families[0].id).toBeGreaterThanOrEqual(1)
+        expect(data.families[0].id).toBeTruthy()
         expect(data.families[0].products[0]).toBeTruthy()
-        expect(data.families[0].products[0].id).toBeGreaterThanOrEqual(1)
+        expect(data.families[0].products[0].id).toBeTruthy()
         return done()
       }
     )
