@@ -95,8 +95,8 @@ describe('graphql', () => {
           families (order: null, imageUrl: null) {
             id
           }
-          products (name: null, type: null) {
-            id
+          families (imageUrl: null, order: null) {
+            name
           }
         }`,
       })
