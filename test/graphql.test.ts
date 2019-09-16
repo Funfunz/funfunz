@@ -87,6 +87,27 @@ describe('graphql', () => {
     )
   })
 
+  it('graphql endpoint filter with null should return 200', (done) => {
+    return request(application)
+      .post('/graphql')
+      .send({
+        query: `{
+          images (id: null, createdAt: null, name: null) {
+            id
+          }
+        }`,
+      })
+      .set('Accept', 'application/json').end(
+      (err, response) => {
+        if (err) {
+          return done(err)
+        }
+        expect(response.status).toBe(200)
+        return done()
+      }
+    )
+  })
+
   it('graphql endpoint with many to many relations', (done) => {
     return request(application)
       .post('/graphql')
