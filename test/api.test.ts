@@ -202,6 +202,15 @@ describe('routes', () => {
     )
   })
 
+  it('get table data with null and range filters', () => {
+    return request(application)
+    .get('/table/products?friendlyData=true&filter={"name":null,"id":[1,2],}').then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
   it('get table data with filters name and id', () => {
     return request(application)
     .get('/table/products?friendlyData=true&filter={"name":"name","id":1}').then(
