@@ -95,6 +95,9 @@ describe('graphql', () => {
           families (order: null, imageUrl: null) {
             id
           }
+          products (name: null, type: null) {
+            id
+          }
         }`,
       })
       .set('Accept', 'application/json').end(
