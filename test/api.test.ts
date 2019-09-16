@@ -60,6 +60,18 @@ describe('Start server', () => {
     )
   })
 
+  it('request to homepage through metle', () => {
+    return request(application).get('/').then(
+      (response) => {
+        expect(response.status).toBe(200)
+      }
+    ).then(() => request(application).get('/')).then(
+      (response) => {
+        expect(response.status).toBe(200)
+      }
+    )
+  })
+
   it('an invalid request should return 200 with the admin frontend', () => {
     return request(application).get('/stuff').then(
       (response) => {
