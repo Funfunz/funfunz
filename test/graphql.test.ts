@@ -92,7 +92,7 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `{
-          images (name: null) {
+          families (order: null, imageUrl: null) {
             id
           }
         }`,
