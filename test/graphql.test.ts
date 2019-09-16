@@ -111,34 +111,6 @@ describe('graphql', () => {
     )
   })
 
-  it('graphql endpoint filter by range', (done) => {
-    return request(application)
-      .post('/graphql')
-      .send({
-        query: `{
-          products (id: [1,2]) {
-            id
-          }
-          families (id: [1,2], order: null, imageUrl: null) {
-            id
-          }
-          families (id: [1,2], imageUrl: null, order: null) {
-            name
-          }
-        }`,
-      })
-      .set('Accept', 'application/json').end(
-      (err, response) => {
-        if (err) {
-          return done(err)
-        }
-        expect(response.status).toBe(200)
-        expect(response.body.data.products[0]).toBeTruthy()
-        return done()
-      }
-    )
-  })
-
   it('graphql endpoint with many to many relations', (done) => {
     return request(application)
       .post('/graphql')
