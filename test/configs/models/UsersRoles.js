@@ -75,6 +75,7 @@ export default {
   "visible": false,
   "roles": {
     "read": ["admin"],
-    "write": ["admin"]
+    "write": ["admin"],
+    "delete": ["all"],
   }
 }
