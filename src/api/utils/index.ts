@@ -360,7 +360,7 @@ export function isNull(val: any) {
 
 export function requirementsCheck(
   tableConfig: ITableInfo,
-  accessType: 'read' | 'write',
+  accessType: 'read' | 'write' | 'delete',
   user: IUser | undefined,
   dbInstance: Database,
   next: (param?: any) => void
