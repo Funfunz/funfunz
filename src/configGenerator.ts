@@ -72,6 +72,7 @@ export interface ITableInfo {
   roles: {
     read: string[],
     write: string[],
+    delete: string[],
   },
   hooks?: {
     [key in Hooks]?: {
@@ -127,6 +128,7 @@ function buildTableInfo(): ITableInfo {
     roles: {
       read: ['all'],
       write: ['all'],
+      delete: ['all'],
     },
   }
 }
