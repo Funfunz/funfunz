@@ -115,6 +115,27 @@ describe('graphql', () => {
     )
   })
 
+  it('graphql endpoint with unauthorized access', (done) => {
+    return request(application)
+      .post('/graphql')
+      .send({
+        query: `{
+          users {
+            id
+          }
+        }`,
+      })
+      .set('Accept', 'application/json').end(
+      (err, response) => {
+        if (err) {
+          return done(err)
+        }
+        expect(response.status).toBe(403)
+        return done()
+      }
+    )
+  })
+
   it('graphql endpoint with many to many relations', (done) => {
     return request(authApplication)
       .post('/graphql')
@@ -140,27 +161,6 @@ describe('graphql', () => {
         expect(data.users[0].id).toBeTruthy()
         expect(data.users[0].roles[0]).toBeTruthy()
         expect(data.users[0].roles[0].id).toBeTruthy()
-        return done()
-      }
-    )
-  })
-
-  it('graphql endpoint with unauthorized access', (done) => {
-    return request(application)
-      .post('/graphql')
-      .send({
-        query: `{
-          users {
-            id
-          }
-        }`,
-      })
-      .set('Accept', 'application/json').end(
-      (err, response) => {
-        if (err) {
-          return done(err)
-        }
-        expect(response.status).toBe(403)
         return done()
       }
     )
