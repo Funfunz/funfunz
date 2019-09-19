@@ -130,6 +130,7 @@ describe('graphql', () => {
         if (err) {
           return done(err)
         }
+        console.log(response)
         expect(response.status).toBe(403)
         return done()
       }
