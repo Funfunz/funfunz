@@ -115,7 +115,7 @@ describe('graphql', () => {
   })
 
   it('graphql endpoint with many to many relations', (done) => {
-    return request(authenticatedServer(app))
+    return request(authenticatedServer(application))
       .post('/graphql')
       .send({
         query: `{
