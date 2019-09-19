@@ -363,15 +363,24 @@ export function requirementsCheck(
   accessType: 'read' | 'write' | 'delete',
   user: IUser | undefined,
   dbInstance: Database,
-  next: (param?: any) => void
+  next?: (param?: any) => void
 ) {
   if (!hasAuthorization(tableConfig.roles[accessType], user)) {
-    return Promise.reject(new HttpException(401, 'Not authorized'))
+    const error = new HttpException(401, 'Not authorized')
+    if (next) {
+      return Promise.reject(error)
+    } else {
+      throw error
+    }
   }
   if (!dbInstance.db) {
-    const ERROR = new HttpException(500, 'No database')
-    catchMiddleware(next, ERROR)
-    return Promise.reject(ERROR)
+    const error = new HttpException(500, 'No database')
+    if (next) {
+      catchMiddleware(next, error)
+      return Promise.reject(error)
+    } else {
+      throw error
+    }
   }
   return Promise.resolve(dbInstance.db)
 }
