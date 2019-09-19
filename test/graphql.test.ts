@@ -145,6 +145,27 @@ describe('graphql', () => {
     )
   })
 
+  it('graphql endpoint with unauthorized access', (done) => {
+    return request(authApplication)
+      .post('/graphql')
+      .send({
+        query: `{
+          users {
+            id
+          }
+        }`,
+      })
+      .set('Accept', 'application/json').end(
+      (err, response) => {
+        if (err) {
+          return done(err)
+        }
+        expect(response.status).toBe(403)
+        return done()
+      }
+    )
+  })
+
   it('graphql endpoint with many to one relations', (done) => {
     return request(application)
       .post('/graphql')
