@@ -1,7 +1,10 @@
 import request from 'supertest'
 import app from '../src/api'
+
 import config from './configs/MCconfig'
 import settings from './configs/MCsettings'
+
+import { authenticatedServer } from './utils'
 
 const application = app({
   config,
@@ -112,7 +115,7 @@ describe('graphql', () => {
   })
 
   it('graphql endpoint with many to many relations', (done) => {
-    return request(application)
+    return request(authenticatedServer(app))
       .post('/graphql')
       .send({
         query: `{
