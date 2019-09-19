@@ -11,6 +11,7 @@ const application = app({
   settings,
   plugin: true,
 })
+const authApplication = authenticatedServer(application)
 
 describe('graphql', () => {
   it('graphql endpoint should return status 200', (done) => {
@@ -115,7 +116,7 @@ describe('graphql', () => {
   })
 
   it('graphql endpoint with many to many relations', (done) => {
-    return request(authenticatedServer(application))
+    return request(authApplication)
       .post('/graphql')
       .send({
         query: `{
@@ -143,6 +144,7 @@ describe('graphql', () => {
       }
     )
   })
+
   it('graphql endpoint with many to one relations', (done) => {
     return request(application)
       .post('/graphql')

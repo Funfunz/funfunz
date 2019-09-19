@@ -8,6 +8,7 @@ export function authenticatedServer(funfunz: Express) {
       email: 'jwebcoder@mymail.com',
       name: 'João Moura',
       roles: [
+        { id: 1, name: 'aunthenticated' },
         { id: 2, name: 'member' },
         { id: 3, name: 'admin' },
       ],
