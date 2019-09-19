@@ -146,7 +146,7 @@ describe('graphql', () => {
   })
 
   it('graphql endpoint with unauthorized access', (done) => {
-    return request(authApplication)
+    return request(application)
       .post('/graphql')
       .send({
         query: `{
