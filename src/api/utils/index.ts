@@ -104,18 +104,18 @@ export function runHook(
   instance: 'after' | 'before',
   req: IMCRequest,
   res: IMCResponse,
-  database: Knex | null,
+  databaseTnstance: Knex | null,
   results?: any
 ) {
   if (TABLE.hooks && TABLE.hooks[hook]) {
     const HOOK = TABLE.hooks[hook]
-    if (database && HOOK && HOOK[instance]) {
+    if (databaseTnstance && HOOK && HOOK[instance]) {
       const CALLER  = HOOK[instance]
       return CALLER ?
         instance === 'before' ?
-          CALLER(req, res, database, TABLE.name, results)
+          CALLER(req, res, databaseTnstance, TABLE.name, results)
           :
-          CALLER(req, res, database, TABLE.name, results)
+          CALLER(req, res, databaseTnstance, TABLE.name, results)
         :
         Promise.resolve(hook === 'getTableCount' ? results.length : results)
     }
@@ -190,7 +190,7 @@ export function applyParentTableFilters(
       return col.relation && col.relation.table ? true : false
     })
     if (column) {
-      const key = relation.fk
+      const key = relation.target
       const value = parentObj[column.name]
       return Promise.resolve(
         applyQueryFilters(QUERY, { [key]: value }, table).first()
