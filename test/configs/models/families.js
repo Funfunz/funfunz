@@ -5,7 +5,7 @@ export default {
   "relations": {
     "manyToOne": {
       "products": [{
-        "fk": "id",
+        "fk": "familyId",
         "target": "id",
       }],
     },
