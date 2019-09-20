@@ -115,27 +115,6 @@ describe('graphql', () => {
     )
   })
 
-  it('graphql endpoint filter with null reverse should return 200', (done) => {
-    return request(application)
-      .post('/graphql')
-      .send({
-        query: `{
-          families (imageUrl: null, order: null) {
-            name
-          }
-        }`,
-      })
-      .set('Accept', 'application/json').end(
-      (err, response) => {
-        if (err) {
-          return done(err)
-        }
-        expect(response.status).toBe(200)
-        return done()
-      }
-    )
-  })
-
   it('graphql endpoint with unauthorized access', (done) => {
     return request(application)
       .post('/graphql')

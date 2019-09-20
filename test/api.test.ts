@@ -202,6 +202,24 @@ describe('routes', () => {
     )
   })
 
+  it('get table data with range filters and number null', () => {
+    return request(application)
+    .get('/table/families?friendlyData=true&filter={"id":[1,2],"order":null}').then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
+  it('get table data with string range filters', () => {
+    return request(application)
+    .get('/table/families?friendlyData=true&filter={"name":["name1","name2"]}').then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
   it('get table data with null and range filters', () => {
     return request(application)
     .get('/table/products?friendlyData=true&filter={"name":null,"id":[1,2]}').then(
