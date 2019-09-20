@@ -2,15 +2,12 @@ import request from 'supertest'
 import app from '../src/api'
 import config from './configs/MCconfig'
 import settings from './configs/MCsettings'
-import { authenticatedServer } from './utils'
 
 const application = app({
   config,
   settings,
   plugin: true,
 })
-
-const authApplication = authenticatedServer(application)
 
 describe('Start server', () => {
   it('should throw an error if no config object set', () => {
