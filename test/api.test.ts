@@ -212,7 +212,16 @@ describe('routes', () => {
 
   it('get table data with null and range filters', () => {
     return request(application)
-    .get('/table/products?friendlyData=true&filter={"name":null,"id":[1,2]}').then(
+    .get('/table/products?friendlyData=true&filter={"name":null,"color":null,"id":[1,2],"type":null}').then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
+  it('get table data with null and range filters', () => {
+    return request(application)
+    .get('/table/products?friendlyData=true&filter={"name":["hello","stuff"],"color":["hello","stuff"]}').then(
       (response) => {
         return expect(response.status).toBe(200)
       }
@@ -292,6 +301,19 @@ describe('routes', () => {
     }).then(
       (response) => {
         return expect(response.status).toBe(200)
+      }
+    )
+  })
+
+  it('get a row by id with relations, wrong multiple pk', () => {
+    return request(application).post('/tableData/products').send({
+      pk: {
+        id: 1,
+        name: 'stuff',
+      },
+    }).then(
+      (response) => {
+        return expect(response.status).toBe(412)
       }
     )
   })
