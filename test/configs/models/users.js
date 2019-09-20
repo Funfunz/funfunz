@@ -104,6 +104,7 @@ export default {
   "visible": true,
   "roles": {
     "read": ["admin"],
-    "write": ["admin"]
+    "write": ["admin"],
+    "delete": ["admin"],
   }
 }

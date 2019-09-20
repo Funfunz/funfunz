@@ -367,7 +367,7 @@ class TableController {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
 
-    return requirementsCheck(TABLE_CONFIG, 'write', req.user, database, next).then(
+    return requirementsCheck(TABLE_CONFIG, 'delete', req.user, database, next).then(
       (DB) => {
         return Promise.all([
           DB,
