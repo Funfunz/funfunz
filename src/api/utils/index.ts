@@ -190,7 +190,7 @@ export function applyParentTableFilters(
       return col.relation && col.relation.table ? true : false
     })
     if (column) {
-      const key = relation.fk
+      const key = relation.target
       const value = parentObj[column.name]
       return Promise.resolve(
         applyQueryFilters(QUERY, { [key]: value }, table).first()
