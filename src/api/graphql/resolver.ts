@@ -1,5 +1,5 @@
 import database from '@root/api/db'
-import { applyParentTableFilters, applyQueryFilters } from '@root/api/utils'
+import { applyParentTableFilters, applyQueryFilters, requirementsCheck } from '@root/api/utils'
 import { ITableInfo } from '@root/configGenerator'
 import { GraphQLResolveInfo } from 'graphql'
 
@@ -29,17 +29,15 @@ function getFields(table: ITableInfo, info: GraphQLResolveInfo): string[] {
 
 export function resolver(table: ITableInfo, parentTable?: ITableInfo) {
   return (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
-    if (!database.db) {
-      return {}
-    }
-    const DB = database.db
-    const fields = getFields(table, info)
-    let QUERY = DB(table.name).select(fields)
-    QUERY = applyQueryFilters(QUERY, args, table)
-    if (parentTable) {
-      return applyParentTableFilters(QUERY, table, parentTable, parent)
-    } else {
-      return QUERY
-    }
+    return requirementsCheck(table, 'read', context.user, database).then((DB) => {
+      const fields = getFields(table, info)
+      let QUERY = DB(table.name).select(fields)
+      QUERY = applyQueryFilters(QUERY, args, table)
+      if (parentTable) {
+        return applyParentTableFilters(QUERY, table, parentTable, parent)
+      } else {
+        return QUERY
+      }
+    })
   }
 }
