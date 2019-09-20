@@ -1,4 +1,4 @@
-import { Database } from '@root/api/db'
+import database, { Database } from '@root/api/db'
 import { HttpException, IMCRequest, IMCResponse, IUser } from '@root/api/types'
 import config from '@root/api/utils/configLoader'
 import { Hooks, IColumnInfo, ITableInfo } from '@root/configGenerator'
@@ -104,18 +104,18 @@ export function runHook(
   instance: 'after' | 'before',
   req: IMCRequest,
   res: IMCResponse,
-  database: Knex | null,
+  databaseTnstance: Knex | null,
   results?: any
 ) {
   if (TABLE.hooks && TABLE.hooks[hook]) {
     const HOOK = TABLE.hooks[hook]
-    if (database && HOOK && HOOK[instance]) {
+    if (databaseTnstance && HOOK && HOOK[instance]) {
       const CALLER  = HOOK[instance]
       return CALLER ?
         instance === 'before' ?
-          CALLER(req, res, database, TABLE.name, results)
+          CALLER(req, res, databaseTnstance, TABLE.name, results)
           :
-          CALLER(req, res, database, TABLE.name, results)
+          CALLER(req, res, databaseTnstance, TABLE.name, results)
         :
         Promise.resolve(hook === 'getTableCount' ? results.length : results)
     }
@@ -163,6 +163,80 @@ export function applyQueryFiltersSearch(
   return DB_QUERY
 }
 
+const oneToManyRelation = (table: ITableInfo, parentTable: ITableInfo) => table.relations &&
+  table.relations.manyToOne && table.relations.manyToOne[parentTable.name] &&
+  table.relations.manyToOne[parentTable.name][0]
+
+const manyToOneRelation = (table: ITableInfo, parentTable: ITableInfo) => parentTable.relations &&
+  parentTable.relations.manyToOne && parentTable.relations.manyToOne[table.name] &&
+  parentTable.relations.manyToOne[table.name][0]
+
+const manyToManyRelation = (table: ITableInfo, parentTable: ITableInfo) => parentTable.relations &&
+  parentTable.relations.manyToMany && table.relations && table.relations.manyToMany && [
+    table.relations.manyToMany && table.relations.manyToMany.find((r) => r.remoteTable === parentTable.name),
+    parentTable.relations.manyToMany && parentTable.relations.manyToMany.find((r) => r.remoteTable === table.name),
+  ]
+
+export function applyParentTableFilters(
+  QUERY: Knex.QueryBuilder,
+  table: ITableInfo,
+  parentTable: ITableInfo,
+  parentObj: any
+) {
+
+  let relation: any = oneToManyRelation(table, parentTable)
+  if (relation) {
+    const column = parentTable.columns.find((col) => {
+      return col.relation && col.relation.table ? true : false
+    })
+    if (column) {
+      const key = relation.target
+      const value = parentObj[column.name]
+      return Promise.resolve(
+        applyQueryFilters(QUERY, { [key]: value }, table).first()
+      )
+    }
+  }
+
+  relation = manyToOneRelation(table, parentTable)
+  if (relation) {
+    const column = table.columns.find((col) => {
+      return col.relation && col.relation.table ? true : false
+    })
+    if (column) {
+      const key = column.name
+      const value = parentObj[relation.target]
+      return Promise.resolve(
+        applyQueryFilters(QUERY, { [key]: value }, table)
+      )
+    }
+  }
+
+  relation = manyToManyRelation(table, parentTable)
+  if (relation) {
+    const [childRelation, parentRelation] = relation
+    if (childRelation && parentRelation && parentObj) {
+      return database && database.db && database.db(
+        childRelation.relationTable
+      ).select([
+        childRelation.remoteForeignKey,
+        parentRelation.remoteForeignKey,
+      ]).where(
+        childRelation.remoteForeignKey,
+        parentObj[childRelation.localId]
+      ).then((results) => {
+        const IDS = results.map((obj) => {
+          return obj[parentRelation.remoteForeignKey]
+        })
+        const filter = {
+          [parentRelation.remoteId]: IDS,
+        }
+        return applyQueryFilters(QUERY, filter, table)
+      })
+    }
+  }
+}
+
 export function applyQueryFilters(
   QUERY: Knex.QueryBuilder,
   filters: string | {[key: string]: any},
@@ -172,37 +246,49 @@ export function applyQueryFilters(
   const FILTERS = typeof filters === 'string' ? JSON.parse(filters) : filters
   Object.keys(FILTERS).forEach(
     (key, index) => {
-      if (columnsByName[key].type === 'int(11)' || columnsByName[key].type === 'datetime') {
+      if (
+        columnsByName[key].type === 'int(11)'
+        || columnsByName[key].type === 'smallint(5)'
+        || columnsByName[key].type === 'datetime'
+      ) {
         index === 0 ?
           (
-            FILTERS[key] === null ?
-              QUERY.whereNull(key) :
-              QUERY.where({
-                [key]: FILTERS[key],
-              })
+            FILTERS[key] === null
+              ? QUERY.whereNull(key)
+              : Array.isArray(FILTERS[key])
+                ? QUERY.whereIn(key, FILTERS[key])
+                : QUERY.where({
+                  [key]: FILTERS[key],
+                })
           ) :
           (
-            FILTERS[key] === null ?
-              QUERY.andWhere((innerQuery) => {
-                innerQuery.whereNull(key)
-              }) :
-              QUERY.andWhere({
-                [key]: FILTERS[key],
-              })
+            FILTERS[key] === null
+              ? QUERY.andWhere((innerQuery) => {
+                  innerQuery.whereNull(key)
+                })
+              : Array.isArray(FILTERS[key])
+                ? QUERY.whereIn(key, FILTERS[key])
+                : QUERY.andWhere({
+                    [key]: FILTERS[key],
+                  })
           )
       } else {
         index === 0 ?
           (
-            FILTERS[key] === null ?
-              QUERY.whereNull(key) :
-              QUERY.where(key, 'like', '%' + FILTERS[key] + '%')
+            FILTERS[key] === null
+              ? QUERY.whereNull(key)
+              : Array.isArray(FILTERS[key])
+                ? QUERY.whereIn(key, FILTERS[key])
+                : QUERY.where(key, 'like', '%' + FILTERS[key] + '%')
           ) :
           (
-            FILTERS[key] === null ?
-              QUERY.andWhere((innerQuery) => {
-                innerQuery.whereNull(key)
-              }) :
-              QUERY.andWhere(key, 'like', '%' + FILTERS[key] + '%')
+            FILTERS[key] === null
+              ? QUERY.andWhere((innerQuery) => {
+                  innerQuery.whereNull(key)
+                })
+              : Array.isArray(FILTERS[key])
+                ? QUERY.whereIn(key, FILTERS[key])
+                : QUERY.andWhere(key, 'like', '%' + FILTERS[key] + '%')
           )
       }
     }
