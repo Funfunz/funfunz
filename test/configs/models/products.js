@@ -148,6 +148,7 @@ export default {
   "visible": true,
   "roles": {
     "read": ["unauthenticated"],
-    "write": ["unauthenticated"]
+    "write": ["unauthenticated"],
+    "delete": ["unauthenticated"],
   }
 }

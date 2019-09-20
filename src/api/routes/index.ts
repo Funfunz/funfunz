@@ -18,10 +18,13 @@ class IndexRouter {
     this.router = router || Router()
     this.router.use(
       '/graphql',
-      graphqlHTTP({
+      graphqlHTTP((req: any) => ({
+        context: {
+          user: req.user,
+        },
         graphiql: true,
         schema: GraphQLSchema(),
-      })
+      }))
     )
 
     this.router.get('/tables',

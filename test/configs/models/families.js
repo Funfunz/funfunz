@@ -113,6 +113,7 @@ export default {
   "visible": true,
   "roles": {
     "read": ["all"],
-    "write": ["all"]
+    "write": ["all"],
+    "delete": ["all"],
   }
 }

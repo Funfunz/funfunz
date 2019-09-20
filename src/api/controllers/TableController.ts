@@ -55,7 +55,7 @@ class TableController {
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
     const COLUMNS = filterVisibleTableColumns(TABLE_CONFIG, 'main')
 
-    return requirementsCheck(TABLE_CONFIG, 'read', req.user, database, next).then(
+    return requirementsCheck(TABLE_CONFIG, 'read', req.user, database).then(
       (DB) => {
         return Promise.all([
           DB,
@@ -144,7 +144,7 @@ class TableController {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
 
-    return requirementsCheck(TABLE_CONFIG, 'read', req.user, database, next).then(
+    return requirementsCheck(TABLE_CONFIG, 'read', req.user, database).then(
       (DB) => {
         const columns: {
           toRequest: string[],
@@ -229,7 +229,7 @@ class TableController {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
 
-    return requirementsCheck(TABLE_CONFIG, 'read', req.user, database, next).then(
+    return requirementsCheck(TABLE_CONFIG, 'read', req.user, database).then(
       (DB) => {
         let QUERY = DB(TABLE_NAME).select('*')
         QUERY = applyQueryFiltersSearch(QUERY, req.query, TABLE_CONFIG)
@@ -254,7 +254,7 @@ class TableController {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
 
-    return requirementsCheck(TABLE_CONFIG, 'read', req.user, database, next).then(
+    return requirementsCheck(TABLE_CONFIG, 'read', req.user, database).then(
       (DB) => {
         const requestedColumns = filterVisibleTableColumns(TABLE_CONFIG, 'detail')
         let QUERY = DB.select(requestedColumns).from(`${req.params.table}`)
@@ -287,7 +287,7 @@ class TableController {
   public insertRowData(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
-    return requirementsCheck(TABLE_CONFIG, 'write', req.user, database, next).then(
+    return requirementsCheck(TABLE_CONFIG, 'write', req.user, database).then(
       (DB) => {
         const data = normalizeData(req.body.data, TABLE_CONFIG)
         return Promise.all([
@@ -322,7 +322,7 @@ class TableController {
       next(new HttpException(500, 'Missing data object'))
       return
     }
-    return requirementsCheck(TABLE_CONFIG, 'write', req.user, database, next).then(
+    return requirementsCheck(TABLE_CONFIG, 'write', req.user, database).then(
       (DB) => {
         const acceptedColumns: string[] = []
         TABLE_CONFIG.columns.forEach(
@@ -367,7 +367,7 @@ class TableController {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
 
-    return requirementsCheck(TABLE_CONFIG, 'write', req.user, database, next).then(
+    return requirementsCheck(TABLE_CONFIG, 'delete', req.user, database).then(
       (DB) => {
         return Promise.all([
           DB,

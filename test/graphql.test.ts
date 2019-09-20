@@ -1,13 +1,17 @@
 import request from 'supertest'
 import app from '../src/api'
+
 import config from './configs/MCconfig'
 import settings from './configs/MCsettings'
+
+import { authenticatedServer } from './utils'
 
 const application = app({
   config,
   settings,
   plugin: true,
 })
+const authApplication = authenticatedServer(application)
 
 describe('graphql', () => {
   it('graphql endpoint should return status 200', (done) => {
@@ -111,8 +115,30 @@ describe('graphql', () => {
     )
   })
 
-  it('graphql endpoint with many to many relations', (done) => {
+  it('graphql endpoint with unauthorized access', (done) => {
     return request(application)
+      .post('/graphql')
+      .send({
+        query: `{
+          users {
+            id
+          }
+        }`,
+      })
+      .set('Accept', 'application/json').end(
+      (err, response) => {
+        if (err) {
+          return done(err)
+        }
+        expect(response.status).toBe(200)
+        expect(response.body.errors[0].message).toEqual('Not authorized')
+        return done()
+      }
+    )
+  })
+
+  it('graphql endpoint with many to many relations', (done) => {
+    return request(authApplication)
       .post('/graphql')
       .send({
         query: `{
@@ -140,6 +166,7 @@ describe('graphql', () => {
       }
     )
   })
+
   it('graphql endpoint with many to one relations', (done) => {
     return request(application)
       .post('/graphql')
