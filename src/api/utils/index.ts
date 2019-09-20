@@ -366,14 +366,13 @@ export function requirementsCheck(
   tableConfig: ITableInfo,
   accessType: 'read' | 'write' | 'delete',
   user: IUser | undefined,
-  dbInstance: Database,
-  next?: (param?: any) => void
+  dbInstance: Database
 ) {
   if (!hasAuthorization(tableConfig.roles[accessType], user)) {
-    throw new HttpException(401, 'Not authorized')
+    return Promise.reject(new HttpException(401, 'Not authorized'))
   }
   if (!dbInstance.db) {
-    throw new HttpException(500, 'No database')
+    return Promise.reject(new HttpException(500, 'No database'))
   }
   return Promise.resolve(dbInstance.db)
 }
