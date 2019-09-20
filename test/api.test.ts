@@ -13,7 +13,6 @@ const application = app({
 const authApplication = authenticatedServer(application)
 
 describe('Start server', () => {
-
   it('should throw an error if no config object set', () => {
     expect(() => {
       app({
@@ -169,6 +168,15 @@ describe('routes', () => {
     )
   })
 
+  it('get table data with pagination', () => {
+    return request(application)
+    .get('/table/products?page=1').then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
   it('get table data with included relations', () => {
     return request(application)
     .get('/table/products?includeRelations=true').then(
@@ -247,7 +255,27 @@ describe('routes', () => {
     )
   })
 
-  it('get a row by id without, multiple pk', () => {
+  it('get quantity of items on a table, no authorization', () => {
+    return request(application).get('/table/users/count').then(
+      (response) => {
+        return expect(response.status).toBe(401)
+      }
+    )
+  })
+
+  it('get a row by id without authorization', () => {
+    return request(application).post('/tableData/users').send({
+      pk: {
+        id: 1,
+      },
+    }).then(
+      (response) => {
+        return expect(response.status).toBe(401)
+      }
+    )
+  })
+
+  it('get a row by id without multiple pk', () => {
     return request(application).post('/tableData/products').send({
       pk: {
         id: 1,
@@ -299,6 +327,21 @@ describe('routes', () => {
     )
   })
 
+  it('update a row by id, multiple pk, no authorization', () => {
+    return request(application).put('/tableData/users').send({
+      pk: {
+        id: 1,
+      },
+      data: {
+        name: 'error',
+      },
+    }).then(
+      (response) => {
+        return expect(response.status).toBe(401)
+      }
+    )
+  })
+
   it('no data while updating a row should throw an error 500', () => {
     return request(application).put('/tableData/products').send({
       pk: {
@@ -307,6 +350,18 @@ describe('routes', () => {
     }).then(
       (response) => {
         return expect(response.status).toBe(500)
+      }
+    )
+  })
+
+  it('delete a row by id, no authorization', () => {
+    return request(application).post('/tableData/users/delete').send({
+      pk: {
+        id: 1,
+      },
+    }).then(
+      (response) => {
+        return expect(response.status).toBe(401)
       }
     )
   })
