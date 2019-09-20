@@ -131,8 +131,7 @@ describe('graphql', () => {
           return done(err)
         }
         expect(response.status).toBe(200)
-        const data = response.body.data
-        console.log(response.body)
+        expect(response.body.errors[0].message).toEqual('Not authorized')
         return done()
       }
     )
