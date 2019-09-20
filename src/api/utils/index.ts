@@ -370,21 +370,10 @@ export function requirementsCheck(
   next?: (param?: any) => void
 ) {
   if (!hasAuthorization(tableConfig.roles[accessType], user)) {
-    const error = new HttpException(401, 'Not authorized')
-    if (next) {
-      return Promise.reject(error)
-    } else {
-      throw error
-    }
+    throw new HttpException(401, 'Not authorized')
   }
   if (!dbInstance.db) {
-    const error = new HttpException(500, 'No database')
-    if (next) {
-      catchMiddleware(next, error)
-      return Promise.reject(error)
-    } else {
-      throw error
-    }
+    throw new HttpException(500, 'No database')
   }
   return Promise.resolve(dbInstance.db)
 }
