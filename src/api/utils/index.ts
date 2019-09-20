@@ -246,7 +246,11 @@ export function applyQueryFilters(
   const FILTERS = typeof filters === 'string' ? JSON.parse(filters) : filters
   Object.keys(FILTERS).forEach(
     (key, index) => {
-      if (columnsByName[key].type === 'int(11)' || columnsByName[key].type === 'datetime') {
+      if (
+        columnsByName[key].type === 'int(11)'
+        || columnsByName[key].type === 'smallint(5)'
+        || columnsByName[key].type === 'datetime'
+      ) {
         index === 0 ?
           (
             FILTERS[key] === null
