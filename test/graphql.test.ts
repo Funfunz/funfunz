@@ -253,4 +253,41 @@ describe('graphql', () => {
       }
     )
   })
+  it('graphql endpoint with mutation to add users', (done) => {
+    return request(application)
+      .post('/graphql')
+      .send({
+        mutation: `{
+          addUsers (
+            input: {
+              name: "Francisco",
+              email: "francisco@mail.com",
+            }
+          ) {
+            id
+            name
+            email
+            createdAt
+            updatedAt
+          }
+        }`,
+      })
+      .set('Accept', 'application/json').end(
+      (err, response) => {
+        if (err) {
+          return done(err)
+        }
+        expect(response.status).toBe(200)
+        expect(response.body).toBeTruthy()
+        const data = response.body.data
+        expect(data.addUsers).toBeTruthy()
+        expect(data.addUsers.id).toBeTruthy()
+        expect(data.addUsers.name).toBeTruthy()
+        expect(data.addUsers.email).toBeTruthy()
+        expect(data.addUsers.createdAt).toBeTruthy()
+        expect(data.addUsers.updatedAt).toBeTruthy()
+        return done()
+      }
+    )
+  })
 })
