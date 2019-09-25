@@ -272,7 +272,6 @@ describe('graphql', () => {
         if (err) {
           return done(err)
         }
-        console.log(response)
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
@@ -282,6 +281,85 @@ describe('graphql', () => {
         expect(data.addUsers.email).toBeTruthy()
         expect(data.addUsers.createdAt).toBeTruthy()
         expect(data.addUsers.updatedAt).toBeTruthy()
+        return done()
+      }
+    )
+  })
+  it('graphql endpoint with mutation to add roles', (done) => {
+    return request(authApplication)
+      .post('/graphql')
+      .send({
+        query: `mutation {
+          addRoles(input: {name:"test"}) {
+            id
+          }
+        }`,
+      })
+      .set('Accept', 'application/json').end(
+      (err, response) => {
+        if (err) {
+          return done(err)
+        }
+        expect(response.status).toBe(200)
+        expect(response.body).toBeTruthy()
+        const data = response.body.data
+        expect(data.addRoles).toBeTruthy()
+        expect(data.addRoles.id).toBeTruthy()
+        return done()
+      }
+    )
+  })
+  it('graphql endpoint with mutation to add many to many relations', (done) => {
+    return request(authApplication)
+      .post('/graphql')
+      .send({
+        query: `mutation {
+          addUsersroles(input: {userId: 3, roleId: 3}) {
+            userId
+            roleId
+          }
+        }`,
+      })
+      .set('Accept', 'application/json').end(
+      (err, response) => {
+        if (err) {
+          return done(err)
+        }
+        expect(response.status).toBe(200)
+        expect(response.body).toBeTruthy()
+        const data = response.body.data
+        expect(data.addUsersroles).toBeTruthy()
+        expect(data.addUsersroles.userId).toBeTruthy()
+        expect(data.addUsersroles.roleId).toBeTruthy()
+        return done()
+      }
+    )
+  })
+  it('graphql endpoint with mutation to add post with many to one relation', (done) => {
+    return request(authApplication)
+      .post('/graphql')
+      .send({
+        query: `mutation {
+          addPosts(input: {title: "my post", ownerId: 1}) {
+            id
+            title
+            users {
+              name
+            }
+          }
+        }`,
+      })
+      .set('Accept', 'application/json').end(
+      (err, response) => {
+        if (err) {
+          return done(err)
+        }
+        expect(response.status).toBe(200)
+        expect(response.body).toBeTruthy()
+        const data = response.body.data
+        expect(data.addPosts).toBeTruthy()
+        expect(data.addPosts.id).toBeTruthy()
+        expect(data.addPosts.users.name).toBeTruthy()
         return done()
       }
     )
