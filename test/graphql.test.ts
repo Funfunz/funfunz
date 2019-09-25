@@ -335,15 +335,15 @@ describe('graphql', () => {
       }
     )
   })
-  it('graphql endpoint with mutation to add post with many to one relation', (done) => {
+  it('graphql endpoint with mutation to add product with many to one relation', (done) => {
     return request(authApplication)
       .post('/graphql')
       .send({
         query: `mutation {
-          addPosts(input: {title: "my post", ownerId: 1}) {
+          addProducts(input: {name: "my product", FamilyId: 1}) {
             id
-            title
-            users {
+            name
+            families {
               name
             }
           }
