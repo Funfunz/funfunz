@@ -258,12 +258,7 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         mutation: `{
-          addUsers (
-            input: {
-              name: "Francisco",
-              email: "francisco@mail.com",
-            }
-          ) {
+          addUsers (input: {name: "Francisco",email: "francisco@mail.com"}) {
             id
             name
             email
