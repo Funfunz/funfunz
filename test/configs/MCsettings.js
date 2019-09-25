@@ -1,4 +1,4 @@
-import UsersRolesModel from './models/UsersRoles'
+import UsersRolesModel from './models/usersroles'
 import familiesModel from './models/families'
 import imagesModel from './models/images'
 import productsModel from './models/products'
