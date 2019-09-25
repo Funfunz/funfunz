@@ -314,7 +314,7 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `mutation {
-          addUsersroles(input: {userId: 3, roleId: 3}) {
+          addUsersRoles(input: {userId: 3, roleId: 3}) {
             userId
             roleId
           }
@@ -322,7 +322,6 @@ describe('graphql', () => {
       })
       .set('Accept', 'application/json').end(
       (err, response) => {
-        console.log(response)
         if (err) {
           return done(err)
         }
