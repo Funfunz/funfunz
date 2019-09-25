@@ -256,6 +256,7 @@ describe('graphql', () => {
   it('graphql endpoint with mutation to add users', (done) => {
     return request(application)
       .post('/graphql')
+      .set('Accept', 'application/json')
       .send({
         mutation: `{
           addUsers (input: {name: "Francisco",email: "francisco@mail.com"}) {
