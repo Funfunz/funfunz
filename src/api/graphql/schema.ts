@@ -1,4 +1,5 @@
 'use strict'
+import mutations from '@root/api/graphql/mutations'
 import queries from '@root/api/graphql/queries'
 import Debug from 'debug'
 import {
@@ -20,8 +21,16 @@ export default () => {
       ...queries(),
     },
   })
+  const RootMutation = new GraphQLObjectType({
+    name: 'Mutation',
+    description: 'This is the default root mutation provided by our application',
+    fields: {
+      ...mutations(),
+    },
+  })
 
   return new GraphQLSchema({
     query: RootQuery,
+    mutation: RootMutation,
   })
 }

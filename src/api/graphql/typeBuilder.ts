@@ -9,6 +9,9 @@ import {
   GraphQLList,
   GraphQLObjectType,
   GraphQLString,
+  GraphQLInputObjectType,
+  GraphQLFieldConfigMap,
+  Thunk,
 } from 'graphql'
 
 const debug = Debug('funfunzmc:graphql-type-builder')
@@ -19,10 +22,11 @@ const MATCHER: {
   'varchar(255)': GraphQLString,
   'int(11)': GraphQLInt,
   'tinyint(1)': GraphQLBoolean,
+  'datetime': GraphQLString,
 }
 
 const types: {
-  [key: string]: GraphQLObjectType,
+  [key: string]: GraphQLObjectType | GraphQLInputObjectType,
 } = {}
 
 export function buildFields(table: ITableInfo, relations: boolean = true) {
@@ -53,6 +57,12 @@ export function buildFields(table: ITableInfo, relations: boolean = true) {
             description: column.verbose,
             resolve: resolver(relatedTable, table),
             args: buildFields(relatedTable, false),
+          }
+          if (column.name !== columnName) {
+            result[column.name] = {
+              type: GraphQLID,
+              description: column.verbose,
+            }
           }
         } else {
           result[column.name] = {
@@ -104,17 +114,79 @@ export function buildFields(table: ITableInfo, relations: boolean = true) {
   return result
 }
 
+export function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export function buildType(table: ITableInfo) {
-  debug(`Creating ${table.name}`)
-  if (!types[table.name]) {
-    types[table.name] = new GraphQLObjectType({
-      name: table.name,
-      description: `${table.name} Type`,
+  const name = table.name
+  debug(`Creating ${name}`)
+  if (!types[name]) {
+    types[name] = new GraphQLObjectType({
+      name,
       fields: () => {
         return buildFields(table, true)
       },
     })
-    debug(`Created ${table.name}`)
+    debug(`Created ${name}`)
   }
-  return types[table.name]
+  return types[name]
+}
+export function buildInputType(table: ITableInfo) {
+  const name = table.name + 'Input'
+  debug(`Creating ${name}`)
+  if (!types[name]) {
+    types[name] = new GraphQLInputObjectType({
+      name,
+      fields: () => {
+        return buildFields(table, false)
+      },
+    })
+    debug(`Created ${name}`)
+  }
+  return types[name]
+}
+export function buildUpdateByIdMutationType(table: ITableInfo) {
+  const name = `update${capitalize(table.name)}ById`
+  debug(`Creating ${name}`)
+  if (!types[name]) {
+    types[name] = new GraphQLObjectType({
+      name,
+      fields: () => {
+        return buildFields(table, false)
+      },
+    })
+    debug(`Created ${name}`)
+  }
+  return types[name]
+}
+export function buildAddMutationType(table: ITableInfo) {
+  const name = `add${capitalize(table.name)}`
+  debug(`Creating ${name}`)
+  if (!types[name]) {
+    types[name] = new GraphQLObjectType({
+      name,
+      fields: () => {
+        return buildFields(table, false)
+      },
+    })
+    debug(`Created ${name}`)
+  }
+  return types[name]
+}
+export function buildDeleteMutationType(table: ITableInfo) {
+  const name = `delete${capitalize(table.name)}`
+  debug(`Creating ${name}`)
+  if (!types[name]) {
+    types[name] = new GraphQLObjectType({
+      name,
+      fields: () => ({
+        success: {
+          type: GraphQLBoolean,
+        },
+      }),
+    })
+    debug(`Created ${name}`)
+  }
+  return types[name]
 }
