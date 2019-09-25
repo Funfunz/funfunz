@@ -328,9 +328,9 @@ describe('graphql', () => {
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
-        expect(data.addUsersroles).toBeTruthy()
-        expect(data.addUsersroles.userId).toBeTruthy()
-        expect(data.addUsersroles.roleId).toBeTruthy()
+        expect(data.addUsersRoles).toBeTruthy()
+        expect(data.addUsersRoles.userId).toBeTruthy()
+        expect(data.addUsersRoles.roleId).toBeTruthy()
         return done()
       }
     )
