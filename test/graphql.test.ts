@@ -314,7 +314,7 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `mutation {
-          addUsersRoles(input: {userId: 3, roleId: 3}) {
+          addUsersroles(input: {userId: 3, roleId: 3}) {
             userId
             roleId
           }
@@ -329,9 +329,9 @@ describe('graphql', () => {
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
-        expect(data.addUsersRoles).toBeTruthy()
-        expect(data.addUsersRoles.userId).toBeTruthy()
-        expect(data.addUsersRoles.roleId).toBeTruthy()
+        expect(data.addUsersroles).toBeTruthy()
+        expect(data.addUsersroles.userId).toBeTruthy()
+        expect(data.addUsersroles.roleId).toBeTruthy()
         return done()
       }
     )
