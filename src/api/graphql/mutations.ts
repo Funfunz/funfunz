@@ -1,10 +1,12 @@
 'use strict'
-import { buildAddMutationType, buildDeleteMutationType, buildInputType, capitalize, buildUpdateByIdMutationType, buildFields } from '@root/api/graphql/typeBuilder'
+import { buildAddMutationType, buildDeleteMutationType, buildInputType, capitalize, buildUpdateByIdMutationType, buildFields, buildType } from '@root/api/graphql/typeBuilder'
 import config from '@root/api/utils/configLoader'
 import { normalize as normalizeData } from '@root/api/utils/data'
 import { ITableInfo } from '@root/configGenerator'
 import Debug from 'debug'
 import { applyQueryFilters, requirementsCheck, runHook, applyPKFilters } from '../utils'
+import { GraphQLResolveInfo } from 'graphql'
+import { resolver } from './resolver'
 
 const debug = Debug('funfunzmc:graphql-mutation-builder')
 
@@ -13,9 +15,9 @@ export default function buildMutations() {
   const mutations: {
     [key: string]: any
   } = {}
-  configs.settings.forEach((table, index) => {
+  configs.settings.forEach((table) => {
     mutations[`add${capitalize(table.name)}`] = buildAddMutation(table)
-    mutations[`update${capitalize(table.name)}ById`] = buildUpdateByIdMutation(table)
+    mutations[`update${capitalize(table.name)}`] = buildUpdateByIdMutation(table)
     mutations[`delete${capitalize(table.name)}`] = buildDeleteMutation(table)
   })
   debug('Mutations built')
@@ -23,10 +25,10 @@ export default function buildMutations() {
 }
 
 function buildUpdateByIdMutation(table: ITableInfo) {
-  debug(`Creating ${table.name} updateById mutation`)
+  debug(`Creating ${table.name} update mutation`)
   const mutation = {
-    type: buildUpdateByIdMutationType(table),
-    resolve: (parent: any, args: any, context: any) => {
+    type: buildType(table, { relations: true }),
+    resolve: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
       return requirementsCheck(table, 'write', context.user).then((db) => {
         const acceptedColumns: string[] = []
         table.columns.forEach((column) => {
@@ -43,32 +45,24 @@ function buildUpdateByIdMutation(table: ITableInfo) {
           runHook(table, 'updateRow', 'before', context.req, context.res, db, newData),
         ])
       }).then(([db, data]) => {
-        let QUERY = db(table.name)
-        console.log('before query')
-        const q = JSON.parse(JSON.stringify(args))
+        let SQL = db(table.name)
+        const query: any = {}
         table.pk.forEach((pk) => {
-          q.pk[pk] = args[pk]
+          query[pk] = isNaN(args[pk]) ? args[pk] : Number(args[pk])
         })
-        QUERY = applyPKFilters(QUERY, q, table)
-        console.log('after query')
+        SQL = applyQueryFilters(SQL, query, table)
         return Promise.all([
-          QUERY.update(data),
           db,
+          SQL.update(data).then(() => {
+            return resolver(table)(parent, query, context, info)
+          }),
         ])
-      }).then(([results, db]) => {
-        return runHook(table, 'updateRow', 'after', context.req, context.res, db, results).then(() => db)
-      }).then((db) => {
-        let QUERY = db(table.name)
-        const q = JSON.parse(JSON.stringify(args))
-        table.pk.forEach((pk) => {
-          q.pk[pk] = args[pk]
-        })
-        QUERY = applyPKFilters(QUERY, q, table)
-        return QUERY.first()
+      }).then(([db, results]) => {
+        return runHook(table, 'updateRow', 'after', context.req, context.res, db, results && results[0])
       })
     },
     args: {
-      ...buildFields(table, false),
+      ...buildFields(table, { relations: false, required: ['pk'] }),
     },
   }
   debug(`Created ${table.name} add mutation`)
@@ -78,32 +72,32 @@ function buildUpdateByIdMutation(table: ITableInfo) {
 function buildAddMutation(table: ITableInfo) {
   debug(`Creating ${table.name} add mutation`)
   const mutation = {
-    type: buildAddMutationType(table),
-    resolve: (parent: any, args: any, context: any) => {
-      const query = { ...args.input }
+    type: buildType(table),
+    resolve: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
       return requirementsCheck(table, 'write', context.user).then((db) => {
-        const data = normalizeData(args.input, table)
+        const data = normalizeData(args, table)
         return Promise.all([
           db,
           runHook(table, 'insertRow', 'before', context.req, context.res, db, data),
         ])
-      }).then(([db, data]) => {
+      })
+      .then(([db, data]) => {
         return Promise.all([
           db,
           db(table.name).insert(data).then((ids) => {
-            if (ids[0]) {
-              return db(table.name).where({ id: ids[0] }).first()
-            } else {
-              return db(table.name).where(query).first()
-            }
+            const query: any = {}
+            table.pk.forEach((key, index) => {
+              query[key] = args[key] || ids[index]
+            })
+            return resolver(table)(parent, query, context, info)
           }),
         ])
       }).then(([db, results]) => {
-        return runHook(table, 'insertRow', 'after', context.req, context.res, db, results)
+        return runHook(table, 'insertRow', 'after', context.req, context.res, db, results && results[0])
       })
     },
     args: {
-      input: { type: buildInputType(table) },
+      ...buildFields(table, { relations: false, exclude: ['pk'] }),
     },
   }
   debug(`Created ${table.name} add mutation`)
@@ -122,7 +116,7 @@ function buildDeleteMutation(table: ITableInfo) {
         ])
       }).then(([db]) => {
         let QUERY = db(table.name)
-        QUERY = applyQueryFilters(QUERY, args.input, table)
+        QUERY = applyQueryFilters(QUERY, args, table)
         return Promise.all([
           Promise.resolve(db),
           QUERY.del(),
@@ -134,7 +128,7 @@ function buildDeleteMutation(table: ITableInfo) {
       })
     },
     args: {
-      input: { type: buildInputType(table) },
+      ...buildFields(table, { relations: false, include: ['pk'], required: ['pk'] }),
     },
   }
   debug(`Created ${table.name} delete mutation`)

@@ -12,9 +12,17 @@ import {
   GraphQLInputObjectType,
   GraphQLFieldConfigMap,
   Thunk,
+  GraphQLNonNull,
 } from 'graphql'
 
 const debug = Debug('funfunzmc:graphql-type-builder')
+
+interface IBuildTypeOptions {
+  required?: ['pk' | string],
+  include?: ['pk' | string],
+  exclude?: ['pk' | string],
+  relations?: boolean,
+}
 
 const MATCHER: {
   [key: string]: any
@@ -29,16 +37,29 @@ const types: {
   [key: string]: GraphQLObjectType | GraphQLInputObjectType,
 } = {}
 
-export function buildFields(table: ITableInfo, relations: boolean = true) {
+export function buildFields(table: ITableInfo, options: IBuildTypeOptions = { relations: true } ) {
+  const { relations, required, include, exclude } = options
   const result: {
     [key: string]: any
   } = {}
   table.columns.forEach(
     (column) => {
       const isPk = table.pk.indexOf(column.name) >= 0
+      if (include && !include.includes(column.name) && !(isPk ? include.includes('pk') : false)) {
+        return
+      }
+      if (exclude && (exclude.includes(column.name) || (isPk ? exclude.includes('pk') : false))) {
+        return
+      }
+      const isRequired = required && (
+        isPk
+          ? required.includes('pk')
+          : required.includes(column.name)
+      )
       if (!column.relation && (table.pk.indexOf(column.name) >= 0 || MATCHER[column.type])) {
+        const type = isPk ? GraphQLID : MATCHER[column.type]
         result[column.name] = {
-          type: isPk ? GraphQLID : MATCHER[column.type],
+          type: isRequired ? new GraphQLNonNull(type) : type,
           description: column.verbose,
         }
       }
@@ -56,7 +77,7 @@ export function buildFields(table: ITableInfo, relations: boolean = true) {
             type: buildType(relatedTable),
             description: column.verbose,
             resolve: resolver(relatedTable, table),
-            args: buildFields(relatedTable, false),
+            args: buildFields(relatedTable, { relations: false }),
           }
           if (column.name !== columnName) {
             result[column.name] = {
@@ -66,7 +87,7 @@ export function buildFields(table: ITableInfo, relations: boolean = true) {
           }
         } else {
           result[column.name] = {
-            type: GraphQLID,
+            type: isRequired ? new GraphQLNonNull(GraphQLID) : GraphQLID,
             description: column.verbose,
           }
         }
@@ -87,7 +108,7 @@ export function buildFields(table: ITableInfo, relations: boolean = true) {
               type: new GraphQLList(buildType(relationTable)),
               description: relationTable.verbose,
               resolve: resolver(relationTable, table),
-              args: buildFields(relationTable, false),
+              args: buildFields(relationTable, { relations: false }),
             }
           }
         }
@@ -104,7 +125,7 @@ export function buildFields(table: ITableInfo, relations: boolean = true) {
             type: new GraphQLList(buildType(remoteTable)),
             description: relation.verbose,
             resolve: resolver(remoteTable, table),
-            args: buildFields(remoteTable, false),
+            args: buildFields(remoteTable, { relations: false }),
           }
         }
       )
@@ -118,14 +139,14 @@ export function capitalize(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-export function buildType(table: ITableInfo) {
+export function buildType(table: ITableInfo, options: IBuildTypeOptions = { relations: true }) {
   const name = table.name
   debug(`Creating ${name}`)
   if (!types[name]) {
     types[name] = new GraphQLObjectType({
       name,
       fields: () => {
-        return buildFields(table, true)
+        return buildFields(table, options)
       },
     })
     debug(`Created ${name}`)
@@ -139,7 +160,7 @@ export function buildInputType(table: ITableInfo) {
     types[name] = new GraphQLInputObjectType({
       name,
       fields: () => {
-        return buildFields(table, false)
+        return buildFields(table, { relations: false })
       },
     })
     debug(`Created ${name}`)
@@ -153,7 +174,7 @@ export function buildUpdateByIdMutationType(table: ITableInfo) {
     types[name] = new GraphQLObjectType({
       name,
       fields: () => {
-        return buildFields(table, false)
+        return buildFields(table, { relations: false })
       },
     })
     debug(`Created ${name}`)
@@ -167,7 +188,7 @@ export function buildAddMutationType(table: ITableInfo) {
     types[name] = new GraphQLObjectType({
       name,
       fields: () => {
-        return buildFields(table, false)
+        return buildFields(table, { relations: true })
       },
     })
     debug(`Created ${name}`)

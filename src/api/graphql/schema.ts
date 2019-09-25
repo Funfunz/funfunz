@@ -9,6 +9,8 @@ import {
 
 const debug = Debug('funfunzmc:graphql-schema')
 
+export let schema: GraphQLSchema
+
 // export the schema
 debug('Created')
 export default () => {
@@ -29,8 +31,9 @@ export default () => {
     },
   })
 
-  return new GraphQLSchema({
+  schema = new GraphQLSchema({
     query: RootQuery,
     mutation: RootMutation,
   })
+  return schema
 }
