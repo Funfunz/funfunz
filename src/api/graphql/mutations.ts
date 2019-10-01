@@ -1,11 +1,11 @@
 'use strict'
-import { buildAddMutationType, buildDeleteMutationType, buildInputType, capitalize, buildUpdateByIdMutationType, buildFields, buildType } from '@root/api/graphql/typeBuilder'
+import { buildDeleteMutationType, buildFields, buildType, capitalize } from '@root/api/graphql/typeBuilder'
 import config from '@root/api/utils/configLoader'
 import { normalize as normalizeData } from '@root/api/utils/data'
 import { ITableInfo } from '@root/configGenerator'
 import Debug from 'debug'
-import { applyQueryFilters, requirementsCheck, runHook, applyPKFilters } from '../utils'
 import { GraphQLResolveInfo } from 'graphql'
+import { applyQueryFilters, requirementsCheck, runHook } from '../utils'
 import { resolver } from './resolver'
 
 const debug = Debug('funfunzmc:graphql-mutation-builder')

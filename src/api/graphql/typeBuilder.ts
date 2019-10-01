@@ -4,15 +4,15 @@ import { ITableInfo } from '@root/configGenerator'
 import Debug from 'debug'
 import {
   GraphQLBoolean,
+  GraphQLFieldConfigMap,
   GraphQLID,
+  GraphQLInputObjectType,
   GraphQLInt,
   GraphQLList,
+  GraphQLNonNull,
   GraphQLObjectType,
   GraphQLString,
-  GraphQLInputObjectType,
-  GraphQLFieldConfigMap,
   Thunk,
-  GraphQLNonNull,
 } from 'graphql'
 
 const debug = Debug('funfunzmc:graphql-type-builder')
@@ -147,48 +147,6 @@ export function buildType(table: ITableInfo, options: IBuildTypeOptions = { rela
       name,
       fields: () => {
         return buildFields(table, options)
-      },
-    })
-    debug(`Created ${name}`)
-  }
-  return types[name]
-}
-export function buildInputType(table: ITableInfo) {
-  const name = table.name + 'Input'
-  debug(`Creating ${name}`)
-  if (!types[name]) {
-    types[name] = new GraphQLInputObjectType({
-      name,
-      fields: () => {
-        return buildFields(table, { relations: false })
-      },
-    })
-    debug(`Created ${name}`)
-  }
-  return types[name]
-}
-export function buildUpdateByIdMutationType(table: ITableInfo) {
-  const name = `update${capitalize(table.name)}ById`
-  debug(`Creating ${name}`)
-  if (!types[name]) {
-    types[name] = new GraphQLObjectType({
-      name,
-      fields: () => {
-        return buildFields(table, { relations: false })
-      },
-    })
-    debug(`Created ${name}`)
-  }
-  return types[name]
-}
-export function buildAddMutationType(table: ITableInfo) {
-  const name = `add${capitalize(table.name)}`
-  debug(`Creating ${name}`)
-  if (!types[name]) {
-    types[name] = new GraphQLObjectType({
-      name,
-      fields: () => {
-        return buildFields(table, { relations: true })
       },
     })
     debug(`Created ${name}`)
