@@ -269,6 +269,7 @@ describe('graphql', () => {
       })
       .set('Accept', 'application/json').end(
       (err, response) => {
+        console.log(response)
         if (err) {
           return done(err)
         }
@@ -297,6 +298,7 @@ describe('graphql', () => {
       })
       .set('Accept', 'application/json').end(
       (err, response) => {
+        console.log(response)
         if (err) {
           return done(err)
         }
@@ -322,6 +324,7 @@ describe('graphql', () => {
       })
       .set('Accept', 'application/json').end(
       (err, response) => {
+        console.log(response)
         if (err) {
           return done(err)
         }
@@ -348,6 +351,7 @@ describe('graphql', () => {
       })
       .set('Accept', 'application/json').end(
       (err, response) => {
+        console.log(response)
         if (err) {
           return done(err)
         }
@@ -373,6 +377,7 @@ describe('graphql', () => {
       })
       .set('Accept', 'application/json').end(
       (err, response) => {
+        console.log(response)
         if (err) {
           return done(err)
         }
