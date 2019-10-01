@@ -335,4 +335,54 @@ describe('graphql', () => {
       }
     )
   })
+  it('graphql endpoint with mutation to add many to many relations', (done) => {
+    return request(authApplication)
+      .post('/graphql')
+      .send({
+        query: `mutation {
+          updateUsers(id: 3, name: "Name from test") {
+            id
+            name
+          }
+        }`,
+      })
+      .set('Accept', 'application/json').end(
+      (err, response) => {
+        if (err) {
+          return done(err)
+        }
+        expect(response.status).toBe(200)
+        expect(response.body).toBeTruthy()
+        const data = response.body.data
+        expect(data.updateUsers).toBeTruthy()
+        expect(data.updateUsers.id).toBeTruthy()
+        expect(data.updateUsers.name).toEqual('Name from test')
+        return done()
+      }
+    )
+  })
+  it('graphql endpoint with mutation to add many to many relations', (done) => {
+    return request(authApplication)
+      .post('/graphql')
+      .send({
+        query: `mutation {
+          deleteUsers(id: 3) {
+            success
+          }
+        }`,
+      })
+      .set('Accept', 'application/json').end(
+      (err, response) => {
+        if (err) {
+          return done(err)
+        }
+        expect(response.status).toBe(200)
+        expect(response.body).toBeTruthy()
+        const data = response.body.data
+        expect(data.deleteUsers).toBeTruthy()
+        expect(data.deleteUsers.success).toBeTruthy()
+        return done()
+      }
+    )
+  })
 })
