@@ -48,7 +48,7 @@ export function buildFields(table: ITableInfo, options: IBuildTypeOptions = { re
       if (include && !include.includes(column.name) && !(isPk ? include.includes('pk') : false)) {
         return
       }
-      if (exclude && (exclude.includes(column.name) || (isPk ? exclude.includes('pk') : false))) {
+      if (exclude && (exclude.includes(column.name) || (isPk ? exclude.includes('pk') && !column.relation : false))) {
         return
       }
       const isRequired = required && (
