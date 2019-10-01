@@ -1,4 +1,5 @@
 'use strict'
+import database from '@root/api/db'
 import { buildDeleteMutationType, buildFields, buildType, capitalize } from '@root/api/graphql/typeBuilder'
 import config from '@root/api/utils/configLoader'
 import { normalize as normalizeData } from '@root/api/utils/data'
@@ -29,7 +30,7 @@ function buildUpdateByIdMutation(table: ITableInfo) {
   const mutation = {
     type: buildType(table, { relations: true }),
     resolve: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
-      return requirementsCheck(table, 'write', context.user).then((db) => {
+      return requirementsCheck(table, 'write', context.user, database).then((db) => {
         const acceptedColumns: string[] = []
         table.columns.forEach((column) => {
           if (column.type === 'datetime') {
@@ -74,7 +75,7 @@ function buildAddMutation(table: ITableInfo) {
   const mutation = {
     type: buildType(table),
     resolve: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
-      return requirementsCheck(table, 'write', context.user).then((db) => {
+      return requirementsCheck(table, 'write', context.user, database).then((db) => {
         const data = normalizeData(args, table)
         return Promise.all([
           db,
@@ -109,7 +110,7 @@ function buildDeleteMutation(table: ITableInfo) {
   const mutation = {
     type: buildDeleteMutationType(table),
     resolve: (parent: any, args: any, context: any) => {
-      return requirementsCheck(table, 'delete', context.user).then((db) => {
+      return requirementsCheck(table, 'delete', context.user, database).then((db) => {
         return Promise.all([
           db,
           runHook(table, 'deleteRow', 'before', context.req, context.res, db),
