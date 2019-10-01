@@ -246,7 +246,11 @@ export function applyQueryFilters(
   const FILTERS = typeof filters === 'string' ? JSON.parse(filters) : filters
   Object.keys(FILTERS).forEach(
     (key, index) => {
-      if (columnsByName[key].type === 'int(11)' || columnsByName[key].type === 'datetime') {
+      if (
+        columnsByName[key].type === 'int(11)'
+        || columnsByName[key].type === 'smallint(5)'
+        || columnsByName[key].type === 'datetime'
+      ) {
         index === 0 ?
           (
             FILTERS[key] === null
@@ -362,19 +366,13 @@ export function requirementsCheck(
   tableConfig: ITableInfo,
   accessType: 'read' | 'write' | 'delete',
   user: IUser | undefined,
-  dbInstance: Database = database,
-  next?: (param?: any) => void
+  dbInstance: Database
 ) {
   if (!hasAuthorization(tableConfig.roles[accessType], user)) {
-    const error = new HttpException(401, 'Not authorized')
-    return Promise.reject(error)
+    return Promise.reject(new HttpException(401, 'Not authorized'))
   }
   if (!dbInstance.db) {
-    const error = new HttpException(500, 'No database')
-    if (next) {
-      catchMiddleware(next, error)
-    }
-    return Promise.reject(error)
+    return Promise.reject(new HttpException(500, 'No database'))
   }
   return Promise.resolve(dbInstance.db)
 }
