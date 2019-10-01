@@ -258,7 +258,7 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `mutation {
-          addUsers (input: {name: "Francisco",email: "francisco@mail.com"}) {
+          addUsers (name: "Francisco",email: "francisco@mail.com") {
             id
             name
             email
@@ -291,7 +291,7 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `mutation {
-          addRoles(input: {name:"test"}) {
+          addRoles(name:"test") {
             id
           }
         }`,
@@ -315,7 +315,7 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `mutation {
-          addUsersroles(input: {userId: 3, roleId: 3}) {
+          addUsersroles(userId: 3, roleId: 3) {
             userId
             roleId
           }
@@ -341,7 +341,7 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `mutation {
-          addProducts(input: {name: "my product", FamilyId: 1}) {
+          addProducts(name: "my product", FamilyId: 1) {
             id
             name
           }
