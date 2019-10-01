@@ -85,6 +85,7 @@ function buildAddMutation(table: ITableInfo) {
         return Promise.all([
           db,
           db(table.name).insert(data).then((ids) => {
+            console.log('ids', ids)
             const query: any = {}
             table.pk.forEach((key, index) => {
               query[key] = args[key] || ids[index]
