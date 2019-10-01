@@ -335,32 +335,4 @@ describe('graphql', () => {
       }
     )
   })
-  it('graphql endpoint with mutation to add product with many to one relation', (done) => {
-    return request(authApplication)
-      .post('/graphql')
-      .send({
-        query: `mutation {
-          addProducts(name: "my product", FamilyId: 1) {
-            id
-            name
-          }
-        }`,
-      })
-      .set('Accept', 'application/json').end(
-      (err, response) => {
-        if (err) {
-          return done(err)
-        }
-        console.log('response', response)
-        expect(response.status).toBe(200)
-        expect(response.body).toBeTruthy()
-        const data = response.body.data
-        console.log('data', data)
-        expect(data.addProducts).toBeTruthy()
-        expect(data.addProducts.id).toBeTruthy()
-        expect(data.addProducts.users.name).toBeTruthy()
-        return done()
-      }
-    )
-  })
 })
