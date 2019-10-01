@@ -351,6 +351,7 @@ describe('graphql', () => {
         if (err) {
           return done(err)
         }
+        console.log('response', response)
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
