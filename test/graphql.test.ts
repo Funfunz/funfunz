@@ -269,7 +269,6 @@ describe('graphql', () => {
       })
       .set('Accept', 'application/json').end(
       (err, response) => {
-        console.log('response', response)
         if (err) {
           return done(err)
         }
@@ -323,6 +322,7 @@ describe('graphql', () => {
       })
       .set('Accept', 'application/json').end(
       (err, response) => {
+        console.log(response)
         if (err) {
           return done(err)
         }
@@ -355,9 +355,9 @@ describe('graphql', () => {
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
-        expect(data.addPosts).toBeTruthy()
-        expect(data.addPosts.id).toBeTruthy()
-        expect(data.addPosts.users.name).toBeTruthy()
+        expect(data.addProducts).toBeTruthy()
+        expect(data.addProducts.id).toBeTruthy()
+        expect(data.addProducts.users.name).toBeTruthy()
         return done()
       }
     )
