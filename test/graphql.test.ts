@@ -340,7 +340,7 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `mutation {
-          updateUsers(id: 3, name: "Name from test") {
+          updateUsers(id: 2, name: "Name from test") {
             id
             name
           }
@@ -367,7 +367,7 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `mutation {
-          deleteUsers(id: 3) {
+          deleteUsers(id: 2) {
             success
           }
         }`,
