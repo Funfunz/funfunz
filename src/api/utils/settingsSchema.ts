@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 export default {
   type: 'array',
   items: {

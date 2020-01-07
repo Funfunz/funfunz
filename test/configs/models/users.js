@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 export default {
   "name": "users",
   "verbose": "Users",

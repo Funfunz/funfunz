@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import UsersRolesModel from './models/UsersRoles'
 import familiesModel from './models/families'
 import imagesModel from './models/images'
