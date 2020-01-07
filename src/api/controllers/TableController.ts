@@ -98,7 +98,7 @@ class TableController {
       ([results, DB]) => {
         if (req.query.includeRelations) {
           results.forEach(
-            (result, index) => {
+            (result: any, index: number) => {
               results[index] = getRelatedData(TABLE_CONFIG, result)
             }
           )

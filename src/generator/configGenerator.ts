@@ -1,5 +1,5 @@
-import { describeInfo, schemaInfo } from '@root/describeTable'
-import { ITypeAnswers } from '@root/index'
+import { describeInfo, schemaInfo } from '@root/generator/describeTable'
+import { ITypeAnswers } from '@root/generator/index'
 import Debug from 'debug'
 import express from 'express'
 import fs from 'fs'

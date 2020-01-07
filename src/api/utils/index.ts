@@ -1,7 +1,7 @@
 import database, { Database } from '@root/api/db'
 import { HttpException, IMCRequest, IMCResponse, IUser } from '@root/api/types'
 import config from '@root/api/utils/configLoader'
-import { Hooks, IColumnInfo, ITableInfo } from '@root/configGenerator'
+import { Hooks, IColumnInfo, ITableInfo } from '@root/generator/configGenerator'
 import { ErrorRequestHandler, NextFunction } from 'express'
 import Knex from 'knex'
 

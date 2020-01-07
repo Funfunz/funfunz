@@ -1,6 +1,5 @@
 import database from '@root/api/db'
 import IndexRouter from '@root/api/routes'
-// import fileUpload from 'express-fileupload'
 import { errorHandler } from '@root/api/utils'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
@@ -31,7 +30,6 @@ class App {
     this.server.use(logger('dev'))
     this.server.use(/\/((?!graphql).)*/, express.urlencoded({ extended: true }));
     this.server.use(/\/((?!graphql).)*/, express.json())
-    // this.server.use(fileUpload())
     this.server.use(cookieParser())
     this.server.disable('x-powered-by')
     this.server.use('/', express.static(path.join(__dirname, './public')))
