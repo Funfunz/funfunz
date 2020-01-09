@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 export default {
   "mysql": {
     "host": "localhost",

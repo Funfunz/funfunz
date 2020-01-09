@@ -1,6 +1,6 @@
 import configSchema from '@root/api/utils/configSchema'
 import settingsSchema from '@root/api/utils/settingsSchema'
-import { ITableInfo } from '@root/configGenerator'
+import { ITableInfo } from '@root/generator/configGenerator'
 import { Validator } from 'jsonschema'
 
 const config: {

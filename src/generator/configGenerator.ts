@@ -1,5 +1,5 @@
-import { describeInfo, schemaInfo } from '@root/describeTable'
-import { ITypeAnswers } from '@root/index'
+import { describeInfo, schemaInfo } from '@root/generator/describeTable'
+import { ITypeAnswers } from '@root/generator/index'
 import Debug from 'debug'
 import express from 'express'
 import fs from 'fs'
@@ -234,7 +234,7 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
   )
 }
 
-export function generateConfig(answers: ITypeAnswers) {
+export function generateConfig(answers: ITypeAnswers & { DBType: string }) {
   const finalConfig = {
     [answers.DBType]: {
         host: answers.DBHost,

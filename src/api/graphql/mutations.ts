@@ -3,9 +3,10 @@ import database from '@root/api/db'
 import { buildDeleteMutationType, buildFields, buildType, capitalize } from '@root/api/graphql/typeBuilder'
 import config from '@root/api/utils/configLoader'
 import { normalize as normalizeData } from '@root/api/utils/data'
-import { ITableInfo } from '@root/configGenerator'
+import { ITableInfo } from '@root/generator/configGenerator'
 import Debug from 'debug'
 import { GraphQLResolveInfo } from 'graphql'
+import Knex from 'Knex'
 import { applyQueryFilters, requirementsCheck, runHook } from '../utils'
 import { resolver } from './resolver'
 
@@ -82,7 +83,7 @@ function buildAddMutation(table: ITableInfo) {
           runHook(table, 'insertRow', 'before', context.req, context.res, db, data),
         ])
       })
-      .then(([db, data]) => {
+      .then(([db, data]: [Knex<any, any[]>, any]) => {
         return Promise.all([
           db,
           db(table.name).insert(data).then((ids) => {
