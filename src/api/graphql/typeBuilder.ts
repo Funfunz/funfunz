@@ -11,7 +11,6 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLString,
-  Thunk,
 } from 'graphql'
 
 const debug = Debug('funfunzmc:graphql-type-builder')
