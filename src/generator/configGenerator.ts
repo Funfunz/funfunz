@@ -234,7 +234,7 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
   )
 }
 
-export function generateConfig(answers: ITypeAnswers) {
+export function generateConfig(answers: ITypeAnswers & { DBType: string }) {
   const finalConfig = {
     [answers.DBType]: {
         host: answers.DBHost,

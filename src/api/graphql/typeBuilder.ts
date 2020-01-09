@@ -4,7 +4,6 @@ import { ITableInfo } from '@root/generator/configGenerator'
 import Debug from 'debug'
 import {
   GraphQLBoolean,
-  GraphQLFieldConfigMap,
   GraphQLID,
   GraphQLInputObjectType,
   GraphQLInt,

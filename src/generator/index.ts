@@ -4,6 +4,7 @@
 import { generateConfig, generateSettings } from '@root/generator/configGenerator'
 import describe from '@root/generator/describeTable'
 import getTableList from '@root/generator/listTables'
+import { databaseQuestions, databaseTypeQuestion } from '@root/generator/questions'
 import { prompt } from 'enquirer'
 import fs from 'fs'
 import minimist from 'minimist'
@@ -35,33 +36,64 @@ function isEmptyFolder(pathSelected: string) {
   return true
 }
 
-function promptUserAboutDatabase() {
-  prompt(databaseQuestions).then(
-    (answers: any) => {
-      const compiledAnswers: ITypeAnswers = {
-        DBType: answers.DBType,
-        DBHost: answers.DBHost,
-        DBName: answers.DBName,
-        DBUser: answers.DBUser,
-        DBPassword: answers.DBPassword,
-      }
+function parseMysql(answers: any) {
+  const compiledAnswers: ITypeAnswers = {
+    DBHost: answers.DBHost,
+    DBName: answers.DBName,
+    DBUser: answers.DBUser,
+    DBPassword: answers.DBPassword,
+  }
 
-      process.env = {
-        ...process.env,
-        ...compiledAnswers,
+  process.env = {
+    ...process.env,
+    ...compiledAnswers,
+  }
+  return Promise.all([
+    getTableList(),
+    generateConfig({
+      ...compiledAnswers,
+      DBType: 'mysql',
+    }),
+  ]).then(
+    ([tableNames]) => {
+      return describe(tableNames)
+    }
+  ).then(
+    (results) => {
+      generateSettings(results)
+    }
+  )
+}
+
+function promptUserAboutDatabase() {
+  prompt(databaseTypeQuestion).then(
+    (answers: any) => {
+      const databaseType: databaseTypes = answers.DBType
+
+      switch (databaseType) {
+        case 'pgsql':
+        case 'mongoDB':
+          throw Error('Database not yet supported')
+        default:
+          return Promise.all([
+            prompt(databaseQuestions[databaseType]),
+            databaseType,
+          ])
       }
-      Promise.all([
-        getTableList(),
-        generateConfig(compiledAnswers),
-      ]).then(
-        ([tableNames]) => {
-          describe(tableNames).then(
-            (results) => {
-              generateSettings(results)
-            }
-          )
-        }
-      )
+    }
+  ).then(
+    ([answers, databaseType]: [any, databaseTypes]) => {
+      switch (databaseType) {
+        case 'pgsql':
+        case 'mongoDB':
+          throw Error('Parser for ' + databaseType + ' not yet integrated')
+        case 'mysql':
+          return parseMysql(answers)
+      }
+    }
+  ).catch(
+    (error: Error) => {
+      console.log(error.message)
     }
   )
 }
@@ -83,50 +115,13 @@ function promptUserToDeleteFolder() {
 }
 
 export interface ITypeAnswers {
-  DBType: string,
   DBHost: string,
   DBName: string,
   DBUser: string,
   DBPassword: string
 }
 
-const databaseQuestions = [
-  {
-    type: 'select',
-    name: 'DBType',
-    message: 'What is your database?',
-    limit: 5,
-    choices: [
-      'mysql',
-      'pgsql',
-      'mongoDB',
-    ],
-  },
-  {
-    type: 'input',
-    name: 'DBHost',
-    message: 'Database hostname?',
-    initial: 'localhost',
-  },
-  {
-    type: 'input',
-    name: 'DBName',
-    message: 'Database name?',
-    initial: 'example_database',
-  },
-  {
-    type: 'input',
-    name: 'DBUser',
-    message: 'Database user?',
-    initial: 'root',
-  },
-  {
-    type: 'password',
-    name: 'DBPassword',
-    message: 'Database password?',
-    initial: '',
-  },
-];
+type databaseTypes = 'mysql' | 'pgsql' | 'mongoDB'
 
 if (isEmptyFolder(userSelectedPath)) {
   promptUserAboutDatabase()
