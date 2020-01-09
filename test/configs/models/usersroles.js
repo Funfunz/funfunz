@@ -1,6 +1,6 @@
 export default {
-  "name": "UsersRoles",
-  "verbose": "UsersRoles",
+  "name": "usersroles",
+  "verbose": "usersroles",
   "pk": ["roleId"],
   "columns": [
     {

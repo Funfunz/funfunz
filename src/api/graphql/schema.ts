@@ -1,4 +1,5 @@
 'use strict'
+import mutations from '@root/api/graphql/mutations'
 import queries from '@root/api/graphql/queries'
 import Debug from 'debug'
 import {
@@ -7,6 +8,8 @@ import {
 } from 'graphql'
 
 const debug = Debug('funfunzmc:graphql-schema')
+
+export let schema: GraphQLSchema
 
 // export the schema
 debug('Created')
@@ -20,8 +23,17 @@ export default () => {
       ...queries(),
     },
   })
-
-  return new GraphQLSchema({
-    query: RootQuery,
+  const RootMutation = new GraphQLObjectType({
+    name: 'Mutation',
+    description: 'This is the default root mutation provided by our application',
+    fields: {
+      ...mutations(),
+    },
   })
+
+  schema = new GraphQLSchema({
+    query: RootQuery,
+    mutation: RootMutation,
+  })
+  return schema
 }
