@@ -37,7 +37,7 @@ export default {
       },
       "editable": true,
       "input": {
-        "type": "numbeer"
+        "type": "number"
       }
     },
     {
