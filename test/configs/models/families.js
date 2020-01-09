@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 export default {
   "name": "families",
   "verbose": "Families",
@@ -36,7 +37,7 @@ export default {
       },
       "editable": true,
       "input": {
-        "type": "numbeer"
+        "type": "number"
       }
     },
     {

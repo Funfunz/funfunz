@@ -1,7 +1,7 @@
 import { IMCRequest, IMCResponse } from '@root/api/types';
 import { addToResponse, hasAuthorization, nextAndReturn } from '@root/api/utils'
 import config from '@root/api/utils/configLoader'
-import { ITableInfo } from '@root/configGenerator'
+import { ITableInfo } from '@root/generator/configGenerator'
 import Debug from 'debug'
 import { NextFunction } from 'express'
 

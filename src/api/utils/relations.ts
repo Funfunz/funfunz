@@ -5,7 +5,7 @@ import {
   getColumnsWithRelations,
   getTableConfig,
 } from '@root/api/utils'
-import { IColumnRelation, IManyToOneRelation, ITableInfo } from '@root/configGenerator'
+import { IColumnRelation, IManyToOneRelation, ITableInfo } from '@root/generator/configGenerator'
 import Knex from 'knex'
 
 interface IToRequestItem {

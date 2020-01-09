@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import express, { Express } from 'express'
 
 export function authenticatedServer(funfunz: Express) {

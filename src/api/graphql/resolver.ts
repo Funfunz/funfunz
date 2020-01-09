@@ -1,6 +1,6 @@
 import database from '@root/api/db'
 import { applyParentTableFilters, applyQueryFilters, requirementsCheck } from '@root/api/utils'
-import { ITableInfo } from '@root/configGenerator'
+import { ITableInfo } from '@root/generator/configGenerator'
 import { GraphQLResolveInfo } from 'graphql'
 
 function getFields(table: ITableInfo, info: GraphQLResolveInfo): string[] {
