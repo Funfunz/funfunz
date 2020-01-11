@@ -1,22 +1,6 @@
 // get the client
+import { describeInfo, schemaInfo } from '@root/generator/configGenerator'
 import mysql from 'mysql2'
-
-export type describeInfo = Array<{
-  Field: string,
-  Type: string,
-  Null: string,
-  Key: string,
-  Default: string | number | null,
-  Extra: string
-}>
-
-export type schemaInfo = Array<{
-  TABLE_NAME: string,
-  COLUMN_NAME?: string,
-  CONSTRAINT_NAME?: string,
-  REFERENCED_TABLE_NAME?: string,
-  REFERENCED_COLUMN_NAME?: string,
-}>
 
 // create the connection to database
 function createPoolSchema() {
@@ -121,4 +105,41 @@ const describe = (tablesNames: string[]): PromiseLike<Array<{schema: schemaInfo,
   )
 }
 
-export default describe
+// create the connection to database
+function createConnection() {
+  return mysql.createConnection({
+    host: process.env.DBHost,
+    user: process.env.DBUser,
+    password: process.env.DBPassword,
+    database: process.env.DBName,
+  })
+}
+
+const getDatabaseData = (): PromiseLike<Array<{schema: schemaInfo, describe: describeInfo}>> => {
+  return new Promise<any>(
+    (res, rej) => {
+      const connection = createConnection()
+      connection.execute(
+        'show tables',
+        (err, results: mysql.RowDataPacket[]) => {
+          if (err) {
+            rej(err)
+          }
+          const tablesList: string[] = results.map((result) => result[`Tables_in_${process.env.DBName}`])
+          res({connection, tables: tablesList})
+        }
+      )
+    }
+  ).then(
+    (result) => {
+      result.connection.end()
+      return describe(result.tables)
+    }
+  ).catch(
+    (err) => {
+      throw err
+    }
+  )
+}
+
+export default getDatabaseData

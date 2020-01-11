@@ -2,7 +2,7 @@ import config from '@root/api/utils/configLoader'
 import Debug from 'debug'
 import knex from 'knex'
 
-const debug = Debug('funfunzmc:database')
+const debug = Debug('funfunzmc:database-knex')
 
 class Database {
   public db: knex | null

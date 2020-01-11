@@ -2,16 +2,11 @@
 
 // get the client
 import { generateConfig, generateSettings } from '@root/generator/configGenerator'
-import describe from '@root/generator/describeTable'
-import getTableList from '@root/generator/listTables'
 import { databaseQuestions, databaseTypeQuestion } from '@root/generator/questions'
 import { prompt } from 'enquirer'
 import fs from 'fs'
 import minimist from 'minimist'
 import path from 'path'
-
-const argv = minimist(process.argv.slice(2))
-const userSelectedPath = path.join(process.cwd(),  argv._[0] || '/generatedConfigs')
 
 function deleteFolderRecursive(pathSelected: string) {
   if (fs.existsSync(pathSelected)) {
@@ -36,43 +31,45 @@ function isEmptyFolder(pathSelected: string) {
   return true
 }
 
-function parseMysql(answers: any) {
-  const compiledAnswers: ITypeAnswers = {
-    DBHost: answers.DBHost,
-    DBName: answers.DBName,
-    DBUser: answers.DBUser,
-    DBPassword: answers.DBPassword,
-  }
+function parse(answers: any, databaseType: databaseTypes, selectedPath: string) {
+  return import('./' + databaseType).then(
+    (dbModule) => {
+      const compiledAnswers: ITypeAnswers = {
+        DBHost: answers.DBHost,
+        DBName: answers.DBName,
+        DBUser: answers.DBUser,
+        DBPassword: answers.DBPassword,
+      }
 
-  process.env = {
-    ...process.env,
-    ...compiledAnswers,
-  }
-  return Promise.all([
-    getTableList(),
-    generateConfig({
-      ...compiledAnswers,
-      DBType: 'mysql',
-    }),
-  ]).then(
-    ([tableNames]) => {
-      return describe(tableNames)
-    }
-  ).then(
-    (results) => {
-      generateSettings(results)
+      process.env = {
+        ...process.env,
+        ...compiledAnswers,
+      }
+      return Promise.all([
+        dbModule.default(),
+        generateConfig(
+          {
+            ...compiledAnswers,
+            DBType: databaseType,
+          },
+          selectedPath
+        ),
+      ]).then(
+        ([results]) => {
+          generateSettings(results, selectedPath)
+        }
+      )
     }
   )
 }
 
-function promptUserAboutDatabase() {
+function promptUserAboutDatabase(selectedPath: string) {
   prompt(databaseTypeQuestion).then(
     (answers: any) => {
       const databaseType: databaseTypes = answers.DBType
 
       switch (databaseType) {
         case 'pgsql':
-        case 'mongoDB':
           throw Error('Database not yet supported')
         default:
           return Promise.all([
@@ -85,10 +82,10 @@ function promptUserAboutDatabase() {
     ([answers, databaseType]: [any, databaseTypes]) => {
       switch (databaseType) {
         case 'pgsql':
-        case 'mongoDB':
           throw Error('Parser for ' + databaseType + ' not yet integrated')
         case 'mysql':
-          return parseMysql(answers)
+        case 'mongoDB':
+          return parse(answers, databaseType, selectedPath)
       }
     }
   ).catch(
@@ -98,7 +95,7 @@ function promptUserAboutDatabase() {
   )
 }
 
-function promptUserToDeleteFolder() {
+function promptUserToDeleteFolder(selectedPath: string) {
   return prompt({
     type: 'confirm',
     name: 'delete',
@@ -106,7 +103,7 @@ function promptUserToDeleteFolder() {
   }).then(
     (answers: any) => {
       if (answers && answers.delete) {
-        deleteFolderRecursive(userSelectedPath)
+        deleteFolderRecursive(selectedPath)
       } else {
         throw Error('Target folder needs to be empty')
       }
@@ -123,12 +120,15 @@ export interface ITypeAnswers {
 
 type databaseTypes = 'mysql' | 'pgsql' | 'mongoDB'
 
+const argv = minimist(process.argv.slice(2))
+const userSelectedPath = path.join(process.cwd(),  argv._[0] || '/generatedConfigs')
+
 if (isEmptyFolder(userSelectedPath)) {
-  promptUserAboutDatabase()
+  promptUserAboutDatabase(userSelectedPath)
 } else {
-  promptUserToDeleteFolder().then(
+  promptUserToDeleteFolder(userSelectedPath).then(
     () => {
-      promptUserAboutDatabase()
+      promptUserAboutDatabase(userSelectedPath)
     }
   )
 }

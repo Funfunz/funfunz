@@ -1,9 +1,9 @@
-import { describeInfo, schemaInfo } from '@root/generator/describeTable'
 import { ITypeAnswers } from '@root/generator/index'
 import Debug from 'debug'
 import express from 'express'
 import fs from 'fs'
 import knex from 'knex'
+import path from 'path'
 import pluralize from 'pluralize'
 
 const debug = Debug('funfunzmc:config-generator')
@@ -15,6 +15,25 @@ type IHookFunction = (
   tableName: string,
   data?: any
 ) => Promise <any>
+
+export interface IDescribeItem {
+  Field: string,
+  Type: string,
+  Null: string,
+  Key: string,
+  Default: string | number | null,
+  Extra: string
+}
+
+export type describeInfo = IDescribeItem[]
+
+export type schemaInfo = Array<{
+  TABLE_NAME: string,
+  COLUMN_NAME?: string,
+  CONSTRAINT_NAME?: string,
+  REFERENCED_TABLE_NAME?: string,
+  REFERENCED_COLUMN_NAME?: string,
+}>
 
 export type Hooks = 'getTableData'
   | 'getDistinctTableData'
@@ -112,6 +131,7 @@ const INPUT_TYPES: {
   'tinyint(1)': 'checkbox',
   'int(11)': 'number',
   'datetime': 'date',
+  'text': 'text',
 }
 
 function buildTableInfo(): ITableInfo {
@@ -159,9 +179,12 @@ function isEditable(fieldName: string) {
   return true
 }
 
-export function generateSettings(DBData: Array<{schema: schemaInfo, describe: describeInfo}>): any {
+export function generateSettings(
+  DBData: Array<{ schema: schemaInfo, describe: describeInfo }>,
+  selectedPath: string
+): any {
   const resultData: any[] = []
-  fs.mkdirSync('generatedConfigs/models/')
+  fs.mkdirSync(path.join(selectedPath, '/models/'))
   DBData.forEach(
     (tableData) => {
       const table = buildTableInfo()
@@ -202,7 +225,7 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
       )
 
       fs.writeFile(
-        'generatedConfigs/models/' + table.name + '.js',
+        path.join(selectedPath, '/models/' + table.name + '.js'),
         'export default ' + JSON.stringify(table, null, 2),
         'utf8',
         (err) => {
@@ -216,7 +239,7 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
   )
 
   fs.writeFile(
-    'generatedConfigs/MCsettings.js',
+    path.join(selectedPath, '/MCsettings.js'),
     resultData.map(
       (table) => `import ${table.name}Model from './models/${table.name}'\n`
     ).join('') +
@@ -234,22 +257,34 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
   )
 }
 
-export function generateConfig(answers: ITypeAnswers & { DBType: string }) {
-  const finalConfig = {
+export function generateConfig(answers: any, selectedPath: string) {
+  const finalConfig: any = {
     [answers.DBType]: {
         host: answers.DBHost,
         database: answers.DBName,
-        user: answers.DBUser,
-        password: answers.DBPassword,
+        user: answers.DBUser || '',
+        password: answers.DBPassword || '',
     },
     server: {
         port: 3004,
     },
   }
 
-  fs.mkdirSync('generatedConfigs/')
+  if (answers.DBAuthSorce) {
+    finalConfig[answers.DBType].authSource = answers.DBAuthSorce
+  }
+
+  if (answers.DBAuthMechanism) {
+    finalConfig[answers.DBType].authMechanism = answers.DBAuthMechanism
+  }
+
+  if (answers.DBPort) {
+    finalConfig[answers.DBType].port = answers.DBPort
+  }
+
+  fs.mkdirSync(selectedPath)
   fs.writeFile(
-    'generatedConfigs/MCconfig.js',
+    path.join(selectedPath, 'MCconfig.js'),
     'export default ' + JSON.stringify(finalConfig, null, 2),
     'utf8',
     (err) => {

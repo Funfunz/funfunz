@@ -29,6 +29,15 @@ class TableController {
     debug('Created')
   }
 
+  /**
+   * Adds to response.data the configuration of the requested table
+   * @get params:
+   *  - {String} table: table name
+   * @param {Object} request
+   * @param {Object} response
+   * @param {Object} next
+   * @res.data {Object} requested table configuration
+   */
   public getTableConfig(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     const TABLE_CONFIG = getTableConfig(req.params.table)
     const RESULT = {
@@ -49,6 +58,22 @@ class TableController {
     return nextAndReturn(next)(RESULT)
   }
 
+  /**
+   * Adds to response.data all rows that match the requested filter
+   * @get params:
+   *  - {String} table: table name
+   *  - {Object | Array} order: object of array of objects containing the order field and asc|desc
+   *  - {Object} filter: object where key is the column name and value is the search match
+   *  - {String} search: string that will be matched against the search fields in the configuration
+   *  - {Number} page: requested page for pagination
+   *  - {Number} limit: requested quantity of items for pagination
+   *  - {Boolen} includeRelations: adds related data 1 level deep
+   *  - {Boolen} friendlyData: replaces relation id's with friendly values based on configuration
+   * @param {Object} request
+   * @param {Object} response
+   * @param {Object} next
+   * @res.data {Object} requested table configuration
+   */
   public getTableData(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     const TABLE_NAME = req.params.table
     const ORDER = req.query.order || null
@@ -140,6 +165,18 @@ class TableController {
     )
   }
 
+  /**
+   * Adds to response.data all distinct rows that match the requested filter
+   * @get params:
+   *  - {String} table: table name
+   *  - {Object} filter: object where key is the column name and value is the search match
+   *  - {String} search: string that will be matched against the search fields in the configuration
+   *  - {Array<String>} columns: desired columns to use in the distinct query
+   * @param {Object} request
+   * @param {Object} response
+   * @param {Object} next
+   * @res.data {Object} requested table configuration
+   */
   public getDistinctTableData(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)

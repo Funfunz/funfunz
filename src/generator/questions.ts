@@ -46,6 +46,12 @@ export const databaseQuestions = {
     },
     {
       type: 'input',
+      name: 'DBPort',
+      message: 'Database port?',
+      initial: '27017',
+    },
+    {
+      type: 'input',
       name: 'DBName',
       message: 'Database name?',
       initial: 'example_database',
@@ -54,12 +60,24 @@ export const databaseQuestions = {
       type: 'input',
       name: 'DBUser',
       message: 'Database user?',
-      initial: 'root',
+      initial: '',
     },
     {
       type: 'password',
       name: 'DBPassword',
       message: 'Database password?',
+      initial: '',
+    },
+    {
+      type: 'input',
+      name: 'DBAuthSorce',
+      message: 'Database authentication database?',
+      initial: 'admin',
+    },
+    {
+      type: 'input',
+      name: 'DBAuthMechanism',
+      message: 'Database authentication mechanism?',
       initial: '',
     },
   ],

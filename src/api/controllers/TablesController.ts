@@ -14,6 +14,7 @@ class TablesController {
     this.settings = config().settings
   }
 
+  // returns a list of all database tables
   public getTables(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     const tables = this.settings.map(
       (table: ITableInfo) => {
