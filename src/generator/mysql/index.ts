@@ -6,6 +6,7 @@ import mysql from 'mysql2'
 function createPoolSchema() {
   return mysql.createPool({
     host: process.env.DBHost,
+    port: parseInt(process.env.DBPort || '', 10),
     user: process.env.DBUser,
     password: process.env.DBPassword,
     database: 'INFORMATION_SCHEMA',
@@ -18,6 +19,7 @@ function createPoolSchema() {
 function createPoolDB() {
   return mysql.createPool({
     host: process.env.DBHost,
+    port: parseInt(process.env.DBPort || '', 10),
     user: process.env.DBUser,
     password: process.env.DBPassword,
     database: process.env.DBName,
@@ -102,6 +104,7 @@ const describe = (tablesNames: string[]): Promise<IDatabaseData[]> => {
 function createConnection() {
   return mysql.createConnection({
     host: process.env.DBHost,
+    port: parseInt(process.env.DBPort || '', 10),
     user: process.env.DBUser,
     password: process.env.DBPassword,
     database: process.env.DBName,

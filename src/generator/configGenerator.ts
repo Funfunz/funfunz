@@ -146,6 +146,7 @@ export function generateConfig(answers: any, selectedPath: string) {
         database: answers.DBName,
         user: answers.DBUser || '',
         password: answers.DBPassword || '',
+        port: answers.DBPort || '',
     },
     server: {
         port: 3004,
@@ -158,10 +159,6 @@ export function generateConfig(answers: any, selectedPath: string) {
 
   if (answers.DBAuthMechanism) {
     finalConfig[answers.DBType].authMechanism = answers.DBAuthMechanism
-  }
-
-  if (answers.DBPort) {
-    finalConfig[answers.DBType].port = answers.DBPort
   }
 
   fs.mkdirSync(selectedPath)

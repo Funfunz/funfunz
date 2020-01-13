@@ -52,6 +52,7 @@ describe('parse mysql', () => {
       DBHost: 'localhost',
       DBName: 'test_db',
       DBUser: 'root',
+      DBPort: '3307',
       DBPassword: process.env.DB_PASSWORD,
     }, 'mysql', mysqlTargetPath).then(
       () => {

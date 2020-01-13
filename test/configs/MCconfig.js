@@ -4,6 +4,7 @@ export default {
     "host": "localhost",
     "database": "test_db",
     "user": "root",
+    "port": "3307",
     "password": process.env.DB_PASSWORD || ""
   },
   "server": {

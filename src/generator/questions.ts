@@ -20,6 +20,12 @@ export const databaseQuestions = {
     },
     {
       type: 'input',
+      name: 'DBPort',
+      message: 'Database port?',
+      initial: '3306',
+    },
+    {
+      type: 'input',
       name: 'DBName',
       message: 'Database name?',
       initial: 'example_database',
