@@ -1,5 +1,4 @@
-// get the client
-import { describeInfo, IDescribeItem, schemaInfo } from '@root/generator/configGenerator'
+import { IDatabaseData, IDescribeItem } from '@root/generator/configurationTypes'
 import { Db, MongoClient } from 'mongodb'
 
 function mongoURIBuilder() {
@@ -40,10 +39,7 @@ function columnData(name: string): IDescribeItem {
 function buildCollectionData(
   items: Array<{[key: string]: any}>,
   collection: {name: string}
-): {
-  schema: schemaInfo;
-  describe: describeInfo;
-} {
+): IDatabaseData {
   const columnNames: {
     [key: string]: {}
   } = {}
@@ -57,7 +53,7 @@ function buildCollectionData(
     }
   )
 
-  const finalCollectionData: {schema: schemaInfo, describe: describeInfo} = {
+  const finalCollectionData: IDatabaseData = {
     describe: Object.keys(columnNames).map(
       columnData
     ),
@@ -68,7 +64,7 @@ function buildCollectionData(
   return finalCollectionData
 }
 
-const getDatabaseData = (): PromiseLike<Array<{schema: schemaInfo, describe: describeInfo}>> => {
+const getDatabaseData = (): Promise<IDatabaseData[]> => {
   const client = new MongoClient(mongoURIBuilder(), { useUnifiedTopology: true })
   const promise: Promise<IMongoConnection> = new Promise(
     (res, rej) => {

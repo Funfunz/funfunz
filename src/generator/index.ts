@@ -1,67 +1,11 @@
 #!/usr/bin/env node
-
-// get the client
-import { generateConfig, generateSettings } from '@root/generator/configGenerator'
+import { databaseTypes } from '@root/generator/configurationTypes'
+import { parse } from '@root/generator/parser'
 import { databaseQuestions, databaseTypeQuestion } from '@root/generator/questions'
+import { deleteFolderRecursive, isEmptyFolder } from '@root/generator/utils'
 import { prompt } from 'enquirer'
-import fs from 'fs'
 import minimist from 'minimist'
 import path from 'path'
-
-export function deleteFolderRecursive(pathSelected: string) {
-  if (fs.existsSync(pathSelected)) {
-    fs.readdirSync(pathSelected).forEach((file) => {
-      const curPath = pathSelected + '/' + file
-      if (fs.lstatSync(curPath).isDirectory()) {
-        deleteFolderRecursive(curPath)
-      } else {
-        fs.unlinkSync(curPath)
-      }
-    })
-    if (pathSelected.split('/').pop() !== '.') {
-      fs.rmdirSync(pathSelected)
-    }
-  }
-}
-
-export function isEmptyFolder(pathSelected: string) {
-  if (fs.existsSync(pathSelected)) {
-    return fs.readdirSync(pathSelected).length <= 0
-  }
-  return true
-}
-
-function parse(answers: any, databaseType: databaseTypes, selectedPath: string) {
-  return import('./' + databaseType).then(
-    (dbModule) => {
-      const compiledAnswers: ITypeAnswers = {
-        DBHost: answers.DBHost,
-        DBName: answers.DBName,
-        DBUser: answers.DBUser,
-        DBPassword: answers.DBPassword,
-      }
-
-      process.env = {
-        ...process.env,
-        ...compiledAnswers,
-      }
-      return Promise.all([
-        dbModule.default(),
-        generateConfig(
-          {
-            ...compiledAnswers,
-            DBType: databaseType,
-          },
-          selectedPath
-        ),
-      ]).then(
-        ([results]) => {
-          generateSettings(results, selectedPath)
-        }
-      )
-    }
-  )
-}
 
 function promptUserAboutDatabase(selectedPath: string) {
   prompt(databaseTypeQuestion).then(
@@ -111,15 +55,6 @@ function promptUserToDeleteFolder(selectedPath: string) {
   )
 }
 
-export interface ITypeAnswers {
-  DBHost: string,
-  DBName: string,
-  DBUser: string,
-  DBPassword: string
-}
-
-type databaseTypes = 'mysql' | 'pgsql' | 'mongoDB'
-
 const argv = minimist(process.argv.slice(2))
 const userSelectedPath = path.join(process.cwd(),  argv._[0] || '/generatedConfigs')
 
@@ -134,5 +69,3 @@ if (process.env.NODE_ENV !== 'test') {
     )
   }
 }
-
-export { parse }

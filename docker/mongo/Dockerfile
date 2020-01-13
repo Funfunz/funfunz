@@ -1,6 +1,0 @@
-FROM mongo:latest
-
-RUN mkdir /db
-WORKDIR /db
-EXPOSE 27017
-EXPOSE 28017

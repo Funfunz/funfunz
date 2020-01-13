@@ -1,5 +1,5 @@
 // get the client
-import { describeInfo, schemaInfo } from '@root/generator/configGenerator'
+import { describeInfo, IDatabaseData, schemaInfo } from '@root/generator/configurationTypes'
 import mysql from 'mysql2'
 
 // create the connection to database
@@ -27,19 +27,16 @@ function createPoolDB() {
   })
 }
 
-const describe = (tablesNames: string[]): PromiseLike<Array<{schema: schemaInfo, describe: describeInfo}>> => {
+const describe = (tablesNames: string[]): Promise<IDatabaseData[]> => {
   const poolSchema = createPoolSchema()
   const poolDescribeDB = createPoolDB()
 
-  const promises: Array<Promise<{schema: schemaInfo, describe: describeInfo}>> = tablesNames.map(
+  const promises: Array<Promise<IDatabaseData>> = tablesNames.map(
     (tableName) => {
-      return new Promise<{schema: schemaInfo, describe: describeInfo}>(
+      return new Promise<IDatabaseData>(
         (res, rej) => {
           let counter = 0
-          const results: {
-            schema: schemaInfo,
-            describe: describeInfo
-          } = {
+          const results: IDatabaseData = {
             schema: [],
             describe: [],
           }
@@ -98,10 +95,6 @@ const describe = (tablesNames: string[]): PromiseLike<Array<{schema: schemaInfo,
       poolDescribeDB.end()
       return result
     }
-  ).catch(
-    (err) => {
-      throw err
-    }
   )
 }
 
@@ -115,7 +108,7 @@ function createConnection() {
   })
 }
 
-const getDatabaseData = (): PromiseLike<Array<{schema: schemaInfo, describe: describeInfo}>> => {
+const getDatabaseData = (): PromiseLike<IDatabaseData[]> => {
   return new Promise<any>(
     (res, rej) => {
       const connection = createConnection()
@@ -134,10 +127,6 @@ const getDatabaseData = (): PromiseLike<Array<{schema: schemaInfo, describe: des
     (result) => {
       result.connection.end()
       return describe(result.tables)
-    }
-  ).catch(
-    (err) => {
-      throw err
     }
   )
 }
