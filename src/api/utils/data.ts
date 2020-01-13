@@ -1,5 +1,5 @@
 import { isNull } from '@root/api/utils'
-import { ITableInfo } from '@root/generator/configGenerator'
+import { ITableInfo } from '@root/generator/configurationTypes'
 
 export default {
   normalize,
