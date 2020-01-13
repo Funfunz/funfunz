@@ -258,7 +258,7 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `mutation {
-          addUsers (name: "Francisco",email: "francisco@mail.com") {
+          addUsers (name: "Francisco",email: "francisco@mail.com", id: 50) {
             id
             name
             email
@@ -269,7 +269,6 @@ describe('graphql', () => {
       })
       .set('Accept', 'application/json').end(
       (err, response) => {
-        console.log(response)
         if (err) {
           return done(err)
         }
@@ -291,14 +290,13 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `mutation {
-          addRoles(name:"test") {
+          addRoles(name:"test", id:30) {
             id
           }
         }`,
       })
       .set('Accept', 'application/json').end(
       (err, response) => {
-        console.log(response)
         if (err) {
           return done(err)
         }
@@ -316,7 +314,7 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `mutation {
-          addUsersroles(userId: 2, roleId: 3) {
+          addUsersroles(userId: 50, roleId: 30) {
             userId
             roleId
           }
@@ -324,7 +322,6 @@ describe('graphql', () => {
       })
       .set('Accept', 'application/json').end(
       (err, response) => {
-        console.log(response)
         if (err) {
           return done(err)
         }
@@ -338,7 +335,7 @@ describe('graphql', () => {
       }
     )
   })
-  it('graphql endpoint with mutation to add many to many relations', (done) => {
+  it('graphql endpoint with mutation to update a row', (done) => {
     return request(authApplication)
       .post('/graphql')
       .send({
@@ -351,7 +348,6 @@ describe('graphql', () => {
       })
       .set('Accept', 'application/json').end(
       (err, response) => {
-        console.log(response)
         if (err) {
           return done(err)
         }
@@ -365,27 +361,29 @@ describe('graphql', () => {
       }
     )
   })
-  it('graphql endpoint with mutation to add many to many relations', (done) => {
+  it('graphql endpoint with mutation to delete a row', (done) => {
     return request(authApplication)
       .post('/graphql')
       .send({
         query: `mutation {
-          deleteUsers(id: 2) {
+          deleteRoles(id: 30) {
+            success
+          }
+          deleteUsers(id: 50) {
             success
           }
         }`,
       })
       .set('Accept', 'application/json').end(
       (err, response) => {
-        console.log(response)
         if (err) {
           return done(err)
         }
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
-        expect(data.deleteUsers).toBeTruthy()
-        expect(data.deleteUsers.success).toBeTruthy()
+        expect(data.deleteRoles).toBeTruthy()
+        expect(data.deleteRoles.success).toBeTruthy()
         return done()
       }
     )

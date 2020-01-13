@@ -99,7 +99,7 @@ function buildAddMutation(table: ITableInfo) {
       })
     },
     args: {
-      ...buildFields(table, { relations: false, exclude: ['pk'] }),
+      ...buildFields(table, { relations: false }),
     },
   }
   debug(`Created ${table.name} add mutation`)

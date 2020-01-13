@@ -8,7 +8,7 @@ import fs from 'fs'
 import minimist from 'minimist'
 import path from 'path'
 
-function deleteFolderRecursive(pathSelected: string) {
+export function deleteFolderRecursive(pathSelected: string) {
   if (fs.existsSync(pathSelected)) {
     fs.readdirSync(pathSelected).forEach((file) => {
       const curPath = pathSelected + '/' + file
@@ -24,7 +24,7 @@ function deleteFolderRecursive(pathSelected: string) {
   }
 }
 
-function isEmptyFolder(pathSelected: string) {
+export function isEmptyFolder(pathSelected: string) {
   if (fs.existsSync(pathSelected)) {
     return fs.readdirSync(pathSelected).length <= 0
   }
@@ -123,12 +123,16 @@ type databaseTypes = 'mysql' | 'pgsql' | 'mongoDB'
 const argv = minimist(process.argv.slice(2))
 const userSelectedPath = path.join(process.cwd(),  argv._[0] || '/generatedConfigs')
 
-if (isEmptyFolder(userSelectedPath)) {
-  promptUserAboutDatabase(userSelectedPath)
-} else {
-  promptUserToDeleteFolder(userSelectedPath).then(
-    () => {
-      promptUserAboutDatabase(userSelectedPath)
-    }
-  )
+if (process.env.NODE_ENV !== 'test') {
+  if (isEmptyFolder(userSelectedPath)) {
+    promptUserAboutDatabase(userSelectedPath)
+  } else {
+    promptUserToDeleteFolder(userSelectedPath).then(
+      () => {
+        promptUserAboutDatabase(userSelectedPath)
+      }
+    )
+  }
 }
+
+export { parse }
