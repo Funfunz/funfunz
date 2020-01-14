@@ -19,12 +19,9 @@
     "build:js": "babel src -d lib --extensions \".js,.ts,.tsx\" --source-maps inline && cp -rf ./src/api/public ./lib/api",
     "start": "NODE_ENV=production node ./lib/index.js",
     "prepublishOnly": "npm run build",
-    "mongo:start": "sh ./docker/mongo/start.sh",
-    "mongo:stop": "sh ./docker/mongo/stop.sh",
-    "mysql:start": "sh ./docker/mysql/start.sh",
-    "mysql:stop": "sh ./docker/mysql/stop.sh",
-    "docker:start": "npm run mongo:start && npm run mysql:start",
-    "docker:stop": "npm run mongo:stop && npm run mysql:stop"
+    "docker:start": "sh ./docker/start.sh",
+    "docker-compose:up": "docker-compose up -d && npm run docker:start",
+    "docker-compose:down": "docker-compose down --remove-orphans"
   },
   "bin": {
     "funfunzmc": "./lib/generator/index.js"
