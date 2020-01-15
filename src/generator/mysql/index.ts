@@ -1,29 +1,16 @@
 // get the client
+import { describeInfo, IDatabaseData, schemaInfo } from '@root/generator/configurationTypes'
 import mysql from 'mysql2'
 
-export type describeInfo = Array<{
-  Field: string,
-  Type: string,
-  Null: string,
-  Key: string,
-  Default: string | number | null,
-  Extra: string
-}>
-
-export type schemaInfo = Array<{
-  TABLE_NAME: string,
-  COLUMN_NAME?: string,
-  CONSTRAINT_NAME?: string,
-  REFERENCED_TABLE_NAME?: string,
-  REFERENCED_COLUMN_NAME?: string,
-}>
+let userAnswers: any = {}
 
 // create the connection to database
 function createPoolSchema() {
   return mysql.createPool({
-    host: process.env.DBHost,
-    user: process.env.DBUser,
-    password: process.env.DBPassword,
+    host: userAnswers.DBHost,
+    port: parseInt(userAnswers.DBPort || '', 10),
+    user: userAnswers.DBUser,
+    password: userAnswers.DBPassword,
     database: 'INFORMATION_SCHEMA',
     waitForConnections: true,
     connectionLimit: 40,
@@ -33,29 +20,27 @@ function createPoolSchema() {
 
 function createPoolDB() {
   return mysql.createPool({
-    host: process.env.DBHost,
-    user: process.env.DBUser,
-    password: process.env.DBPassword,
-    database: process.env.DBName,
+    host: userAnswers.DBHost,
+    port: parseInt(userAnswers.DBPort || '', 10),
+    user: userAnswers.DBUser,
+    password: userAnswers.DBPassword,
+    database: userAnswers.DBName,
     waitForConnections: true,
     connectionLimit: 40,
     queueLimit: 0,
   })
 }
 
-const describe = (tablesNames: string[]): PromiseLike<Array<{schema: schemaInfo, describe: describeInfo}>> => {
+const describe = (tablesNames: string[]): Promise<IDatabaseData[]> => {
   const poolSchema = createPoolSchema()
   const poolDescribeDB = createPoolDB()
 
-  const promises: Array<Promise<{schema: schemaInfo, describe: describeInfo}>> = tablesNames.map(
+  const promises: Array<Promise<IDatabaseData>> = tablesNames.map(
     (tableName) => {
-      return new Promise<{schema: schemaInfo, describe: describeInfo}>(
+      return new Promise<IDatabaseData>(
         (res, rej) => {
           let counter = 0
-          const results: {
-            schema: schemaInfo,
-            describe: describeInfo
-          } = {
+          const results: IDatabaseData = {
             schema: [],
             describe: [],
           }
@@ -70,7 +55,7 @@ const describe = (tablesNames: string[]): PromiseLike<Array<{schema: schemaInfo,
             'TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME ' +
             'FROM KEY_COLUMN_USAGE ' +
             'WHERE ' +
-              'TABLE_SCHEMA=\'' + process.env.DBName + '\' ' +
+              'TABLE_SCHEMA=\'' + userAnswers.DBName + '\' ' +
               'AND ' +
               'TABLE_NAME=\'' + tableName + '\' ' +
               'AND ' +
@@ -114,11 +99,43 @@ const describe = (tablesNames: string[]): PromiseLike<Array<{schema: schemaInfo,
       poolDescribeDB.end()
       return result
     }
-  ).catch(
-    (err) => {
-      throw err
+  )
+}
+
+// create the connection to database
+function createConnection() {
+  return mysql.createConnection({
+    host: userAnswers.DBHost,
+    port: parseInt(userAnswers.DBPort || '', 10),
+    user: userAnswers.DBUser,
+    password: userAnswers.DBPassword,
+    database: userAnswers.DBName,
+  })
+}
+
+const getDatabaseData = (answers: any): PromiseLike<IDatabaseData[]> => {
+  console.log(answers)
+  userAnswers = answers
+  return new Promise<any>(
+    (res, rej) => {
+      const connection = createConnection()
+      connection.execute(
+        'show tables',
+        (err, results: mysql.RowDataPacket[]) => {
+          if (err) {
+            rej(err)
+          }
+          const tablesList: string[] = results.map((result) => result[`Tables_in_${answers.DBName}`])
+          res({connection, tables: tablesList})
+        }
+      )
+    }
+  ).then(
+    (result) => {
+      result.connection.end()
+      return describe(result.tables)
     }
   )
 }
 
-export default describe
+export default getDatabaseData

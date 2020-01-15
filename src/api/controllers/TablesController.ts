@@ -1,7 +1,7 @@
 import { IMCRequest, IMCResponse } from '@root/api/types';
 import { addToResponse, hasAuthorization, nextAndReturn } from '@root/api/utils'
 import config from '@root/api/utils/configLoader'
-import { ITableInfo } from '@root/generator/configGenerator'
+import { ITableInfo } from '@root/generator/configurationTypes'
 import Debug from 'debug'
 import { NextFunction } from 'express'
 
@@ -14,6 +14,7 @@ class TablesController {
     this.settings = config().settings
   }
 
+  // returns a list of all database tables
   public getTables(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     const tables = this.settings.map(
       (table: ITableInfo) => {

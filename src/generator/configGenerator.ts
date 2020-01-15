@@ -1,109 +1,10 @@
-import { describeInfo, schemaInfo } from '@root/generator/describeTable'
-import { ITypeAnswers } from '@root/generator/index'
+import { describeInfo, IColumnInfo, ITableInfo, schemaInfo } from '@root/generator/configurationTypes'
 import Debug from 'debug'
-import express from 'express'
 import fs from 'fs'
-import knex from 'knex'
+import path from 'path'
 import pluralize from 'pluralize'
 
 const debug = Debug('funfunzmc:config-generator')
-
-type IHookFunction = (
-  req: express.Request,
-  res: express.Response,
-  DB: knex,
-  tableName: string,
-  data?: any
-) => Promise <any>
-
-export type Hooks = 'getTableData'
-  | 'getDistinctTableData'
-  | 'getTableCount'
-  | 'getRow'
-  | 'insertRow'
-  | 'updateRow'
-  | 'deleteRow'
-
-export interface IManyToOneRelation {
-  fk: string,
-  target: string,
-}
-
-export interface ITableInfo {
-  name: string,
-  verbose: string,
-  pk: string[],
-  order?: number,
-  actions: {
-    delete: boolean,
-    edit: boolean,
-  },
-  searchFields?: string[],
-  relations?: {
-    manyToOne?: {
-      [key: string]: IManyToOneRelation[],
-    },
-    manyToMany?: [
-      {
-        verbose: string,
-        relationTable: string,
-        foreignKey: string,
-        localId: string,
-        remoteTable: string,
-        remoteForeignKey: string,
-        remoteId: string,
-      }
-    ]
-  },
-  chips?: [
-    {
-      verbose: string,
-      columns: [
-        {
-          name: string,
-          verbose: string,
-        }
-      ],
-    },
-  ],
-  itemTitle?: string,
-  columns: IColumnInfo[],
-  visible: boolean,
-  roles: {
-    read: string[],
-    write: string[],
-    delete: string[],
-  },
-  hooks?: {
-    [key in Hooks]?: {
-      before?: IHookFunction,
-      after?: IHookFunction,
-    }
-  },
-}
-
-export interface IColumnRelation {
-  type: string,
-  table: string,
-  key: string,
-  display: string,
-}
-
-export interface IColumnInfo {
-  name: string,
-  verbose: string,
-  type: string,
-  allowNull: boolean,
-  visible: {
-    main: boolean,
-    detail: boolean,
-  },
-  editable: boolean,
-  input: {
-    type: 'text' | 'checkbox' | 'date' | 'number',
-  },
-  relation?: IColumnRelation,
-}
 
 const INPUT_TYPES: {
   [key: string]: 'text' | 'checkbox' | 'number' | 'date'
@@ -112,6 +13,7 @@ const INPUT_TYPES: {
   'tinyint(1)': 'checkbox',
   'int(11)': 'number',
   'datetime': 'date',
+  'text': 'text',
 }
 
 function buildTableInfo(): ITableInfo {
@@ -159,9 +61,12 @@ function isEditable(fieldName: string) {
   return true
 }
 
-export function generateSettings(DBData: Array<{schema: schemaInfo, describe: describeInfo}>): any {
+export function generateSettings(
+  DBData: Array<{ schema: schemaInfo, describe: describeInfo }>,
+  selectedPath: string
+): any {
   const resultData: any[] = []
-  fs.mkdirSync('generatedConfigs/models/')
+  fs.mkdirSync(path.join(selectedPath, '/models/'))
   DBData.forEach(
     (tableData) => {
       const table = buildTableInfo()
@@ -202,7 +107,7 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
       )
 
       fs.writeFile(
-        'generatedConfigs/models/' + table.name + '.js',
+        path.join(selectedPath, '/models/' + table.name + '.js'),
         'export default ' + JSON.stringify(table, null, 2),
         'utf8',
         (err) => {
@@ -216,7 +121,7 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
   )
 
   fs.writeFile(
-    'generatedConfigs/MCsettings.js',
+    path.join(selectedPath, '/MCsettings.js'),
     resultData.map(
       (table) => `import ${table.name}Model from './models/${table.name}'\n`
     ).join('') +
@@ -234,22 +139,31 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
   )
 }
 
-export function generateConfig(answers: ITypeAnswers & { DBType: string }) {
-  const finalConfig = {
+export function generateConfig(answers: any, selectedPath: string) {
+  const finalConfig: any = {
     [answers.DBType]: {
         host: answers.DBHost,
         database: answers.DBName,
-        user: answers.DBUser,
-        password: answers.DBPassword,
+        user: answers.DBUser || '',
+        password: answers.DBPassword || '',
+        port: answers.DBPort || '',
     },
     server: {
         port: 3004,
     },
   }
 
-  fs.mkdirSync('generatedConfigs/')
+  if (answers.DBAuthSorce) {
+    finalConfig[answers.DBType].authSource = answers.DBAuthSorce
+  }
+
+  if (answers.DBAuthMechanism) {
+    finalConfig[answers.DBType].authMechanism = answers.DBAuthMechanism
+  }
+
+  fs.mkdirSync(selectedPath)
   fs.writeFile(
-    'generatedConfigs/MCconfig.js',
+    path.join(selectedPath, 'MCconfig.js'),
     'export default ' + JSON.stringify(finalConfig, null, 2),
     'utf8',
     (err) => {

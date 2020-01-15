@@ -2,7 +2,7 @@
 import { resolver } from '@root/api/graphql/resolver'
 import { buildFields, buildType } from '@root/api/graphql/typeBuilder'
 import config from '@root/api/utils/configLoader'
-import { ITableInfo } from '@root/generator/configGenerator'
+import { ITableInfo } from '@root/generator/configurationTypes'
 import Debug from 'debug'
 import { GraphQLList } from 'graphql'
 import pluralize from 'pluralize'
