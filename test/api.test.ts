@@ -424,7 +424,7 @@ describe('routes', () => {
           name: 'nameInserted',
           color: 'yellow',
           active: 0,
-          FamilyId: 2,
+          UserId: 2,
           type: 2,
           createdAt: new Date().getTime(),
         },
