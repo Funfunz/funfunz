@@ -182,6 +182,7 @@ describe('graphql', () => {
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
+        console.log('1', data)
         expect(data.products[0]).toBeTruthy()
         expect(data.products[0].id).toBeTruthy()
         console.log(data.products[0])
