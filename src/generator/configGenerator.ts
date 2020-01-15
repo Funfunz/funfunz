@@ -31,59 +31,33 @@ export interface IManyToOneRelation {
 
 export interface ITableInfo {
   name: string,
-  verbose: string,
-  pk: string[],
-  order?: number,
-  actions: {
-    delete: boolean,
-    edit: boolean,
-  },
-  searchFields?: string[],
-  relations?: {
-    manyToOne?: {
-      [key: string]: IManyToOneRelation[],
-    },
-    manyToMany?: [
-      {
-        verbose: string,
-        relationTable: string,
-        foreignKey: string,
-        localId: string,
-        remoteTable: string,
-        remoteForeignKey: string,
-        remoteId: string,
-      }
-    ]
-  },
-  chips?: [
-    {
-      verbose: string,
-      columns: [
-        {
-          name: string,
-          verbose: string,
-        }
-      ],
-    },
-  ],
-  itemTitle?: string,
-  columns: IColumnInfo[],
-  visible: boolean,
+  relations?: ITableRelation[],
   roles: {
+    create: string[],
     read: string[],
     write: string[],
     delete: string[],
   },
+  columns: IColumnInfo[],
   hooks?: {
     [key in Hooks]?: {
       before?: IHookFunction,
       after?: IHookFunction,
     }
   },
+  layout?: any,
+}
+
+export interface ITableRelation {
+  type: '1:n' | 'n:1' | 'm:n',
+  relationalTable: string,
+  foreignKey: string,
+  remoteForeignKey: string,
+  remoteTable: string,
 }
 
 export interface IColumnRelation {
-  type: string,
+  type: '1:n',
   table: string,
   key: string,
   display: string,
@@ -91,44 +65,38 @@ export interface IColumnRelation {
 
 export interface IColumnInfo {
   name: string,
-  verbose: string,
-  type: string,
-  allowNull: boolean,
-  visible: {
-    main: boolean,
-    detail: boolean,
-  },
+  searchable: boolean,
+  listable: boolean,
   editable: boolean,
-  input: {
-    type: 'text' | 'checkbox' | 'date' | 'number',
+  model: {
+    isPk?: boolean,
+    type: string,
+    allowNull: boolean,
   },
   relation?: IColumnRelation,
-}
-
-const INPUT_TYPES: {
-  [key: string]: 'text' | 'checkbox' | 'number' | 'date'
-} = {
-  'varchar(255)': 'text',
-  'tinyint(1)': 'checkbox',
-  'int(11)': 'number',
-  'datetime': 'date',
+  layout?: any,
 }
 
 function buildTableInfo(): ITableInfo {
   return {
     name: '',
-    verbose: '',
-    pk: [],
-    actions: {
-      delete: true,
-      edit: true,
-    },
-    columns: [],
-    visible: true,
     roles: {
+      create: ['all'],
       read: ['all'],
       write: ['all'],
       delete: ['all'],
+    },
+    columns: [],
+    layout: {
+      label: '',
+      listPage: {},
+      searchField: {},
+      createButton: {},
+      editButton: {},
+      deleteButton: {},
+      editPage: {
+        sections: [],
+      },
     },
   }
 }
@@ -136,17 +104,14 @@ function buildTableInfo(): ITableInfo {
 function buildColumnInfo(): IColumnInfo {
   return {
     name: '',
-    verbose: '',
-    type: '',
-    allowNull: true,
-    visible: {
-      main: true,
-      detail: true,
-    },
+    searchable: true,
+    listable: true,
     editable: true,
-    input: {
-      type: 'text',
+    model: {
+      type: '',
+      allowNull: true,
     },
+    layout: {},
   }
 }
 
@@ -157,6 +122,15 @@ function isEditable(fieldName: string) {
       return false
   }
   return true
+}
+
+const INPUT_TYPES: {
+  [key: string]: 'text' | 'checkbox' | 'number' | 'date'
+} = {
+  'varchar(255)': 'text',
+  'tinyint(1)': 'checkbox',
+  'int(11)': 'number',
+  'datetime': 'date',
 }
 
 export function generateSettings(DBData: Array<{schema: schemaInfo, describe: describeInfo}>): any {
@@ -171,24 +145,24 @@ export function generateSettings(DBData: Array<{schema: schemaInfo, describe: de
 
       const pluralName = pluralize(table.name)
 
-      table.verbose = pluralName.charAt(0).toUpperCase() + pluralName.slice(1)
+      table.layout.label = pluralName.charAt(0).toUpperCase() + pluralName.slice(1)
       describe.forEach(
         (column) => {
           const columnData = buildColumnInfo()
           columnData.name = column.Field
-          columnData.verbose = column.Field
-          columnData.type = column.Type
-          columnData.input.type = INPUT_TYPES[column.Type]
-          columnData.allowNull = column.Null === 'NO' ? false : true
+          columnData.layout.label = column.Field
+          columnData.model.type = column.Type
+          columnData.layout.editField.type = INPUT_TYPES[column.Type]
+          columnData.model.allowNull = column.Null === 'NO' ? false : true
           columnData.editable = isEditable(column.Field)
           if (column.Key === 'PRI') {
-            table.pk.push(column.Field)
+            columnData.model.isPk = true
           }
           tableData.schema.forEach(
             (schemaData) => {
               if (schemaData.COLUMN_NAME === column.Field) {
                 columnData.relation = {
-                  type: 'oneToMany',
+                  type: '1:n',
                   table: schemaData.REFERENCED_TABLE_NAME || '',
                   key: schemaData.REFERENCED_COLUMN_NAME || '',
                   display: schemaData.REFERENCED_COLUMN_NAME || '',
