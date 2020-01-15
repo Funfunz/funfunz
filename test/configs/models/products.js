@@ -7,14 +7,6 @@ export default {
     "name",
     "color",
   ],
-  "relations": {
-    "manyToOne": {
-      "images": [{
-        "fk": "ProductId",
-        "target": "id"
-      }],
-    },
-  },
   "chips": [
     {
       "verbose": "color",
@@ -126,8 +118,8 @@ export default {
       }
     },
     {
-      "name": "FamilyId",
-      "verbose": "FamilyId",
+      "name": "UserId",
+      "verbose": "UserId",
       "type": "int(11)",
       "allowNull": true,
       "visible": {
@@ -140,7 +132,7 @@ export default {
       },
       "relation": {
         "type": "oneToMany",
-        "table": "families",
+        "table": "users",
         "key": "id",
         "display": "id"
       }

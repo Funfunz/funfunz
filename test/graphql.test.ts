@@ -19,7 +19,7 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `{
-          families {
+          products {
             id
           }
         }`,
@@ -41,7 +41,7 @@ describe('graphql', () => {
         query: `{
           products {
             id
-            families {
+            users {
               id
             }
           }
@@ -63,18 +63,12 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `{
-          images {
+          products {
             id
-            products {
+            users {
               id
-              families {
+              products {
                 id
-                products {
-                  id
-                  images {
-                    id
-                  }
-                }
               }
             }
           }
@@ -96,10 +90,10 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `{
-          families (order: null, imageUrl: null) {
+          products (type: null, name: null) {
             id
           }
-          families (imageUrl: null, order: null) {
+          products (name: null, type: null) {
             name
           }
         }`,
@@ -174,7 +168,7 @@ describe('graphql', () => {
         query: `{
           products {
             id
-            families {
+            users {
               id
             }
           }
@@ -190,8 +184,8 @@ describe('graphql', () => {
         const data = response.body.data
         expect(data.products[0]).toBeTruthy()
         expect(data.products[0].id).toBeTruthy()
-        expect(data.products[0].families).toBeTruthy()
-        expect(data.products[0].families.id).toBeTruthy()
+        expect(data.products[0].users).toBeTruthy()
+        expect(data.products[0].users.id).toBeTruthy()
         return done()
       }
     )
@@ -201,7 +195,7 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `{
-          families {
+          users {
             id
             products {
               id
@@ -217,10 +211,10 @@ describe('graphql', () => {
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
-        expect(data.families[0]).toBeTruthy()
-        expect(data.families[0].id).toBeTruthy()
-        expect(data.families[0].products[0]).toBeTruthy()
-        expect(data.families[0].products[0].id).toBeTruthy()
+        expect(data.users[0]).toBeTruthy()
+        expect(data.users[0].id).toBeTruthy()
+        expect(data.users[0].products[0]).toBeTruthy()
+        expect(data.users[0].products[0].id).toBeTruthy()
         return done()
       }
     )
@@ -230,7 +224,7 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `{
-          families {
+          users {
             id
             products (id: 1) {
               id
@@ -246,9 +240,9 @@ describe('graphql', () => {
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
-        expect(data.families[0]).toBeTruthy()
-        expect(data.families[0].id).toBeTruthy()
-        expect(data.families[0].products).toBeTruthy()
+        expect(data.users[0]).toBeTruthy()
+        expect(data.users[0].id).toBeTruthy()
+        expect(data.users[0].products).toBeTruthy()
         return done()
       }
     )

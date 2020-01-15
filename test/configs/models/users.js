@@ -14,7 +14,13 @@ export default {
         "remoteForeignKey": "roleId",
         "remoteId": "id"
       }
-    ]
+    ],
+    "manyToOne": {
+      "products": [{
+        "fk": "UserId",
+        "target": "id",
+      }],
+    },
   },
   "columns": [
     {
