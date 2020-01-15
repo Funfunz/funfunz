@@ -2,7 +2,7 @@ import config from '@root/api/utils/configLoader'
 import Debug from 'debug'
 import knex from 'knex'
 
-const debug = Debug('funfunzmc:database')
+const debug = Debug('funfunzmc:database-knex')
 
 class Database {
   public db: knex | null
@@ -27,6 +27,7 @@ class Database {
       user,
       password,
       host,
+      port,
       dialect = 'mysql2',
       log,
     } = configuration.mysql
@@ -35,6 +36,7 @@ class Database {
     debug('DB_USER', user)
     debug('DB_PASSWORD', password)
     debug('DB_HOST', host)
+    debug('DB_PORT', port)
     debug('DB_DIALECT', dialect)
     debug('log', log)
     debug('End')

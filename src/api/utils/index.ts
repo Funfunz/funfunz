@@ -1,7 +1,7 @@
 import database, { Database } from '@root/api/db'
 import { HttpException, IMCRequest, IMCResponse, IUser } from '@root/api/types'
 import config from '@root/api/utils/configLoader'
-import { Hooks, IColumnInfo, ITableInfo } from '@root/generator/configGenerator'
+import { Hooks, IColumnInfo, ITableInfo } from '@root/generator/configurationTypes'
 import { ErrorRequestHandler, NextFunction } from 'express'
 import Knex from 'knex'
 
@@ -46,8 +46,16 @@ export const errorHandler: ErrorRequestHandler = (err, req, res) => {
   }
 }
 
+/**
+ * checks for user authorization against a list of roles
+ * of the list has the role "all" return always true
+ * @param {string[]} roles - a list of roles
+ * @param {IUser} user - the express session user
+ *
+ * @returns {boolean} true if authorized, false if not
+ */
 export function hasAuthorization(
-  tableRoles: string[],
+  roles: string[],
   user: IUser = {
     roles: [
       {
@@ -58,15 +66,15 @@ export function hasAuthorization(
   }
 ): boolean {
   let isAuthorized: boolean = true
-  if (tableRoles && tableRoles.length) {
-    isAuthorized = !!tableRoles.find(
-      (tableRole: string) => {
-        if (tableRole === 'all') {
+  if (roles && roles.length) {
+    isAuthorized = !!roles.find(
+      (role: string) => {
+        if (role === 'all') {
           return true
         }
         return !!user.roles.find(
           (userRole) => {
-            return (userRole.name === tableRole);
+            return (userRole.name === role);
           }
         )
       }
@@ -76,11 +84,23 @@ export function hasAuthorization(
   return isAuthorized
 }
 
+/**
+ * given a table, filters the visible columns for the main or detail backoffice pages
+ * @param {ITableInfo} table - a table configuration
+ * @param {'main' | 'detail'} target - backoffice page
+ *
+ * @returns {IColumnInfo[]} array of filtered columns
+ */
 export function filterVisibleTableColumns(table: ITableInfo, target: 'main' | 'detail') {
   const toKeep: {
     [key: string]: boolean
   } = {}
-  if (table.chips) {
+
+  /**
+   * since the chips are treated has columns by the frontend and they include data from multiple columns
+   * we need to include all the related database columns in order to get all the necessary row data
+   */
+  if (table.chips && target === 'main') {
     table.chips.forEach(
       (chip) => {
         chip.columns.forEach(
@@ -123,12 +143,25 @@ export function runHook(
   return Promise.resolve(hook === 'getTableCount' ? results.length : results)
 }
 
+/**
+ * returns the table configuration based on the table name
+ * @param {string} TABLE_NAME - the name of the table
+ *
+ * @returns {ITableInfo} table configuration
+ */
 export function getTableConfig(TABLE_NAME: string) {
   return config().settings.filter(
     (tableItem) => tableItem.name === TABLE_NAME
   )[0]
 }
 
+/**
+ * returns the columns configuration list transformed into an key:value object
+ * where key equals to the column name, and value equals to the column configuration
+ * @param {ITableInfo} TABLE_CONFIG - the table configuration
+ *
+ * @returns {{ [key: string]: IColumnInfo }} {[columnName]:[columnConfig]} object
+ */
 export function getColumnsByName(TABLE_CONFIG: ITableInfo) {
   const columnsByName: {
     [key: string]: IColumnInfo
@@ -143,12 +176,26 @@ export function getColumnsByName(TABLE_CONFIG: ITableInfo) {
   return columnsByName
 }
 
+/**
+ * returns the columns configuration list for the columns containing a relation
+ * @param {ITableInfo} TABLE_CONFIG - the table configuration
+ *
+ * @returns {IColumnInfo[]} array of relation columns
+ */
 export function getColumnsWithRelations(TABLE_CONFIG: ITableInfo) {
   return TABLE_CONFIG.columns.filter(
     (column) => column.relation
   )
 }
 
+/**
+ * helper function that sets the filters and search query to a Knex query object
+ * @param {Knex.QueryBuilder} DB_QUERY - Knex query object
+ * @param {object} reqQuer - parsed req.query object from express
+ * @param {ITableInfo} TABLE_CONFIG - table configuration
+ *
+ * @returns {Knex.QueryBuilder} updated Knex query object
+ */
 export function applyQueryFiltersSearch(
   DB_QUERY: Knex.QueryBuilder,
   reqQuery: {[key: string]: any},
@@ -318,15 +365,32 @@ interface IBodyWithPK {
   }
 }
 
+/**
+ * adds the necessary filters to filter a query by primary key
+ * @param {Knex.QueryBuilder} QUERY - the Knex query builder
+ * @param {IBodyWithPK} body - the express req.body object containing the primary keys object
+ * @param {ITableInfo} TABLE_CONFIG - table configuration object
+ *
+ * @returns {Knex.QueryBuilder} the update Knex query builder with the filters set
+ */
 export function applyPKFilters(QUERY: Knex.QueryBuilder, body: IBodyWithPK, TABLE_CONFIG: ITableInfo) {
-  const columnsByName = getColumnsByName(TABLE_CONFIG)
   const PKS = Object.keys(body.pk)
+
+  if (typeof TABLE_CONFIG.pk === 'string' && PKS.length !== 1) {
+    throw new HttpException(412, 'Incorrect set of primary keys')
+  }
 
   if (Array.isArray(TABLE_CONFIG.pk) && TABLE_CONFIG.pk.length !== PKS.length) {
     throw new HttpException(412, 'Incorrect set of primary keys')
   }
-  let index = 0
-  for (index = 0; index < PKS.length; index += 1) {
+
+  const columnsByName = getColumnsByName(TABLE_CONFIG)
+
+  /**
+   * goes through each primary key sent on the request
+   * if a sent key is missing from the table it interrupts the cycle and throws an error
+   */
+  for (let index = 0; index < PKS.length; index += 1) {
     let valid = false
     if (Array.isArray(TABLE_CONFIG.pk)) {
       if (TABLE_CONFIG.pk.indexOf(PKS[index]) !== -1) {
@@ -358,10 +422,25 @@ export function applyPKFilters(QUERY: Knex.QueryBuilder, body: IBodyWithPK, TABL
   return QUERY
 }
 
+/**
+ * helper function to check for undefined, null, and empty values
+ * @param {any} val - a variable
+ *
+ * @returns {boolean} true or false if val is a nullable value
+ */
 export function isNull(val: any) {
   return val === '' || val === undefined || val === null
 }
 
+/**
+ * checks for user authorization to the table based on the type of access requested
+ * @param {ITableInfo} tableConfig - a table configuration
+ * @param {'read' | 'write' | 'delete'} accessType - the type of access being requested
+ * @param {IUser | undefined} user - the express session user of none for unauthenticated users
+ * @param {Database} dbInstance - the database instance
+ *
+ * @returns {Promise<Knex>} the database connector
+ */
 export function requirementsCheck(
   tableConfig: ITableInfo,
   accessType: 'read' | 'write' | 'delete',
