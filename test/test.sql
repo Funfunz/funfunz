@@ -45,38 +45,6 @@ INSERT INTO `usersroles` VALUES ('2019-04-05 11:10:00','2019-04-05 11:10:00',1,1
 UNLOCK TABLES;
 
 --
--- Table structure for table `products`
---
-
-DROP TABLE IF EXISTS `products`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `products` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) DEFAULT NULL,
-  `color` varchar(255) DEFAULT NULL,
-  `type` smallint(5) DEFAULT NULL,
-  `createdAt` datetime NOT NULL,
-  `updatedAt` datetime NOT NULL,
-  `UserId` int(11) DEFAULT NULL,
-  `active` tinyint(1) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `UserId` (`UserId`),
-  CONSTRAINT `products_ibfk_1` FOREIGN KEY (`UserId`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `products`
---
-
-LOCK TABLES `products` WRITE;
-/*!40000 ALTER TABLE `products` DISABLE KEYS */;
-INSERT INTO `products` VALUES (1,'name1','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(2,'name2','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(3,'name3','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(4,'name4','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(5,'name5','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(6,'name6','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(7,'name7','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(8,'name8','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(9,'name9','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(10,'name10','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(11,'name11','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,0),(12,'name12','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,0),(13,'name13','Blue',2,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,0),(14,'name14','Blue',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,0),(15,'name15','Blue',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,0),(16,'name16','Blue',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,0),(17,'name17','Blue',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(18,'name18','Blue',2,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(19,'name19','Blue',2,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(20,'name20','Red',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(21,'name21','Red',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(22,'name22','Red',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(23,'name23','Red',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(24,'name24','Red',2,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(25,'name25','Red',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(26,'name26','Red',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(27,'name27','Red',2,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(28,'name28','Red',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(29,'name29','Red',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(30,'name30','Red',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(31,'name31','Red',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(32,'name32','Red',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(33,'name33','Yellow',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(34,'name34','Red',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,0);
-/*!40000 ALTER TABLE `products` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `roles`
 --
 
@@ -131,6 +99,40 @@ LOCK TABLES `users` WRITE;
 INSERT INTO `users` VALUES (1,'jwebcoder@mymail.com','João Moura',NULL,'2019-04-05 11:10:00','2019-04-05 11:10:00'),(2,'joaogsleite@mymail.com','João Leite','$2a$10$kqh09pVk6oJoeo98h8qpAOZ962XSIfWkMxItlpxWxApUKkklMzfG6','2019-04-05 14:14:59','2019-04-05 14:16:14');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `products`
+--
+
+DROP TABLE IF EXISTS `products`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `products` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) DEFAULT NULL,
+  `color` varchar(255) DEFAULT NULL,
+  `type` smallint(5) DEFAULT NULL,
+  `createdAt` datetime NOT NULL,
+  `updatedAt` datetime NOT NULL,
+  `UserId` int(11) DEFAULT NULL,
+  `active` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `UserId` (`UserId`),
+  CONSTRAINT `products_ibfk_1` FOREIGN KEY (`UserId`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `products`
+--
+
+LOCK TABLES `products` WRITE;
+/*!40000 ALTER TABLE `products` DISABLE KEYS */;
+INSERT INTO `products` VALUES (1,'name1','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(2,'name2','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(3,'name3','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(4,'name4','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(5,'name5','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(6,'name6','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(7,'name7','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(8,'name8','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(9,'name9','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(10,'name10','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,1),(11,'name11','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,0),(12,'name12','Blue',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,0),(13,'name13','Blue',2,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,0),(14,'name14','Blue',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',1,0),(15,'name15','Blue',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,0),(16,'name16','Blue',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,0),(17,'name17','Blue',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(18,'name18','Blue',2,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(19,'name19','Blue',2,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(20,'name20','Red',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(21,'name21','Red',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(22,'name22','Red',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(23,'name23','Red',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(24,'name24','Red',2,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(25,'name25','Red',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(26,'name26','Red',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(27,'name27','Red',2,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(28,'name28','Red',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(29,'name29','Red',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(30,'name30','Red',3,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(31,'name31','Red',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(32,'name32','Red',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(33,'name33','Yellow',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,1),(34,'name34','Red',1,'2019-04-05 13:52:02','2019-04-05 13:52:02',2,0);
+/*!40000 ALTER TABLE `products` ENABLE KEYS */;
+UNLOCK TABLES;
+
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
