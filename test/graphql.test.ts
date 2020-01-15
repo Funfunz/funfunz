@@ -184,6 +184,7 @@ describe('graphql', () => {
         const data = response.body.data
         expect(data.products[0]).toBeTruthy()
         expect(data.products[0].id).toBeTruthy()
+        console.log(data.products[0])
         expect(data.products[0].users).toBeTruthy()
         expect(data.products[0].users.id).toBeTruthy()
         return done()
@@ -211,6 +212,7 @@ describe('graphql', () => {
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
+        console.log(data)
         expect(data.users[0]).toBeTruthy()
         expect(data.users[0].id).toBeTruthy()
         expect(data.users[0].products[0]).toBeTruthy()
@@ -240,6 +242,7 @@ describe('graphql', () => {
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
+        console.log(data)
         expect(data.users[0]).toBeTruthy()
         expect(data.users[0].id).toBeTruthy()
         expect(data.users[0].products).toBeTruthy()
