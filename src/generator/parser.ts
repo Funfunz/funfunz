@@ -4,12 +4,8 @@ import { databaseTypes } from '@root/generator/configurationTypes'
 export function parse(answers: any, databaseType: databaseTypes, selectedPath: string) {
   return import('./' + databaseType).then(
     (dbModule) => {
-      process.env = {
-        ...process.env,
-        ...answers,
-      }
       return Promise.all([
-        dbModule.default(),
+        dbModule.default(answers),
         generateConfig(
           {
             ...answers,

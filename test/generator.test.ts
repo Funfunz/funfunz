@@ -14,12 +14,13 @@ describe('parse mongo', () => {
     deleteFolderRecursive(mongoTargetPath)
   })
 
+  /*
   it('should generate the required files', (done) => {
     parse({
       DBHost: 'localhost',
       DBName: 'Northwind',
       DBUser: 'admin',
-      DBPassword: 'password',
+      DBPassword: process.env.DBPassword || 'password',
       DBPort: '27017',
       DBAuthSorce: 'admin',
       DBAuthMechanism: 'SCRAM-SHA-1',
@@ -33,6 +34,7 @@ describe('parse mongo', () => {
       }
     )
   })
+  */
 })
 
 const mysqlTargetPath = path.join(process.cwd(), '/test/generatedConfigsMysql')
@@ -52,7 +54,7 @@ describe('parse mysql', () => {
       DBHost: 'localhost',
       DBName: 'test_db',
       DBUser: 'root',
-      DBPort: '3307',
+      DBPort: '3306',
       DBPassword: process.env.DB_PASSWORD,
     }, 'mysql', mysqlTargetPath).then(
       () => {

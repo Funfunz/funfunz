@@ -2,13 +2,15 @@
 import { describeInfo, IDatabaseData, schemaInfo } from '@root/generator/configurationTypes'
 import mysql from 'mysql2'
 
+let userAnswers: any = {}
+
 // create the connection to database
 function createPoolSchema() {
   return mysql.createPool({
-    host: process.env.DBHost,
-    port: parseInt(process.env.DBPort || '', 10),
-    user: process.env.DBUser,
-    password: process.env.DBPassword,
+    host: userAnswers.DBHost,
+    port: parseInt(userAnswers.DBPort || '', 10),
+    user: userAnswers.DBUser,
+    password: userAnswers.DBPassword,
     database: 'INFORMATION_SCHEMA',
     waitForConnections: true,
     connectionLimit: 40,
@@ -18,11 +20,11 @@ function createPoolSchema() {
 
 function createPoolDB() {
   return mysql.createPool({
-    host: process.env.DBHost,
-    port: parseInt(process.env.DBPort || '', 10),
-    user: process.env.DBUser,
-    password: process.env.DBPassword,
-    database: process.env.DBName,
+    host: userAnswers.DBHost,
+    port: parseInt(userAnswers.DBPort || '', 10),
+    user: userAnswers.DBUser,
+    password: userAnswers.DBPassword,
+    database: userAnswers.DBName,
     waitForConnections: true,
     connectionLimit: 40,
     queueLimit: 0,
@@ -53,7 +55,7 @@ const describe = (tablesNames: string[]): Promise<IDatabaseData[]> => {
             'TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME ' +
             'FROM KEY_COLUMN_USAGE ' +
             'WHERE ' +
-              'TABLE_SCHEMA=\'' + process.env.DBName + '\' ' +
+              'TABLE_SCHEMA=\'' + userAnswers.DBName + '\' ' +
               'AND ' +
               'TABLE_NAME=\'' + tableName + '\' ' +
               'AND ' +
@@ -103,15 +105,17 @@ const describe = (tablesNames: string[]): Promise<IDatabaseData[]> => {
 // create the connection to database
 function createConnection() {
   return mysql.createConnection({
-    host: process.env.DBHost,
-    port: parseInt(process.env.DBPort || '', 10),
-    user: process.env.DBUser,
-    password: process.env.DBPassword,
-    database: process.env.DBName,
+    host: userAnswers.DBHost,
+    port: parseInt(userAnswers.DBPort || '', 10),
+    user: userAnswers.DBUser,
+    password: userAnswers.DBPassword,
+    database: userAnswers.DBName,
   })
 }
 
-const getDatabaseData = (): PromiseLike<IDatabaseData[]> => {
+const getDatabaseData = (answers: any): PromiseLike<IDatabaseData[]> => {
+  console.log(answers)
+  userAnswers = answers
   return new Promise<any>(
     (res, rej) => {
       const connection = createConnection()
@@ -121,7 +125,7 @@ const getDatabaseData = (): PromiseLike<IDatabaseData[]> => {
           if (err) {
             rej(err)
           }
-          const tablesList: string[] = results.map((result) => result[`Tables_in_${process.env.DBName}`])
+          const tablesList: string[] = results.map((result) => result[`Tables_in_${answers.DBName}`])
           res({connection, tables: tablesList})
         }
       )
