@@ -365,15 +365,32 @@ interface IBodyWithPK {
   }
 }
 
+/**
+ * adds the necessary filters to filter a query by primary key
+ * @param {Knex.QueryBuilder} QUERY - the Knex query builder
+ * @param {IBodyWithPK} body - the express req.body object containing the primary keys object
+ * @param {ITableInfo} TABLE_CONFIG - table configuration object
+ *
+ * @returns {Knex.QueryBuilder} the update Knex query builder with the filters set
+ */
 export function applyPKFilters(QUERY: Knex.QueryBuilder, body: IBodyWithPK, TABLE_CONFIG: ITableInfo) {
-  const columnsByName = getColumnsByName(TABLE_CONFIG)
   const PKS = Object.keys(body.pk)
+
+  if (typeof TABLE_CONFIG.pk === 'string' && PKS.length !== 1) {
+    throw new HttpException(412, 'Incorrect set of primary keys')
+  }
 
   if (Array.isArray(TABLE_CONFIG.pk) && TABLE_CONFIG.pk.length !== PKS.length) {
     throw new HttpException(412, 'Incorrect set of primary keys')
   }
-  let index = 0
-  for (index = 0; index < PKS.length; index += 1) {
+
+  const columnsByName = getColumnsByName(TABLE_CONFIG)
+
+  /**
+   * goes through each primary key sent on the request
+   * if a sent key is missing from the table it interrupts the cycle and throws an error
+   */
+  for (let index = 0; index < PKS.length; index += 1) {
     let valid = false
     if (Array.isArray(TABLE_CONFIG.pk)) {
       if (TABLE_CONFIG.pk.indexOf(PKS[index]) !== -1) {
