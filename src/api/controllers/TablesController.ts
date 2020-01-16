@@ -16,7 +16,7 @@ class TablesController {
 
   // returns a list of all database tables
   public getTables(req: IMCRequest, res: IMCResponse, next: NextFunction) {
-    const tables = this.settings.map(
+    const tables = this.settings.filter((t) => t.visible).map(
       (table: ITableInfo) => {
         let isAuthorized: boolean = true
         if (!table.visible) {
@@ -26,11 +26,13 @@ class TablesController {
           isAuthorized = hasAuthorization(table.roles.read, req.user)
         }
         if (isAuthorized) {
-          return {
-            name: table.name,
-            verbose: table.verbose,
-            order: table.order || undefined,
-          }
+          const result: any = {}
+          Object.keys(table).forEach((key) => {
+            if (!['columns', 'relations'].includes(key)) {
+              result[key] = (table as any)[key]
+            }
+          })
+          return result
         }
         return undefined
       }

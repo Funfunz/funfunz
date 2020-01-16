@@ -5,41 +5,44 @@ export default {
     type: 'object',
     required: [
       'name',
-      'pk',
       'columns',
       'roles',
     ],
     properties: {
       name: {type: 'string'},
-      pk: {
-        type: 'array',
-        items: {
-          type: 'string',
-        },
-      },
       columns: {
         type: 'array',
         items: {
           type: 'object',
           required: [
             'name',
-            'verbose',
-            'type',
-            'allowNull',
-            'input',
+            'visible',
+            'model',
           ],
           properties: {
             name: {type: 'string'},
-            verbose: {type: 'string'},
-            type: {type: 'string'},
-            allowNull: {type: 'boolean'},
-            input: {
+            visible: {
+              type: 'object',
+              required: [
+                'list',
+                'detail',
+                'relation',
+              ],
+              properties: {
+                list: {type: 'boolean'},
+                detail: {type: 'boolean'},
+                relation: {type: 'boolean'},
+              },
+            },
+            model: {
               type: 'object',
               required: [
                 'type',
+                'allowNull',
               ],
               properties: {
                 type: {type: 'string'},
+                allowNull: {type: 'boolean'},
               },
             },
           },
@@ -49,7 +52,9 @@ export default {
         type: 'object',
         required: [
           'read',
-          'write',
+          'create',
+          'update',
+          'delete',
         ],
         properties: {
           read: {
@@ -58,7 +63,19 @@ export default {
               type: 'string',
             },
           },
-          write: {
+          create: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+          update: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+          delete: {
             type: 'array',
             items: {
               type: 'string',

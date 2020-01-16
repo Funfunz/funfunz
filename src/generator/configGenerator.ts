@@ -20,10 +20,11 @@ const INPUT_TYPES: {
 function buildTableInfo(): ITableInfo {
   return {
     name: '',
+    visible: true,
     roles: {
       create: ['all'],
       read: ['all'],
-      write: ['all'],
+      update: ['all'],
       delete: ['all'],
     },
     columns: [],
@@ -45,8 +46,11 @@ function buildColumnInfo(): IColumnInfo {
   return {
     name: '',
     searchable: true,
-    listable: true,
-    editable: true,
+    visible: {
+      list: true,
+      detail: true,
+      relation: false,
+    },
     model: {
       type: '',
       allowNull: true,
@@ -92,23 +96,26 @@ export function generateSettings(
           columnData.model.type = column.Type
           columnData.layout.editField.type = INPUT_TYPES[column.Type]
           columnData.model.allowNull = column.Null === 'NO' ? false : true
-          columnData.editable = isEditable(column.Field)
+          columnData.visible.detail = isEditable(column.Field)
           if (column.Key === 'PRI') {
             columnData.model.isPk = true
+            columnData.visible.relation = true
           }
           tableData.schema.forEach(
             (schemaData) => {
               if (schemaData.COLUMN_NAME === column.Field) {
-                columnData.relation = {
-                  type: '1:n',
-                  table: schemaData.REFERENCED_TABLE_NAME || '',
-                  key: schemaData.REFERENCED_COLUMN_NAME || '',
-                  display: schemaData.REFERENCED_COLUMN_NAME || '',
+                if (!table.relations) {
+                  table.relations = []
                 }
+                table.relations.push({
+                  type: 'n:1',
+                  relationalTable: table.name,
+                  foreignKey: columnData.name,
+                  remoteTable: schemaData.REFERENCED_TABLE_NAME || '',
+                })
               }
             }
           )
-
           table.columns.push(columnData)
         }
       )

@@ -1,120 +1,172 @@
-/* istanbul ignore file */
 export default {
   "name": "families",
-  "verbose": "Families",
-  "pk": ["id"],
-  "relations": {
-    "manyToOne": {
-      "products": [{
-        "fk": "familyId",
-        "target": "id",
-      }],
-    },
+  "visible": true,
+  "roles": {
+    "create": [
+      "all"
+    ],
+    "read": [
+      "all"
+    ],
+    "update": [
+      "all"
+    ],
+    "delete": [
+      "all"
+    ]
   },
   "columns": [
     {
       "name": "id",
-      "verbose": "id",
-      "type": "int(11)",
-      "allowNull": false,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": true,
+        "relation": true
       },
-      "editable": true,
-      "input": {
-        "type": "number"
+      "model": {
+        "type": "int",
+        "allowNull": false,
+        "isPk": true
+      },
+      "layout": {
+        "label": "Id",
+        "listColumn": {},
+        "editField": {
+          "type": "number"
+        }
       }
     },
     {
       "name": "order",
-      "verbose": "order",
-      "type": "int(11)",
-      "allowNull": true,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": true,
+        "relation": false
       },
-      "editable": true,
-      "input": {
-        "type": "number"
+      "model": {
+        "type": "int",
+        "allowNull": true
+      },
+      "layout": {
+        "label": "Order",
+        "listColumn": {},
+        "editField": {
+          "type": "number"
+        }
       }
     },
     {
       "name": "imageUrl",
-      "verbose": "imageUrl",
-      "type": "varchar(255)",
-      "allowNull": true,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": true,
+        "relation": false
       },
-      "editable": true,
-      "input": {
-        "type": "file"
+      "model": {
+        "type": "varchar(255)",
+        "allowNull": true
+      },
+      "layout": {
+        "label": "ImageUrl",
+        "listColumn": {},
+        "editField": {
+          "type": "text"
+        }
       }
     },
     {
       "name": "name",
-      "verbose": "name",
-      "type": "varchar(255)",
-      "allowNull": false,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": true,
+        "relation": false,
       },
-      "editable": true,
-      "input": {
-        "type": "text"
+      "model": {
+        "type": "varchar(255)",
+        "allowNull": false
+      },
+      "layout": {
+        "label": "Name",
+        "listColumn": {},
+        "editField": {
+          "type": "text"
+        }
       }
     },
     {
       "name": "email",
-      "verbose": "email",
-      "type": "varchar(255)",
-      "allowNull": true,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": true,
+        "relation": false
       },
-      "editable": true,
-      "input": {
-        "type": "text"
+      "model": {
+        "type": "varchar(255)",
+        "allowNull": true
+      },
+      "layout": {
+        "label": "Email",
+        "listColumn": {},
+        "editField": {
+          "type": "text"
+        }
       }
     },
     {
       "name": "createdAt",
-      "verbose": "createdAt",
-      "type": "datetime",
-      "allowNull": false,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": false,
+        "relation": false
       },
-      "editable": true,
-      "input": {
-        "type": "date"
+      "model": {
+        "type": "datetime",
+        "allowNull": false
+      },
+      "layout": {
+        "label": "CreatedAt",
+        "listColumn": {},
+        "editField": {
+          "type": "date"
+        }
       }
     },
     {
       "name": "updatedAt",
-      "verbose": "updatedAt",
-      "type": "datetime",
-      "allowNull": false,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": false,
+        "relation": false
       },
-      "editable": true,
-      "input": {
-        "type": "date"
+      "model": {
+        "type": "datetime",
+        "allowNull": false
+      },
+      "layout": {
+        "label": "UpdatedAt",
+        "listColumn": {},
+        "editField": {
+          "type": "date"
+        }
       }
     }
   ],
-  "visible": true,
-  "roles": {
-    "read": ["all"],
-    "write": ["all"],
-    "delete": ["all"],
+  "layout": {
+    "label": "Families",
+    "listPage": {},
+    "searchField": {},
+    "createButton": {},
+    "editButton": {},
+    "deleteButton": {},
+    "editPage": {
+      "sections": []
+    }
   }
 }

@@ -3,7 +3,7 @@ export default {
     "host": "127.0.0.1",
     "database": "test_db",
     "user": "root",
-    "password": "password",
+    "password": "",
     "port": "3306"
   },
   "server": {

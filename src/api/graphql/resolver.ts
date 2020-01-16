@@ -1,10 +1,10 @@
 import database from '@root/api/db'
-import { applyParentTableFilters, applyQueryFilters, requirementsCheck } from '@root/api/utils'
+import { applyParentTableFilters, applyQueryFilters, requirementsCheck, getPKs } from '@root/api/utils'
 import { ITableInfo } from '@root/generator/configurationTypes'
 import { GraphQLResolveInfo } from 'graphql'
 
 function getFields(table: ITableInfo, info: GraphQLResolveInfo): string[] {
-  const fields = [...table.pk]
+  const fields = [...(getPKs(table))]
 
   if (info.fieldNodes[0].selectionSet) {
     info.fieldNodes[0].selectionSet.selections.forEach(
@@ -17,8 +17,9 @@ function getFields(table: ITableInfo, info: GraphQLResolveInfo): string[] {
             return (c.relation && c.relation.type === 'oneToMany' &&
               c.relation.table === columnName) ? true : false
           })
-          if (column) {
-            fields.push(column.name)
+          const relation = table.relations && table.relations.find((r) => r.remoteTable === columnName)
+          if (relation) {
+            fields.push(relation.foreignKey)
           }
         }
       }

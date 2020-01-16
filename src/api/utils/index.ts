@@ -91,31 +91,22 @@ export function hasAuthorization(
  *
  * @returns {IColumnInfo[]} array of filtered columns
  */
-export function filterVisibleTableColumns(table: ITableInfo, target: 'main' | 'detail') {
-  const toKeep: {
-    [key: string]: boolean
-  } = {}
-
-  /**
-   * since the chips are treated has columns by the frontend and they include data from multiple columns
-   * we need to include all the related database columns in order to get all the necessary row data
-   */
-  if (table.chips && target === 'main') {
-    table.chips.forEach(
-      (chip) => {
-        chip.columns.forEach(
-          (column) => {
-            toKeep[column.name] = true
-          }
-        )
-      }
-    )
-  }
-  return table.columns.filter(
-    (column) => column.visible[target] || table.pk.indexOf(column.name) >= 0  || toKeep[column.name]
-  ).map(
-    (column) => column.name
-  )
+export function filterVisibleTableColumns(table: ITableInfo, target: 'list' | 'detail' | 'relation') {
+  return table.columns.filter((column) => {
+    if (column.model.isPk) {
+      return true
+    } else if (target === 'list') {
+      return column.visible.list
+    } else if (target === 'detail') {
+      return column.visible.detail
+    } else if (target === 'relation') {
+      return column.visible.relation
+    } else {
+      return false
+    }
+  }).map((column) => {
+    return column.name
+  })
 }
 
 export function runHook(
@@ -294,9 +285,10 @@ export function applyQueryFilters(
   Object.keys(FILTERS).forEach(
     (key, index) => {
       if (
-        columnsByName[key].type === 'int(11)'
-        || columnsByName[key].type === 'smallint(5)'
-        || columnsByName[key].type === 'datetime'
+        columnsByName[key].model.type === 'int(11)'
+        || columnsByName[key].model.type === 'int'
+        || columnsByName[key].model.type === 'smallint(5)'
+        || columnsByName[key].model.type === 'datetime'
       ) {
         index === 0 ?
           (
@@ -365,6 +357,14 @@ interface IBodyWithPK {
   }
 }
 
+export function getPKs(TABLE_CONFIG: ITableInfo): string[] {
+  return TABLE_CONFIG.columns.filter((column) => {
+    return column.model.isPk
+  }).map((column) => {
+    return column.name
+  })
+}
+
 /**
  * adds the necessary filters to filter a query by primary key
  * @param {Knex.QueryBuilder} QUERY - the Knex query builder
@@ -375,12 +375,12 @@ interface IBodyWithPK {
  */
 export function applyPKFilters(QUERY: Knex.QueryBuilder, body: IBodyWithPK, TABLE_CONFIG: ITableInfo) {
   const PKS = Object.keys(body.pk)
-
-  if (typeof TABLE_CONFIG.pk === 'string' && PKS.length !== 1) {
+  const tablePKs = getPKs(TABLE_CONFIG)
+  if (typeof tablePKs === 'string' && PKS.length !== 1) {
     throw new HttpException(412, 'Incorrect set of primary keys')
   }
 
-  if (Array.isArray(TABLE_CONFIG.pk) && TABLE_CONFIG.pk.length !== PKS.length) {
+  if (Array.isArray(tablePKs) && tablePKs.length !== PKS.length) {
     throw new HttpException(412, 'Incorrect set of primary keys')
   }
 
@@ -392,11 +392,11 @@ export function applyPKFilters(QUERY: Knex.QueryBuilder, body: IBodyWithPK, TABL
    */
   for (let index = 0; index < PKS.length; index += 1) {
     let valid = false
-    if (Array.isArray(TABLE_CONFIG.pk)) {
-      if (TABLE_CONFIG.pk.indexOf(PKS[index]) !== -1) {
+    if (Array.isArray(tablePKs)) {
+      if (tablePKs.indexOf(PKS[index]) !== -1) {
         valid = true
       }
-    } else if (TABLE_CONFIG.pk === PKS[index]) {
+    } else if (tablePKs === PKS[index]) {
       valid = true
     }
 
@@ -404,7 +404,7 @@ export function applyPKFilters(QUERY: Knex.QueryBuilder, body: IBodyWithPK, TABL
       throw new HttpException(412, `Primary key ${PKS[index]} missing on table`)
     }
 
-    if (columnsByName[PKS[index]].type === 'int(11)') {
+    if (columnsByName[PKS[index]].model.type === 'int' || columnsByName[PKS[index]].model.type === 'int(11)') {
       index === 0 ?
         QUERY.where({
           [PKS[index]]: body.pk[PKS[index]],
@@ -443,7 +443,7 @@ export function isNull(val: any) {
  */
 export function requirementsCheck(
   tableConfig: ITableInfo,
-  accessType: 'read' | 'write' | 'delete',
+  accessType: 'read' | 'create' | 'update' | 'delete',
   user: IUser | undefined,
   dbInstance: Database
 ) {

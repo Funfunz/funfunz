@@ -174,9 +174,18 @@ describe('routes', () => {
     )
   })
 
-  it('get table data with included relations', () => {
+  it('get table data with included n:1 relations', () => {
     return request(application)
     .get('/table/products?includeRelations=true').then(
+      (response) => {
+        return expect(response.status).toBe(200)
+      }
+    )
+  })
+
+  it('get table data with included m:n relations', () => {
+    return request(application)
+    .get('/table/users?includeRelations=true').then(
       (response) => {
         return expect(response.status).toBe(200)
       }

@@ -57,11 +57,12 @@ export interface IManyToOneRelation {
 
 export interface ITableInfo {
   name: string,
+  visible: boolean,
   relations?: ITableRelation[],
   roles: {
     create: string[],
     read: string[],
-    write: string[],
+    update: string[],
     delete: string[],
   },
   columns: IColumnInfo[],
@@ -78,22 +79,24 @@ export interface ITableRelation {
   type: '1:n' | 'n:1' | 'm:n',
   relationalTable: string,
   foreignKey: string,
-  remoteForeignKey: string,
+  remoteForeignKey?: string,
   remoteTable: string,
 }
 
 export interface IColumnRelation {
-  type: '1:n',
+  type: 'n:1',
   table: string,
   key: string,
-  display: string,
 }
 
 export interface IColumnInfo {
   name: string,
   searchable: boolean,
-  listable: boolean,
-  editable: boolean,
+  visible: {
+    list: boolean,
+    detail: boolean,
+    relation: boolean,
+  },
   model: {
     isPk?: boolean,
     type: string,

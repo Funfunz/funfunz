@@ -12,6 +12,7 @@ import {
   GraphQLObjectType,
   GraphQLString,
 } from 'graphql'
+import { getPKs } from '../utils'
 
 const debug = Debug('funfunzmc:graphql-type-builder')
 
@@ -42,7 +43,7 @@ export function buildFields(table: ITableInfo, options: IBuildTypeOptions = { re
   } = {}
   table.columns.forEach(
     (column) => {
-      const isPk = table.pk.indexOf(column.name) >= 0
+      const isPk = getPKs(table).indexOf(column.name) >= 0
       if (include && !include.includes(column.name) && !(isPk ? include.includes('pk') : false)) {
         return
       }

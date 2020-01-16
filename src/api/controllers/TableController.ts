@@ -40,22 +40,12 @@ class TableController {
    */
   public getTableConfig(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     const TABLE_CONFIG = getTableConfig(req.params.table)
-    const RESULT = {
-      columns: TABLE_CONFIG.columns,
-      name: TABLE_CONFIG.name,
-      pk: TABLE_CONFIG.pk,
-      verbose: TABLE_CONFIG.verbose,
-      chips: TABLE_CONFIG.chips || [],
-      itemTitle: TABLE_CONFIG.itemTitle,
-      relations: TABLE_CONFIG.relations,
-      actions: TABLE_CONFIG.actions,
-    }
 
     if (!hasAuthorization(TABLE_CONFIG.roles.read, req.user)) {
       return catchMiddleware(next, new HttpException(401, 'Not authorized'))
     }
-    addToResponse(res, 'results')(RESULT)
-    return nextAndReturn(next)(RESULT)
+    addToResponse(res, 'results')(TABLE_CONFIG)
+    return nextAndReturn(next)(TABLE_CONFIG)
   }
 
   /**
@@ -78,7 +68,7 @@ class TableController {
     const TABLE_NAME = req.params.table
     const ORDER = req.query.order || null
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
-    const COLUMNS = filterVisibleTableColumns(TABLE_CONFIG, 'main')
+    const COLUMNS = filterVisibleTableColumns(TABLE_CONFIG, 'list')
 
     return requirementsCheck(TABLE_CONFIG, 'read', req.user, database).then(
       (DB) => {
@@ -293,7 +283,7 @@ class TableController {
 
     return requirementsCheck(TABLE_CONFIG, 'read', req.user, database).then(
       (DB) => {
-        const requestedColumns = filterVisibleTableColumns(TABLE_CONFIG, 'detail')
+        const requestedColumns = filterVisibleTableColumns(TABLE_CONFIG, 'list')
         let QUERY = DB.select(requestedColumns).from(`${req.params.table}`)
         QUERY = applyPKFilters(QUERY, req.body, TABLE_CONFIG)
         return QUERY
@@ -324,7 +314,7 @@ class TableController {
   public insertRowData(req: IMCRequest, res: IMCResponse, next: NextFunction) {
     const TABLE_NAME = req.params.table
     const TABLE_CONFIG = getTableConfig(TABLE_NAME)
-    return requirementsCheck(TABLE_CONFIG, 'write', req.user, database).then(
+    return requirementsCheck(TABLE_CONFIG, 'create', req.user, database).then(
       (DB) => {
         const data = normalizeData(req.body.data, TABLE_CONFIG)
         return Promise.all([
@@ -359,12 +349,12 @@ class TableController {
       next(new HttpException(500, 'Missing data object'))
       return
     }
-    return requirementsCheck(TABLE_CONFIG, 'write', req.user, database).then(
+    return requirementsCheck(TABLE_CONFIG, 'update', req.user, database).then(
       (DB) => {
         const acceptedColumns: string[] = []
         TABLE_CONFIG.columns.forEach(
           (column) => {
-            if (column.type === 'datetime') {
+            if (column.model.type === 'datetime') {
               req.body.data[column.name] = new Date(req.body.data[column.name] || null)
             }
             if (req.body.data[column.name] !== undefined) {

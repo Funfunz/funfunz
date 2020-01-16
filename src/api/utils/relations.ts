@@ -3,9 +3,10 @@ import { HttpException } from '@root/api/types'
 import {
   filterVisibleTableColumns,
   getColumnsWithRelations,
+  getPKs,
   getTableConfig,
 } from '@root/api/utils'
-import { IColumnRelation, IManyToOneRelation, ITableInfo } from '@root/generator/configurationTypes'
+import { IColumnRelation, IManyToOneRelation, ITableInfo, ITableRelation } from '@root/generator/configurationTypes'
 import Knex from 'knex'
 
 interface IToRequestItem {
@@ -103,20 +104,17 @@ export function  getManyToOneRelationQueries(TABLE_CONFIG: ITableInfo, parentDat
     results: any[];
     tableName: string;
   }>> = []
-  if (TABLE_CONFIG.relations && TABLE_CONFIG.relations.manyToOne) {
-    const MANY_TO_ONE = TABLE_CONFIG.relations.manyToOne
-    const KEYS: string[] = Object.keys(MANY_TO_ONE)
-    KEYS.forEach(
-      (tableName) => {
-        relationQueries.push(
-          getRelatedRow(
-            tableName,
-            MANY_TO_ONE[tableName],
-            parentData
-          )
+  const MANY_TO_ONE = TABLE_CONFIG.relations && TABLE_CONFIG.relations.filter((r) => r.type === 'n:1')
+  if (MANY_TO_ONE && MANY_TO_ONE.length > 0) {
+    MANY_TO_ONE.forEach((relation) => {
+      relationQueries.push(
+        getRelatedRow(
+          relation.remoteTable,
+          relation,
+          parentData
         )
-      }
-    )
+      )
+    })
   }
 
   return relationQueries
@@ -124,24 +122,42 @@ export function  getManyToOneRelationQueries(TABLE_CONFIG: ITableInfo, parentDat
 
 export function  getManyToManyRelationQueries(TABLE_CONFIG: ITableInfo, parentData: any) {
   let relationQueries: Array<Promise<{}>> = []
-  if (TABLE_CONFIG.relations && TABLE_CONFIG.relations.manyToMany) {
+  const relations = TABLE_CONFIG.relations && TABLE_CONFIG.relations.filter((r) => r.type === 'm:n')
+  if (relations && relations.length > 0) {
     if (!database.db) {
       throw new HttpException(500, 'No database')
     }
+    const tablePks = getPKs(TABLE_CONFIG)
+    if (tablePks.length > 1) {
+      throw new Error('Multiple pks not supported for m:n relations')
+    }
+    const tablePk = tablePks[0]
     const DB = database.db
-    relationQueries = TABLE_CONFIG.relations.manyToMany.map(
+    relationQueries = relations.map(
       (relation) => {
-        return DB(relation.relationTable).select().where(relation.foreignKey, parentData[relation.localId]).then(
+        return DB(relation.relationalTable).select().where(relation.foreignKey, parentData[tablePk]).then(
           (relationResult: any) => {
             return relationResult.map(
-              (relationRow: any) => relationRow[relation.remoteForeignKey]
+              (relationRow: any) => {
+                if (!relation.remoteForeignKey) {
+                  throw new Error('Invalid remoteForeignKey key')
+                }
+                return relationRow[relation.remoteForeignKey]
+              }
             )
           }
         ).then(
           (relationRemoteIds) => {
+            const remoteTableConfig = getTableConfig(relation.remoteTable)
+            const remoteTablePks = getPKs(remoteTableConfig)
+            if (remoteTablePks.length > 1) {
+              throw new Error('Multiple pks not supported for m:n relations')
+            }
+            const remoteTablePk = remoteTablePks[0]
+            const requestedColumns = filterVisibleTableColumns(remoteTableConfig, 'relation')
             return Promise.all([
               relation.remoteTable,
-              DB(relation.remoteTable).select().whereIn(relation.remoteId, relationRemoteIds),
+              DB(relation.remoteTable).select(requestedColumns).whereIn(remoteTablePk, relationRemoteIds),
             ])
           }
         )
@@ -152,25 +168,19 @@ export function  getManyToManyRelationQueries(TABLE_CONFIG: ITableInfo, parentDa
   return relationQueries
 }
 
-export function  getRelatedRow(tableName: string, columnNames: IManyToOneRelation[], parentData: any) {
+export function getRelatedRow(tableName: string, tableRelation: ITableRelation, parentData: any) {
   if (!database.db) {
     throw new HttpException(500, 'No database')
   }
   const TABLE_CONFIG = getTableConfig(tableName)
-
-  const requestedColumns = filterVisibleTableColumns(TABLE_CONFIG, 'detail').filter(
-    (column) => !columnNames.find((relatedData) => relatedData.fk.indexOf(column) >= 0)
-  )
-
+  const tablePks = getPKs(TABLE_CONFIG);
+  if (tablePks.length > 1) {
+    throw new Error('Multiple pks not supported for n:1 relations')
+  }
+  const tablePk = tablePks[0]
+  const requestedColumns = filterVisibleTableColumns(TABLE_CONFIG, 'relation')
   const QUERY = database.db.select(requestedColumns).from(tableName)
-
-  columnNames.forEach(
-    (columnName, index) => {
-      index === 0
-        ? QUERY.where(columnName.fk, parentData[columnName.target])
-        : QUERY.andWhere(columnName.fk, parentData[columnName.target])
-    }
-  )
+  QUERY.where(tablePk, parentData[tableRelation.foreignKey])
 
   return QUERY.then(
     (results) => {
@@ -205,7 +215,6 @@ export function mergeRelatedData([results, manyToOneRelations, manyToManyRelatio
 export function getRelatedData(tableConfig: ITableInfo, result: any) {
   const manyToOneRelationQueries = getManyToOneRelationQueries(tableConfig, result)
   const manyToManyRelationQueries = getManyToManyRelationQueries(tableConfig, result)
-
   return Promise.all([
     result,
     Promise.all(manyToOneRelationQueries),

@@ -7,7 +7,7 @@ import { ITableInfo } from '@root/generator/configurationTypes'
 import Debug from 'debug'
 import { GraphQLResolveInfo } from 'graphql'
 import Knex from 'Knex'
-import { applyQueryFilters, requirementsCheck, runHook } from '../utils'
+import { applyQueryFilters, getPKs, requirementsCheck, runHook } from '../utils'
 import { resolver } from './resolver'
 
 const debug = Debug('funfunzmc:graphql-mutation-builder')
@@ -31,10 +31,10 @@ function buildUpdateByIdMutation(table: ITableInfo) {
   const mutation = {
     type: buildType(table, { relations: true }),
     resolve: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
-      return requirementsCheck(table, 'write', context.user, database).then((db) => {
+      return requirementsCheck(table, 'update', context.user, database).then((db) => {
         const acceptedColumns: string[] = []
         table.columns.forEach((column) => {
-          if (column.type === 'datetime') {
+          if (column.model.type === 'datetime') {
             args[column.name] = new Date(args[column.name] || null)
           }
           if (args[column.name] !== undefined) {
@@ -49,7 +49,7 @@ function buildUpdateByIdMutation(table: ITableInfo) {
       }).then(([db, data]) => {
         let SQL = db(table.name)
         const query: any = {}
-        table.pk.forEach((pk) => {
+        getPKs(table).forEach((pk) => {
           query[pk] = isNaN(args[pk]) ? args[pk] : Number(args[pk])
         })
         SQL = applyQueryFilters(SQL, query, table)
@@ -76,7 +76,7 @@ function buildAddMutation(table: ITableInfo) {
   const mutation = {
     type: buildType(table),
     resolve: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
-      return requirementsCheck(table, 'write', context.user, database).then((db) => {
+      return requirementsCheck(table, 'create', context.user, database).then((db) => {
         const data = normalizeData(args, table)
         return Promise.all([
           db,
@@ -88,7 +88,7 @@ function buildAddMutation(table: ITableInfo) {
           db,
           db(table.name).insert(data).then((ids) => {
             const query: any = {}
-            table.pk.forEach((key, index) => {
+            getPKs(table).forEach((key, index) => {
               query[key] = args[key] || ids[index]
             })
             return resolver(table)(parent, query, context, info)
