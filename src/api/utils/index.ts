@@ -201,19 +201,23 @@ export function applyQueryFiltersSearch(
   return DB_QUERY
 }
 
-const oneToManyRelation = (table: ITableInfo, parentTable: ITableInfo) => table.relations &&
-  table.relations.manyToOne && table.relations.manyToOne[parentTable.name] &&
-  table.relations.manyToOne[parentTable.name][0]
+const oneToManyRelation = (table: ITableInfo, parentTable: ITableInfo) => {
+  return parentTable.relations && parentTable.relations.find((relation) => {
+    return relation.type === '1:n' && relation.remoteTable === table.name
+  })
+}
 
-const manyToOneRelation = (table: ITableInfo, parentTable: ITableInfo) => parentTable.relations &&
-  parentTable.relations.manyToOne && parentTable.relations.manyToOne[table.name] &&
-  parentTable.relations.manyToOne[table.name][0]
+const manyToOneRelation = (table: ITableInfo, parentTable: ITableInfo) => {
+  return parentTable.relations && parentTable.relations.find((relation) => {
+    return relation.type === 'n:1' && relation.remoteTable === table.name
+  })
+}
 
-const manyToManyRelation = (table: ITableInfo, parentTable: ITableInfo) => parentTable.relations &&
-  parentTable.relations.manyToMany && table.relations && table.relations.manyToMany && [
-    table.relations.manyToMany && table.relations.manyToMany.find((r) => r.remoteTable === parentTable.name),
-    parentTable.relations.manyToMany && parentTable.relations.manyToMany.find((r) => r.remoteTable === table.name),
-  ]
+const manyToManyRelation = (table: ITableInfo, parentTable: ITableInfo) => {
+  return parentTable.relations && parentTable.relations.find((relation) => {
+    return relation.type === 'm:n' && relation.remoteTable === table.name
+  })
+}
 
 export function applyParentTableFilters(
   QUERY: Knex.QueryBuilder,
@@ -221,53 +225,60 @@ export function applyParentTableFilters(
   parentTable: ITableInfo,
   parentObj: any
 ) {
-
   let relation: any = oneToManyRelation(table, parentTable)
   if (relation) {
-    const column = parentTable.columns.find((col) => {
-      return col.relation && col.relation.table ? true : false
-    })
-    if (column) {
-      const key = relation.target
-      const value = parentObj[column.name]
-      return Promise.resolve(
-        applyQueryFilters(QUERY, { [key]: value }, table).first()
-      )
+    const pks = getPKs(parentTable)
+    if (pks.length > 1) {
+      throw new Error('Multiple pks relation not supported')
     }
+    const pk = pks[0]
+    const value = parentObj[pk]
+    return Promise.resolve(
+      applyQueryFilters(QUERY, { [relation.foreignKey]: value }, table)
+    )
   }
 
   relation = manyToOneRelation(table, parentTable)
   if (relation) {
-    const column = table.columns.find((col) => {
-      return col.relation && col.relation.table ? true : false
-    })
-    if (column) {
-      const key = column.name
-      const value = parentObj[relation.target]
-      return Promise.resolve(
-        applyQueryFilters(QUERY, { [key]: value }, table)
-      )
+    const pks = getPKs(table)
+    if (pks.length > 1) {
+      throw new Error('Multiple pks relation not supported')
     }
+    const pk = pks[0]
+    console.log(parentObj,relation.foreignKey)
+    const value = parentObj[relation.foreignKey]
+    return Promise.resolve(
+      applyQueryFilters(QUERY, { [pk]: value }, table)
+    )
   }
 
   relation = manyToManyRelation(table, parentTable)
   if (relation) {
-    const [childRelation, parentRelation] = relation
-    if (childRelation && parentRelation && parentObj) {
+    if (relation) {
+      const pks = getPKs(table)
+      if (pks.length > 1) {
+        throw new Error('Multiple pks relation not supported')
+      }
+      const pk = pks[0]
+      const remotePks = getPKs(parentTable)
+      if (remotePks.length > 1) {
+        throw new Error('Multiple pks relation not supported')
+      }
+      const remotePk = remotePks[0]
       return database && database.db && database.db(
-        childRelation.relationTable
+        relation.relationalTable
       ).select([
-        childRelation.remoteForeignKey,
-        parentRelation.remoteForeignKey,
+        relation.foreignKey,
+        relation.remoteForeignKey,
       ]).where(
-        childRelation.remoteForeignKey,
-        parentObj[childRelation.localId]
+        relation.foreignKey,
+        parentObj[remotePk]
       ).then((results) => {
         const IDS = results.map((obj) => {
-          return obj[parentRelation.remoteForeignKey]
+          return obj[relation.remoteForeignKey]
         })
         const filter = {
-          [parentRelation.remoteId]: IDS,
+          [pk]: IDS,
         }
         return applyQueryFilters(QUERY, filter, table)
       })
@@ -337,7 +348,7 @@ export function applyQueryFilters(
 }
 
 export function applyQuerySearch(QUERY: Knex.QueryBuilder, search: string, TABLE_CONFIG: ITableInfo) {
-  const searchFields = TABLE_CONFIG.searchFields || []
+  const searchFields = TABLE_CONFIG.columns.filter((c) => c.searchable).map((c) => c.name) || []
   QUERY.where(function() {
     searchFields.forEach(
       (searchField, index) => {

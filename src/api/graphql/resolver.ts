@@ -12,15 +12,12 @@ function getFields(table: ITableInfo, info: GraphQLResolveInfo): string[] {
         const columnName = selection.name.value
         if (table.columns.find((c) => c.name === columnName)) {
           fields.push(columnName)
-        } else {
-          const column = table.columns.find((c) => {
-            return (c.relation && c.relation.type === 'oneToMany' &&
-              c.relation.table === columnName) ? true : false
-          })
-          const relation = table.relations && table.relations.find((r) => r.remoteTable === columnName)
-          if (relation) {
-            fields.push(relation.foreignKey)
-          }
+        }
+        const relation = table.relations && table.relations.find((r) => {
+          return r.remoteTable === columnName && r.relationalTable === table.name
+        })
+        if (relation) {
+          fields.push(relation.foreignKey)
         }
       }
     )

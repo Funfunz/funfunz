@@ -55,82 +55,81 @@ export function buildFields(table: ITableInfo, options: IBuildTypeOptions = { re
           ? required.includes('pk')
           : required.includes(column.name)
       )
-      if (!column.relation && (table.pk.indexOf(column.name) >= 0 || MATCHER[column.type])) {
-        const type = isPk ? GraphQLID : MATCHER[column.type]
+      const relationalColumns = (table.relations && table.relations.map((relation) => relation.foreignKey)) || []
+      if (!relationalColumns.includes(column.name) &&
+        (getPKs(table).indexOf(column.name) >= 0 || MATCHER[column.model.type])) {
+        const type = isPk ? GraphQLID : MATCHER[column.model.type]
         result[column.name] = {
           type: isRequired ? new GraphQLNonNull(type) : type,
-          description: column.verbose,
+          description: column.layout.label,
         }
       }
 
-      if (column.relation) {
+      if (relationalColumns.includes(column.name)) {
         if (relations) {
-          const relation = column.relation
-          const columnName = relation.type === 'oneToMany'
-            ? relation.table
+          const relation = table.relations && table.relations.find((r) => r.foreignKey === column.name)
+          if (!relation) {
+            throw new Error('Invalid relation configuration')
+          }
+          const columnName = relation.type === 'n:1'
+            ? relation.remoteTable
             : column.name
           const relatedTable = config().settings.filter(
-            (settingsTable) => settingsTable.name === relation.table
+            (settingsTable) => settingsTable.name === relation.remoteTable
           )[0]
           result[columnName] = {
             type: buildType(relatedTable),
-            description: column.verbose,
+            description: column.layout.label,
             resolve: resolver(relatedTable, table),
             args: buildFields(relatedTable, { relations: false }),
           }
           if (column.name !== columnName) {
             result[column.name] = {
               type: GraphQLID,
-              description: column.verbose,
+              description: column.layout.label,
             }
           }
         } else {
           result[column.name] = {
             type: isRequired ? new GraphQLNonNull(GraphQLID) : GraphQLID,
-            description: column.verbose,
+            description: column.layout.label,
           }
         }
       }
     }
   )
   if (table.relations && relations) {
-    if (table.relations.manyToOne) {
-      Object.keys(table.relations.manyToOne).forEach(
-        (tableName) => {
-          const relation = ((table.relations || {}).manyToOne || {})[tableName]
-          if (relation) {
-            const columnName = tableName
-            const relationTable = config().settings.filter(
-              (settingsTable) => settingsTable.name === tableName
-            )[0]
-            result[columnName] = {
-              type: new GraphQLList(buildType(relationTable)),
-              description: relationTable.verbose,
-              resolve: resolver(relationTable, table),
-              args: buildFields(relationTable, { relations: false }),
-            }
-          }
+    const oneToMany = table.relations && table.relations.filter((r) => r.type === '1:n')
+    if (oneToMany) {
+      oneToMany.forEach((relation) => {
+        const columnName = relation.remoteTable
+        const relationTable = config().settings.filter(
+          (settingsTable) => settingsTable.name === relation.relationalTable
+        )[0]
+        result[columnName] = {
+          type: new GraphQLList(buildType(relationTable)),
+          description: relationTable.name,
+          resolve: resolver(relationTable, table),
+          args: buildFields(relationTable, { relations: false }),
         }
-      )
+      })
     }
-    if (table.relations.manyToMany) {
-      table.relations.manyToMany.forEach(
-        (relation) => {
-          const columnName = relation.remoteTable
-          const remoteTable = config().settings.filter(
-            (settingsTable) => settingsTable.name === relation.remoteTable
-          )[0]
-          result[columnName] = {
-            type: new GraphQLList(buildType(remoteTable)),
-            description: relation.verbose,
-            resolve: resolver(remoteTable, table),
-            args: buildFields(remoteTable, { relations: false }),
-          }
+    const manyToMany = table.relations && table.relations.filter((r) => r.type === 'm:n')
+    if (manyToMany) {
+      manyToMany.forEach((relation) => {
+        const columnName = relation.remoteTable
+        const remoteTable = config().settings.filter(
+          (settingsTable) => settingsTable.name === relation.remoteTable
+        )[0]
+        result[columnName] = {
+          type: new GraphQLList(buildType(remoteTable)),
+          description: remoteTable.name,
+          resolve: resolver(remoteTable, table),
+          args: buildFields(remoteTable, { relations: false }),
         }
-      )
+      })
     }
   }
-
   return result
 }
 

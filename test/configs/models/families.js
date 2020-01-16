@@ -15,6 +15,14 @@ export default {
       "all"
     ]
   },
+  "relations": [
+    {
+      "type": "1:n",
+      "relationalTable": "products",
+      "foreignKey": "FamilyId",
+      "remoteTable": "products"
+    }
+  ],
   "columns": [
     {
       "name": "id",
