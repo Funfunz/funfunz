@@ -6,7 +6,7 @@ import { normalize as normalizeData } from '@root/api/utils/data'
 import { ITableInfo } from '@root/generator/configurationTypes'
 import Debug from 'debug'
 import { GraphQLResolveInfo } from 'graphql'
-import Knex from 'Knex'
+import Knex from 'knex'
 import { applyQueryFilters, requirementsCheck, runHook } from '../utils'
 import { resolver } from './resolver'
 
