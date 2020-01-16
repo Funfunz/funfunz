@@ -114,7 +114,6 @@ function createConnection() {
 }
 
 const getDatabaseData = (answers: any): PromiseLike<IDatabaseData[]> => {
-  console.log(answers)
   userAnswers = answers
   return new Promise<any>(
     (res, rej) => {

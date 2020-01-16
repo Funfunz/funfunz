@@ -12,6 +12,7 @@ const INPUT_TYPES: {
   'varchar(255)': 'text',
   'tinyint(1)': 'checkbox',
   'int(11)': 'number',
+  'int': 'number',
   'datetime': 'date',
   'text': 'text',
 }
@@ -50,7 +51,11 @@ function buildColumnInfo(): IColumnInfo {
       type: '',
       allowNull: true,
     },
-    layout: {},
+    layout: {
+      label: '',
+      listColumn: {},
+      editField: {},
+    },
   }
 }
 
@@ -83,7 +88,7 @@ export function generateSettings(
         (column) => {
           const columnData = buildColumnInfo()
           columnData.name = column.Field
-          columnData.layout.label = column.Field
+          columnData.layout.label = column.Field.charAt(0).toUpperCase() + column.Field.substring(1)
           columnData.model.type = column.Type
           columnData.layout.editField.type = INPUT_TYPES[column.Type]
           columnData.model.allowNull = column.Null === 'NO' ? false : true
