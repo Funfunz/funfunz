@@ -22,7 +22,7 @@ function getFields(table: ITableInfo, info: GraphQLResolveInfo): string[] {
       }
     )
   }
-  return fields
+  return [...new Set(fields)]
 }
 
 export function resolver(table: ITableInfo, parentTable?: ITableInfo) {

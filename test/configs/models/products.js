@@ -193,6 +193,12 @@ export default {
       "relationalTable": "products",
       "foreignKey": "FamilyId",
       "remoteTable": "families"
+    },
+    {
+      "type": "1:n",
+      "relationalTable": "images",
+      "foreignKey": "ProductId",
+      "remoteTable": "images"
     }
   ]
 }

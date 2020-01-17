@@ -28,6 +28,7 @@ const MATCHER: {
 } = {
   'varchar(255)': GraphQLString,
   'int(11)': GraphQLInt,
+  'int': GraphQLInt,
   'tinyint(1)': GraphQLBoolean,
   'datetime': GraphQLString,
 }

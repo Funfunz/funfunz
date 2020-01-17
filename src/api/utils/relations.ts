@@ -24,7 +24,7 @@ function toRequestBuilder(relation: IColumnRelation, columnName: string): IToReq
   return {
     values: new Set<number>(),
     key: relation.key,
-    display: relation.display,
+    display: '',
     foreignKeyColumn: columnName,
   }
 }

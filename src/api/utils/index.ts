@@ -233,9 +233,7 @@ export function applyParentTableFilters(
     }
     const pk = pks[0]
     const value = parentObj[pk]
-    return Promise.resolve(
-      applyQueryFilters(QUERY, { [relation.foreignKey]: value }, table)
-    )
+    return applyQueryFilters(QUERY, { [relation.foreignKey]: value }, table)
   }
 
   relation = manyToOneRelation(table, parentTable)
@@ -245,11 +243,8 @@ export function applyParentTableFilters(
       throw new Error('Multiple pks relation not supported')
     }
     const pk = pks[0]
-    console.log(parentObj,relation.foreignKey)
     const value = parentObj[relation.foreignKey]
-    return Promise.resolve(
-      applyQueryFilters(QUERY, { [pk]: value }, table)
-    )
+    return applyQueryFilters(QUERY, { [pk]: value }, table).first()
   }
 
   relation = manyToManyRelation(table, parentTable)
