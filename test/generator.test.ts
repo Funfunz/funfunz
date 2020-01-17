@@ -51,7 +51,7 @@ describe('parse mysql', () => {
 
   it('should generate the required files', (done) => {
     parse({
-      DBHost: '127.0.0.1',
+      DBHost: 'localhost',
       DBName: 'test_db',
       DBUser: 'root',
       DBPort: '3306',
