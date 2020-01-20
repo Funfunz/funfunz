@@ -55,7 +55,7 @@ describe('parse mysql', () => {
       DBName: 'test_db',
       DBUser: 'root',
       DBPort: '3306',
-      DBPassword: process.env.DB_PASSWORD,
+      DBPassword: process.env.DB_PASSWORD || '',
     }, 'mysql', mysqlTargetPath).then(
       () => {
         expect(true).toBeTruthy()

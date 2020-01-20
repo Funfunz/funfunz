@@ -18,7 +18,7 @@ class App {
   public server: express.Express
   constructor() {
     debug('start')
-    database.initDB()
+    database.initDBconnection()
     this.server = express()
     this.server.disable('x-powered-by')
 

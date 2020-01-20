@@ -6,7 +6,7 @@ export default {
       "admin"
     ],
     "read": [
-      "unauthenticated"
+      "admin"
     ],
     "update": [
       "admin"
