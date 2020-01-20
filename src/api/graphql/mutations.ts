@@ -6,7 +6,7 @@ import { normalize as normalizeData } from '@root/api/utils/data'
 import { ITableInfo } from '@root/generator/configurationTypes'
 import Debug from 'debug'
 import { GraphQLResolveInfo } from 'graphql'
-import Knex from 'Knex'
+import Knex from 'knex'
 import { applyQueryFilters, getPKs, requirementsCheck, runHook } from '../utils'
 import { resolver } from './resolver'
 
@@ -95,7 +95,7 @@ function buildAddMutation(table: ITableInfo) {
           }),
         ])
       }).then(([db, results]) => {
-        return runHook(table, 'insertRow', 'after', context.req, context.res, db, results && results[0])
+        return runHook(table, 'insertRow', 'after', context.req, context.res, db || null, results && results[0])
       })
     },
     args: {
