@@ -283,7 +283,7 @@ class TableController {
 
     return requirementsCheck(TABLE_CONFIG, 'read', req.user, database).then(
       (DB) => {
-        const requestedColumns = filterVisibleTableColumns(TABLE_CONFIG, 'list')
+        const requestedColumns = filterVisibleTableColumns(TABLE_CONFIG, 'detail')
         let QUERY = DB.select(requestedColumns).from(`${req.params.table}`)
         QUERY = applyPKFilters(QUERY, req.body, TABLE_CONFIG)
         return QUERY
