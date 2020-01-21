@@ -249,35 +249,33 @@ export function applyParentTableFilters(
 
   relation = manyToManyRelation(table, parentTable)
   if (relation) {
-    if (relation) {
-      const pks = getPKs(table)
-      if (pks.length > 1) {
-        throw new Error('Multiple pks relation not supported')
-      }
-      const pk = pks[0]
-      const remotePks = getPKs(parentTable)
-      if (remotePks.length > 1) {
-        throw new Error('Multiple pks relation not supported')
-      }
-      const remotePk = remotePks[0]
-      return database && database.db && database.db(
-        relation.relationalTable
-      ).select([
-        relation.foreignKey,
-        relation.remoteForeignKey,
-      ]).where(
-        relation.foreignKey,
-        parentObj[remotePk]
-      ).then((results) => {
-        const IDS = results.map((obj) => {
-          return obj[relation.remoteForeignKey]
-        })
-        const filter = {
-          [pk]: IDS,
-        }
-        return applyQueryFilters(QUERY, filter, table)
-      })
+    const pks = getPKs(table)
+    if (pks.length > 1) {
+      throw new Error('Multiple pks relation not supported')
     }
+    const pk = pks[0]
+    const remotePks = getPKs(parentTable)
+    if (remotePks.length > 1) {
+      throw new Error('Multiple pks relation not supported')
+    }
+    const remotePk = remotePks[0]
+    return database && database.db && database.db(
+      relation.relationalTable
+    ).select([
+      relation.foreignKey,
+      relation.remoteForeignKey,
+    ]).where(
+      relation.foreignKey,
+      parentObj[remotePk]
+    ).then((results) => {
+      const IDS = results.map((obj) => {
+        return obj[relation.remoteForeignKey]
+      })
+      const filter = {
+        [pk]: IDS,
+      }
+      return applyQueryFilters(QUERY, filter, table)
+    })
   }
 }
 
