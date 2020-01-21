@@ -1,5 +1,5 @@
 import database from '@root/api/db'
-import { applyParentTableFilters, applyQueryFilters, requirementsCheck, getPKs } from '@root/api/utils'
+import { applyParentTableFilters, applyQueryFilters, getPKs, requirementsCheck } from '@root/api/utils'
 import { ITableInfo } from '@root/generator/configurationTypes'
 import { GraphQLResolveInfo } from 'graphql'
 import Knex from 'knex'

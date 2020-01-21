@@ -4,7 +4,7 @@ import { buildFields, buildType } from '@root/api/graphql/typeBuilder'
 import config from '@root/api/utils/configLoader'
 import { ITableInfo } from '@root/generator/configurationTypes'
 import Debug from 'debug'
-import { GraphQLList, GraphQLInt } from 'graphql'
+import { GraphQLInt, GraphQLList } from 'graphql'
 import pluralize from 'pluralize'
 
 const debug = Debug('funfunzmc:graphql-query-builder')
