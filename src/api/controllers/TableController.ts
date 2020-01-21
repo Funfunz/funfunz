@@ -422,7 +422,7 @@ class TableController {
     )
   }
 
-  private paginate(query: Knex.QueryBuilder, page: string | number, limit: string | number) {
+  public paginate(query: Knex.QueryBuilder, page: string | number, limit: string | number) {
     let LIMIT = 10
     let PAGE_NUMBER = 0
     if (page) {

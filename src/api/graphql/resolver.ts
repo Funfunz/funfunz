@@ -2,6 +2,7 @@ import database from '@root/api/db'
 import { applyParentTableFilters, applyQueryFilters, requirementsCheck, getPKs } from '@root/api/utils'
 import { ITableInfo } from '@root/generator/configurationTypes'
 import { GraphQLResolveInfo } from 'graphql'
+import Knex from 'knex'
 
 function getFields(table: ITableInfo, info: GraphQLResolveInfo): string[] {
   const fields = [...(getPKs(table))]
@@ -30,7 +31,14 @@ export function resolver(table: ITableInfo, parentTable?: ITableInfo) {
     return requirementsCheck(table, 'read', context.user, database).then((DB) => {
       const fields = getFields(table, info)
       let QUERY = DB(table.name).select(fields)
-      QUERY = applyQueryFilters(QUERY, args, table)
+      const queryFilters: any = {}
+      for (const key in args) {
+        if (key !== 'limit' && key !== 'offset') {
+          queryFilters[key] = args[key]
+        }
+      }
+      QUERY = applyQueryFilters(QUERY, queryFilters, table)
+      paginate(QUERY, args.offset, args.limit)
       if (parentTable) {
         return applyParentTableFilters(QUERY, table, parentTable, parent)
       } else {
@@ -38,4 +46,13 @@ export function resolver(table: ITableInfo, parentTable?: ITableInfo) {
       }
     })
   }
+}
+
+function paginate(query: Knex.QueryBuilder, offset = 0, limit = 10) {
+  offset = typeof offset === 'string' ? parseInt(offset, 10) : offset
+  limit = typeof limit === 'string' ? parseInt(limit, 10) : limit
+  if (limit > 0) {
+    query.offset((offset) * limit).limit(limit)
+  }
+  return query
 }

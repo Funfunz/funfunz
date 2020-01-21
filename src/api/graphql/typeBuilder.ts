@@ -21,6 +21,7 @@ interface IBuildTypeOptions {
   include?: ['pk' | string],
   exclude?: ['pk' | string],
   relations?: boolean,
+  pagination?: boolean,
 }
 
 const MATCHER: {
@@ -38,10 +39,20 @@ const types: {
 } = {}
 
 export function buildFields(table: ITableInfo, options: IBuildTypeOptions = { relations: true } ) {
-  const { relations, required, include, exclude } = options
+  const { relations, required, include, exclude, pagination } = options
   const result: {
     [key: string]: any
   } = {}
+  if (pagination) {
+    result.limit = {
+      type: GraphQLInt,
+      description: 'Limit',
+    }
+    result.offset = {
+      type: GraphQLInt,
+      description: 'Offset',
+    }
+  }
   table.columns.forEach(
     (column) => {
       const isPk = getPKs(table).indexOf(column.name) >= 0
@@ -111,7 +122,7 @@ export function buildFields(table: ITableInfo, options: IBuildTypeOptions = { re
           type: new GraphQLList(buildType(relationTable)),
           description: relationTable.name,
           resolve: resolver(relationTable, table),
-          args: buildFields(relationTable, { relations: false }),
+          args: buildFields(relationTable, { relations: false, pagination: true }),
         }
       })
     }
@@ -126,7 +137,7 @@ export function buildFields(table: ITableInfo, options: IBuildTypeOptions = { re
           type: new GraphQLList(buildType(remoteTable)),
           description: remoteTable.name,
           resolve: resolver(remoteTable, table),
-          args: buildFields(remoteTable, { relations: false }),
+          args: buildFields(remoteTable, { relations: false, pagination: true }),
         }
       })
     }

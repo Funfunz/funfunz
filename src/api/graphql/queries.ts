@@ -29,7 +29,7 @@ function buildQuery(table: ITableInfo) {
     type: new GraphQLList(buildType(table)),
     description: `This will return all the ${pluralize(table.name)}.`,
     resolve: resolver(table),
-    args: buildFields(table, { relations: false }),
+    args: buildFields(table, { relations: false, pagination: true }),
   }
   debug(`Created ${table.name} query`)
   return query
