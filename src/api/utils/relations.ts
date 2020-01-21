@@ -6,7 +6,7 @@ import {
   getPKs,
   getTableConfig,
 } from '@root/api/utils'
-import { IColumnRelation, IManyToOneRelation, ITableInfo, ITableRelation } from '@root/generator/configurationTypes'
+import { IColumnRelation, ITableInfo, ITableRelation } from '@root/generator/configurationTypes'
 import Knex from 'knex'
 
 interface IToRequestItem {
