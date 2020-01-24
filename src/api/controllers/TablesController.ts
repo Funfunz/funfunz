@@ -28,7 +28,7 @@ class TablesController {
         if (isAuthorized) {
           const result: any = {}
           Object.keys(table).forEach((key) => {
-            if (!['columns', 'relations'].includes(key)) {
+            if (key !== 'columns' && key !== 'relations') {
               result[key] = (table as any)[key]
             }
           })
