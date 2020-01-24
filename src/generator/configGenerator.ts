@@ -57,7 +57,7 @@ function buildColumnInfo(): IColumnInfo {
     },
     layout: {
       label: '',
-      listColumn: {},
+      listColumn: true,
       editField: {},
     },
   }
