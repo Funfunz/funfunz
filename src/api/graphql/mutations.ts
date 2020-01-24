@@ -64,7 +64,7 @@ function buildUpdateByIdMutation(table: ITableInfo) {
       })
     },
     args: {
-      ...buildFields(table, { relations: false, required: ['pk'] }),
+      ...buildFields(table, { relations: false, required: ['pk'], pagination: false }),
     },
   }
   debug(`Created ${table.name} add mutation`)
@@ -99,7 +99,7 @@ function buildAddMutation(table: ITableInfo) {
       })
     },
     args: {
-      ...buildFields(table, { relations: false }),
+      ...buildFields(table, { relations: false, pagination: false }),
     },
   }
   debug(`Created ${table.name} add mutation`)
@@ -130,7 +130,7 @@ function buildDeleteMutation(table: ITableInfo) {
       })
     },
     args: {
-      ...buildFields(table, { relations: false, include: ['pk'], required: ['pk'] }),
+      ...buildFields(table, { relations: false, include: ['pk'], required: ['pk'], pagination: false }),
     },
   }
   debug(`Created ${table.name} delete mutation`)

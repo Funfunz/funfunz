@@ -38,7 +38,7 @@ const types: {
   [key: string]: GraphQLObjectType | GraphQLInputObjectType,
 } = {}
 
-export function buildFields(table: ITableInfo, options: IBuildTypeOptions = { relations: true } ) {
+export function buildFields(table: ITableInfo, options: IBuildTypeOptions = { relations: true, pagination: true } ) {
   const { relations, required, include, exclude, pagination } = options
   const result: {
     [key: string]: any
@@ -93,7 +93,7 @@ export function buildFields(table: ITableInfo, options: IBuildTypeOptions = { re
             type: buildType(relatedTable),
             description: column.layout.label,
             resolve: resolver(relatedTable, table),
-            args: buildFields(relatedTable, { relations: false }),
+            args: buildFields(relatedTable, { relations: false, pagination: false }),
           }
           if (column.name !== columnName) {
             result[column.name] = {
