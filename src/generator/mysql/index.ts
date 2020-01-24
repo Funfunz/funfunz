@@ -121,7 +121,6 @@ const getDatabaseData = (answers: any): PromiseLike<IDatabaseData[]> => {
       connection.execute(
         'show tables',
         (err, results: mysql.RowDataPacket[]) => {
-          console.log('results', results)
           if (err) {
             rej(err)
           }
