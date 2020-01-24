@@ -99,7 +99,7 @@ export interface IColumnInfo {
   },
   model: {
     isPk?: boolean,
-    type: string,
+    type: 'varchar(255)' | 'tinyint(1)' | 'int(11)' | 'int' | 'datetime'| 'text',
     allowNull: boolean,
   },
   relation?: IColumnRelation,
