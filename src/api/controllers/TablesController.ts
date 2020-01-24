@@ -20,7 +20,7 @@ class TablesController {
       (table: ITableInfo) => {
         let isAuthorized: boolean = true
         if (!table.visible) {
-          return undefined
+          return
         }
         if (table.roles && table.roles.read && table.roles.read.length) {
           isAuthorized = hasAuthorization(table.roles.read, req.user)
@@ -34,7 +34,7 @@ class TablesController {
           })
           return result
         }
-        return undefined
+        return
       }
     ).filter(
       (table) => table
