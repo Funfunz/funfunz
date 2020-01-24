@@ -30,11 +30,11 @@ function buildTableInfo(): ITableInfo {
     columns: [],
     layout: {
       label: '',
-      listPage: {},
-      searchField: {},
-      createButton: {},
-      editButton: {},
-      deleteButton: {},
+      listPage: true,
+      searchField: true,
+      createButton: true,
+      editButton: true,
+      deleteButton: true,
       editPage: {
         sections: [],
       },
