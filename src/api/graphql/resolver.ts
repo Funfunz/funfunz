@@ -58,7 +58,7 @@ export function resolverCount(table: ITableInfo) {
   }
 }
 
-function paginate(query: Knex.QueryBuilder, offset = 0, limit = 10) {
+function paginate(query: Knex.QueryBuilder, offset = 0, limit = 0) {
   offset = typeof offset === 'string' ? parseInt(offset, 10) : offset
   limit = typeof limit === 'string' ? parseInt(limit, 10) : limit
   if (limit > 0) {
