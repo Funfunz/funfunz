@@ -52,7 +52,7 @@ function buildColumnInfo(): IColumnInfo {
       relation: false,
     },
     model: {
-      type: '',
+      type: 'varchar(255)',
       allowNull: true,
     },
     layout: {

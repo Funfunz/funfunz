@@ -25,7 +25,7 @@ export interface ITypeAnswers {
 
 export interface IDescribeItem {
   Field: string,
-  Type: string,
+  Type: 'varchar(255)' | 'tinyint(1)' | 'smallint(5)' | 'int(11)' | 'int' | 'datetime'| 'text',
   Null: string,
   Key: string,
   Default: string | number | null,
@@ -99,7 +99,7 @@ export interface IColumnInfo {
   },
   model: {
     isPk?: boolean,
-    type: 'varchar(255)' | 'tinyint(1)' | 'int(11)' | 'int' | 'datetime'| 'text',
+    type: 'varchar(255)' | 'tinyint(1)' | 'smallint(5)' | 'int(11)' | 'int' | 'datetime'| 'text',
     allowNull: boolean,
   },
   relation?: IColumnRelation,
