@@ -12,6 +12,7 @@ const INPUT_TYPES: {
   'varchar(255)': 'text',
   'tinyint(1)': 'checkbox',
   'int(11)': 'number',
+  'int': 'number',
   'datetime': 'date',
   'text': 'text',
 }
@@ -19,18 +20,24 @@ const INPUT_TYPES: {
 function buildTableInfo(): ITableInfo {
   return {
     name: '',
-    verbose: '',
-    pk: [],
-    actions: {
-      delete: true,
-      edit: true,
-    },
-    columns: [],
     visible: true,
     roles: {
+      create: ['all'],
       read: ['all'],
-      write: ['all'],
+      update: ['all'],
       delete: ['all'],
+    },
+    columns: [],
+    layout: {
+      label: '',
+      listPage: true,
+      searchField: true,
+      createButton: true,
+      editButton: true,
+      deleteButton: true,
+      editPage: {
+        sections: [],
+      },
     },
   }
 }
@@ -38,16 +45,20 @@ function buildTableInfo(): ITableInfo {
 function buildColumnInfo(): IColumnInfo {
   return {
     name: '',
-    verbose: '',
-    type: '',
-    allowNull: true,
+    searchable: true,
     visible: {
-      main: true,
+      list: true,
       detail: true,
+      relation: false,
     },
-    editable: true,
-    input: {
-      type: 'text',
+    model: {
+      type: 'varchar(255)',
+      allowNull: true,
+    },
+    layout: {
+      label: '',
+      listColumn: true,
+      editField: {},
     },
   }
 }
@@ -76,32 +87,35 @@ export function generateSettings(
 
       const pluralName = pluralize(table.name)
 
-      table.verbose = pluralName.charAt(0).toUpperCase() + pluralName.slice(1)
+      table.layout.label = pluralName.charAt(0).toUpperCase() + pluralName.slice(1)
       describe.forEach(
         (column) => {
           const columnData = buildColumnInfo()
           columnData.name = column.Field
-          columnData.verbose = column.Field
-          columnData.type = column.Type
-          columnData.input.type = INPUT_TYPES[column.Type]
-          columnData.allowNull = column.Null === 'NO' ? false : true
-          columnData.editable = isEditable(column.Field)
+          columnData.layout.label = column.Field.charAt(0).toUpperCase() + column.Field.substring(1)
+          columnData.model.type = column.Type
+          columnData.layout.editField.type = INPUT_TYPES[column.Type]
+          columnData.model.allowNull = column.Null === 'NO' ? false : true
+          columnData.visible.detail = isEditable(column.Field)
           if (column.Key === 'PRI') {
-            table.pk.push(column.Field)
+            columnData.model.isPk = true
+            columnData.visible.relation = true
           }
           tableData.schema.forEach(
             (schemaData) => {
               if (schemaData.COLUMN_NAME === column.Field) {
-                columnData.relation = {
-                  type: 'oneToMany',
-                  table: schemaData.REFERENCED_TABLE_NAME || '',
-                  key: schemaData.REFERENCED_COLUMN_NAME || '',
-                  display: schemaData.REFERENCED_COLUMN_NAME || '',
+                if (!table.relations) {
+                  table.relations = []
                 }
+                table.relations.push({
+                  type: 'n:1',
+                  relationalTable: table.name,
+                  foreignKey: columnData.name,
+                  remoteTable: schemaData.REFERENCED_TABLE_NAME || '',
+                })
               }
             }
           )
-
           table.columns.push(columnData)
         }
       )

@@ -1,111 +1,161 @@
-/* istanbul ignore file */
 export default {
   "name": "users",
-  "verbose": "Users",
-  "pk": ["id"],
-  "relations": {
-    "manyToMany": [
-      {
-        "verbose": "Roles",
-        "relationTable": "usersroles",
-        "foreignKey": "userId",
-        "localId": "id",
-        "remoteTable": "roles",
-        "remoteForeignKey": "roleId",
-        "remoteId": "id"
-      }
+  "visible": true,
+  "roles": {
+    "create": [
+      "admin"
+    ],
+    "read": [
+      "admin"
+    ],
+    "update": [
+      "admin"
+    ],
+    "delete": [
+      "admin"
     ]
   },
+  "relations": [
+    {
+      "type": "m:n",
+      "relationalTable": "usersroles",
+      "foreignKey": "userId",
+      "remoteTable": "roles",
+      "remoteForeignKey": "roleId",
+    },
+  ],
   "columns": [
     {
       "name": "id",
-      "verbose": "id",
-      "type": "int(11)",
-      "allowNull": false,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": true,
+        "relation": true
       },
-      "editable": true,
-      "input": {
-        "type": "number"
+      "model": {
+        "type": "int",
+        "allowNull": false,
+        "isPk": true
+      },
+      "layout": {
+        "label": "Id",
+        "listColumn": {},
+        "editField": {
+          "type": "number"
+        }
       }
     },
     {
       "name": "email",
-      "verbose": "email",
-      "type": "varchar(255)",
-      "allowNull": false,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": true,
+        "relation": false
       },
-      "editable": true,
-      "input": {
-        "type": "text"
+      "model": {
+        "type": "varchar(255)",
+        "allowNull": false
+      },
+      "layout": {
+        "label": "Email",
+        "listColumn": {},
+        "editField": {
+          "type": "text"
+        }
       }
     },
     {
       "name": "name",
-      "verbose": "name",
-      "type": "varchar(255)",
-      "allowNull": true,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": true,
+        "relation": false
       },
-      "editable": true,
-      "input": {
-        "type": "text"
+      "model": {
+        "type": "varchar(255)",
+        "allowNull": true
+      },
+      "layout": {
+        "label": "Name",
+        "listColumn": {},
+        "editField": {
+          "type": "text"
+        }
       }
     },
     {
       "name": "password",
-      "verbose": "password",
-      "type": "varchar(255)",
-      "allowNull": true,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": true,
+        "relation": false
       },
-      "editable": true,
-      "input": {
-        "type": "text"
+      "model": {
+        "type": "varchar(255)",
+        "allowNull": true
+      },
+      "layout": {
+        "label": "Password",
+        "listColumn": {},
+        "editField": {
+          "type": "text"
+        }
       }
     },
     {
       "name": "createdAt",
-      "verbose": "createdAt",
-      "type": "datetime",
-      "allowNull": false,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": false,
+        "relation": false
       },
-      "editable": true,
-      "input": {
-        "type": "date"
+      "model": {
+        "type": "datetime",
+        "allowNull": false
+      },
+      "layout": {
+        "label": "CreatedAt",
+        "listColumn": {},
+        "editField": {
+          "type": "date"
+        }
       }
     },
     {
       "name": "updatedAt",
-      "verbose": "updatedAt",
-      "type": "datetime",
-      "allowNull": false,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": false,
+        "relation": false
       },
-      "editable": true,
-      "input": {
-        "type": "date"
+      "model": {
+        "type": "datetime",
+        "allowNull": false
+      },
+      "layout": {
+        "label": "UpdatedAt",
+        "listColumn": {},
+        "editField": {
+          "type": "date"
+        }
       }
     }
   ],
-  "visible": true,
-  "roles": {
-    "read": ["admin"],
-    "write": ["admin"],
-    "delete": ["admin"],
+  "layout": {
+    "label": "Users",
+    "listPage": {},
+    "searchField": {},
+    "createButton": {},
+    "editButton": {},
+    "deleteButton": {},
+    "editPage": {
+      "sections": []
+    }
   }
 }

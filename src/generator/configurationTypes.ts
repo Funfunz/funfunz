@@ -25,7 +25,7 @@ export interface ITypeAnswers {
 
 export interface IDescribeItem {
   Field: string,
-  Type: string,
+  Type: 'varchar(255)' | 'tinyint(1)' | 'smallint(5)' | 'int(11)' | 'int' | 'datetime'| 'text',
   Null: string,
   Key: string,
   Default: string | number | null,
@@ -57,76 +57,51 @@ export interface IManyToOneRelation {
 
 export interface ITableInfo {
   name: string,
-  verbose: string,
-  pk: string[],
-  order?: number,
-  actions: {
-    delete: boolean,
-    edit: boolean,
-  },
-  searchFields?: string[],
-  relations?: {
-    manyToOne?: {
-      [key: string]: IManyToOneRelation[],
-    },
-    manyToMany?: [
-      {
-        verbose: string,
-        relationTable: string,
-        foreignKey: string,
-        localId: string,
-        remoteTable: string,
-        remoteForeignKey: string,
-        remoteId: string,
-      }
-    ]
-  },
-  chips?: [
-    {
-      verbose: string,
-      columns: [
-        {
-          name: string,
-          verbose: string,
-        }
-      ],
-    },
-  ],
-  itemTitle?: string,
-  columns: IColumnInfo[],
   visible: boolean,
+  relations?: ITableRelation[],
   roles: {
+    create: string[],
     read: string[],
-    write: string[],
+    update: string[],
     delete: string[],
   },
+  columns: IColumnInfo[],
   hooks?: {
     [key in Hooks]?: {
       before?: IHookFunction,
       after?: IHookFunction,
     }
   },
+  layout?: any,
+}
+
+export interface ITableRelation {
+  type: '1:n' | 'n:1' | 'm:n',
+  relationalTable: string,
+  foreignKey: string,
+  remoteForeignKey?: string,
+  remoteTable: string,
 }
 
 export interface IColumnRelation {
-  type: string,
+  type: 'n:1',
   table: string,
   key: string,
-  display: string,
 }
 
 export interface IColumnInfo {
   name: string,
-  verbose: string,
-  type: string,
-  allowNull: boolean,
+  searchable: boolean,
   visible: {
-    main: boolean,
+    list: boolean,
     detail: boolean,
+    relation: boolean,
   },
-  editable: boolean,
-  input: {
-    type: 'text' | 'checkbox' | 'date' | 'number',
+  model: {
+    isPk?: boolean,
+    type: 'varchar(255)' | 'tinyint(1)' | 'smallint(5)' | 'int(11)' | 'int' | 'datetime'| 'text',
+    allowNull: boolean,
   },
   relation?: IColumnRelation,
+  layout?: any,
 }

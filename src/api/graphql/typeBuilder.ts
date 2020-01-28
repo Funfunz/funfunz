@@ -12,6 +12,7 @@ import {
   GraphQLObjectType,
   GraphQLString,
 } from 'graphql'
+import { getPKs } from '../utils'
 
 const debug = Debug('funfunzmc:graphql-type-builder')
 
@@ -20,6 +21,7 @@ interface IBuildTypeOptions {
   include?: ['pk' | string],
   exclude?: ['pk' | string],
   relations?: boolean,
+  pagination?: boolean,
 }
 
 const MATCHER: {
@@ -27,6 +29,7 @@ const MATCHER: {
 } = {
   'varchar(255)': GraphQLString,
   'int(11)': GraphQLInt,
+  'int': GraphQLInt,
   'tinyint(1)': GraphQLBoolean,
   'datetime': GraphQLString,
 }
@@ -35,101 +38,104 @@ const types: {
   [key: string]: GraphQLObjectType | GraphQLInputObjectType,
 } = {}
 
-export function buildFields(table: ITableInfo, options: IBuildTypeOptions = { relations: true } ) {
-  const { relations, required, include, exclude } = options
+export function buildFields(table: ITableInfo, options: IBuildTypeOptions = { relations: true, pagination: true } ) {
+  const { relations, required, include, pagination } = options
   const result: {
     [key: string]: any
   } = {}
-  table.columns.forEach(
-    (column) => {
-      const isPk = table.pk.indexOf(column.name) >= 0
-      if (include && !include.includes(column.name) && !(isPk ? include.includes('pk') : false)) {
-        return
-      }
-      if (exclude && (exclude.includes(column.name) || (isPk ? exclude.includes('pk') && !column.relation : false))) {
-        return
-      }
-      const isRequired = required && (
-        isPk
-          ? required.includes('pk')
-          : required.includes(column.name)
-      )
-      if (!column.relation && (table.pk.indexOf(column.name) >= 0 || MATCHER[column.type])) {
-        const type = isPk ? GraphQLID : MATCHER[column.type]
-        result[column.name] = {
-          type: isRequired ? new GraphQLNonNull(type) : type,
-          description: column.verbose,
-        }
-      }
-
-      if (column.relation) {
-        if (relations) {
-          const relation = column.relation
-          const columnName = relation.type === 'oneToMany'
-            ? relation.table
-            : column.name
-          const relatedTable = config().settings.filter(
-            (settingsTable) => settingsTable.name === relation.table
-          )[0]
-          result[columnName] = {
-            type: buildType(relatedTable),
-            description: column.verbose,
-            resolve: resolver(relatedTable, table),
-            args: buildFields(relatedTable, { relations: false }),
-          }
-          if (column.name !== columnName) {
-            result[column.name] = {
-              type: GraphQLID,
-              description: column.verbose,
-            }
-          }
-        } else {
-          result[column.name] = {
-            type: isRequired ? new GraphQLNonNull(GraphQLID) : GraphQLID,
-            description: column.verbose,
-          }
-        }
-      }
+  if (pagination) {
+    result.limit = {
+      type: GraphQLInt,
+      description: 'Limit',
     }
-  )
-  if (table.relations && relations) {
-    if (table.relations.manyToOne) {
-      Object.keys(table.relations.manyToOne).forEach(
-        (tableName) => {
-          const relation = ((table.relations || {}).manyToOne || {})[tableName]
-          if (relation) {
-            const columnName = tableName
-            const relationTable = config().settings.filter(
-              (settingsTable) => settingsTable.name === tableName
-            )[0]
-            result[columnName] = {
-              type: new GraphQLList(buildType(relationTable)),
-              description: relationTable.verbose,
-              resolve: resolver(relationTable, table),
-              args: buildFields(relationTable, { relations: false }),
-            }
-          }
-        }
-      )
-    }
-    if (table.relations.manyToMany) {
-      table.relations.manyToMany.forEach(
-        (relation) => {
-          const columnName = relation.remoteTable
-          const remoteTable = config().settings.filter(
-            (settingsTable) => settingsTable.name === relation.remoteTable
-          )[0]
-          result[columnName] = {
-            type: new GraphQLList(buildType(remoteTable)),
-            description: relation.verbose,
-            resolve: resolver(remoteTable, table),
-            args: buildFields(remoteTable, { relations: false }),
-          }
-        }
-      )
+    result.offset = {
+      type: GraphQLInt,
+      description: 'Offset',
     }
   }
+  table.columns.forEach((column) => {
+    const isPk = getPKs(table).indexOf(column.name) >= 0
+    if (include && !include.includes(column.name) && !(isPk ? include.includes('pk') : false)) {
+      return
+    }
+    const isRequired = required && (
+      isPk
+        ? required.includes('pk')
+        : required.includes(column.name)
+    )
+    const relationalColumns = (table.relations && table.relations.map((relation) => relation.foreignKey)) || []
+    if (getPKs(table).indexOf(column.name) >= 0 || MATCHER[column.model.type]) {
+      const type = isPk ? GraphQLID : MATCHER[column.model.type]
+      result[column.name] = {
+        type: isRequired ? new GraphQLNonNull(type) : type,
+        description: column.layout.label,
+      }
+    }
 
+    if (relationalColumns.includes(column.name)) {
+      if (relations) {
+        const relation = table.relations && table.relations.find((r) => r.foreignKey === column.name)
+        if (!relation) {
+          throw new Error('Invalid relation configuration')
+        }
+        const columnName = (relation.type === 'n:1' || relation.type === 'm:n')
+          ? relation.remoteTable
+          : column.name
+        const relatedTable = config().settings.filter(
+          (settingsTable) => settingsTable.name === relation.remoteTable
+        )[0]
+        result[columnName] = {
+          type: buildType(relatedTable),
+          description: column.layout.label,
+          resolve: resolver(relatedTable, table),
+          args: buildFields(relatedTable, { relations: false, pagination: false }),
+        }
+        if (column.name !== columnName) {
+          result[column.name] = {
+            type: GraphQLID,
+            description: column.layout.label,
+          }
+        }
+      } else {
+        result[column.name] = {
+          type: isRequired ? new GraphQLNonNull(GraphQLID) : GraphQLID,
+          description: column.layout.label,
+        }
+      }
+    }
+  })
+  if (table.relations && relations) {
+    const oneToMany = table.relations && table.relations.filter((r) => r.type === '1:n')
+    if (oneToMany) {
+      oneToMany.forEach((relation) => {
+        const columnName = relation.remoteTable
+        const relationTable = config().settings.filter(
+          (settingsTable) => settingsTable.name === relation.relationalTable
+        )[0]
+        result[columnName] = {
+          type: new GraphQLList(buildType(relationTable)),
+          description: relationTable.name,
+          resolve: resolver(relationTable, table),
+          args: buildFields(relationTable, { relations: false, pagination: true }),
+        }
+      })
+    }
+    const manyToMany = table.relations && table.relations.filter((r) => r.type === 'm:n')
+    if (manyToMany) {
+      manyToMany.forEach((relation) => {
+        const columnName = relation.remoteTable
+        const remoteTable = config().settings.filter(
+          (settingsTable) => settingsTable.name === relation.remoteTable
+        )[0]
+        result[columnName] = {
+          type: new GraphQLList(buildType(remoteTable)),
+          description: remoteTable.name,
+          resolve: resolver(remoteTable, table),
+          args: buildFields(remoteTable, { relations: false, pagination: true }),
+        }
+      })
+    }
+  }
   return result
 }
 
