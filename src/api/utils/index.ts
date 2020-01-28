@@ -260,7 +260,7 @@ export function applyParentTableFilters(
     }
     const remotePk = remotePks[0]
     return database && database.db && database.db(
-      relation.relationalTable || relation.remoteTable
+      relation.relationalTable
     ).select([
       relation.foreignKey,
       relation.remoteForeignKey,
