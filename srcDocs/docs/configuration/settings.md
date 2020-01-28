@@ -4,8 +4,8 @@
 
 ```typescript
 {
-  name: string,
-  visible: boolean,
+  name: string, // sql table name
+  visible: boolean, // if this table is visible in the API
   relations: [
     {
       type: '1:n' | 'n:1' | 'm:n',
@@ -24,7 +24,7 @@
   },
   columns: [
     {
-      name: string,
+      name: string,  // column name
       searchable: boolean,  // field used on search
       visible: {
         list: boolean,  // field is returned on list requests
@@ -38,8 +38,8 @@
         ...  // other sql column options
       },
       layout: {
-        isTitle: boolean,
-        label: string,
+        isTitle: boolean, // if column is used as item title
+        label: string, // label used on frontend
         listColumn: boolean | {
           ...  // props for the frontend column component
         },
@@ -53,7 +53,7 @@
   ],
   ...
   layout: {
-    label: string,
+    label: string,  // table name used on frontend
     listPage: boolean | {
       chips: [
         { 
@@ -61,7 +61,7 @@
           columns: [ { name: string, label: { key: value, ... } }, ],
         },
       ],
-      ... // props for frontend table component
+      ... // other props for frontend table component
     },
     searchField: boolean | {
       ... // props for frontend search component
@@ -86,30 +86,19 @@
 }
 ```
 
-## Relations object
+## Relations array
 
 ```javascript
-  relations: {
-    manyToMany: [ // array of many to many relations
-      {
-        verbose: string, // name shown on the frontend
-        relationTable: string, // name of the relation table
-        foreignKey: string, // foreignKey of the current table on the relation table
-        localId: string, // relation field for the current table
-        remoteTable: string, // name of the remote table
-        remoteForeignKey: string, // foreignKey of the remote table on the relation table
-        remoteId: string // relation field for the remote table
-      }
-    ],
-    manyToOne: { // each key is a name of a related table
-      string /*table name*/: [ // array of keys used for the relation
-        {
-          fk: string, // foreign key on the related table
-          target: string // key in the current table
-        }
-      ]
-    }
-  }
+  relations: [
+    {
+      type: '1:n' | 'n:1' | 'm:n', // type of relation
+      relationalTable: string, // name of the relation table
+      foreignKey: string, // foreignKey of the current table on the relation table
+      remoteForeignKey: string, // foreignKey of the remote table on the relation table
+      remoteTable: string, // name of the remote table
+    },
+    ...
+  ]
 ```
 
 ## Hooks Object
