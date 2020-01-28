@@ -109,9 +109,9 @@ export function buildFields(table: ITableInfo, options: IBuildTypeOptions = { re
     if (oneToMany) {
       oneToMany.forEach((relation) => {
         const columnName = relation.remoteTable
-        const relationTable = config().settings.filter(
-          (settingsTable) => settingsTable.name === relation.relationalTable
-        )[0]
+        const relationTable = config().settings.filter((settingsTable) => {
+          return settingsTable.name === (relation.relationalTable || relation.remoteTable)
+        })[0]
         result[columnName] = {
           type: new GraphQLList(buildType(relationTable)),
           description: relationTable.name,

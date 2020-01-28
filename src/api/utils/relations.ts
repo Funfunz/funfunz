@@ -6,7 +6,7 @@ import {
   getPKs,
   getTableConfig,
 } from '@root/api/utils'
-import { IColumnRelation, ITableInfo, ITableRelation } from '@root/generator/configurationTypes'
+import { IColumnRelation, ITableInfo, IRelation } from '@root/generator/configurationTypes'
 import Knex from 'knex'
 
 interface IToRequestItem {
@@ -133,9 +133,9 @@ export function  getManyToManyRelationQueries(TABLE_CONFIG: ITableInfo, parentDa
     }
     const tablePk = tablePks[0]
     const DB = database.db
-    relationQueries = relations.map(
-      (relation) => {
-        return DB(relation.relationalTable).select().where(relation.foreignKey, parentData[tablePk]).then(
+    relationQueries = relations.map((relation) => {
+        return DB(relation.relationalTable || relation.remoteTable).select()
+          .where(relation.foreignKey, parentData[tablePk]).then(
           (relationResult: any) => {
             return relationResult.map(
               (relationRow: any) => {
@@ -168,7 +168,7 @@ export function  getManyToManyRelationQueries(TABLE_CONFIG: ITableInfo, parentDa
   return relationQueries
 }
 
-export function getRelatedRow(tableName: string, tableRelation: ITableRelation, parentData: any) {
+export function getRelatedRow(tableName: string, tableRelation: IRelation, parentData: any) {
   if (!database.db) {
     throw new HttpException(500, 'No database')
   }
