@@ -414,7 +414,7 @@ describe('graphql', () => {
       .post('/graphql')
       .send({
         query: `{
-         users(limit:1, offset: 2) {
+         users(limit:1, offset: 1) {
            id
          }
         }`,
