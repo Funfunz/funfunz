@@ -392,7 +392,7 @@ describe('graphql', () => {
     return request(authApplication)
       .post('/graphql')
       .send({
-        query: ` {
+        query: `{
          usersCount
         }`,
       })
@@ -413,7 +413,7 @@ describe('graphql', () => {
     return request(authApplication)
       .post('/graphql')
       .send({
-        query: ` {
+        query: `{
          users(limit:1, offset: 2) {
            id
          }

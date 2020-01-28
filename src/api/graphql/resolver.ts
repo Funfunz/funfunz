@@ -51,9 +51,9 @@ export function resolver(table: ITableInfo, parentTable?: ITableInfo) {
 export function resolverCount(table: ITableInfo) {
   return (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
     return requirementsCheck(table, 'read', context.user, database).then((DB) => {
-      const fields = getFields(table, info)
-      const QUERY = DB(table.name).select(fields)
-      return applyQueryFilters(QUERY, args, table).count('*').first().then((res) => res['count(*)'])
+      let QUERY = DB(table.name).select([])
+      QUERY = applyQueryFilters(QUERY, args, table)
+      return QUERY.count('*', {as: 'count'}).first().then((res) => res.count)
     })
   }
 }
