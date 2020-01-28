@@ -388,4 +388,49 @@ describe('graphql', () => {
       }
     )
   })
+  it('graphql count query', (done) => {
+    return request(authApplication)
+      .post('/graphql')
+      .send({
+        query: `{
+         usersCount
+        }`,
+      })
+      .set('Accept', 'application/json').end(
+      (err, response) => {
+        if (err) {
+          return done(err)
+        }
+        expect(response.status).toBe(200)
+        expect(response.body).toBeTruthy()
+        const data = response.body.data
+        expect(data.usersCount).toBeTruthy()
+        return done()
+      }
+    )
+  })
+  it('graphql pagination', (done) => {
+    return request(authApplication)
+      .post('/graphql')
+      .send({
+        query: `{
+         users(limit:1, offset: 1) {
+           id
+         }
+        }`,
+      })
+      .set('Accept', 'application/json').end(
+      (err, response) => {
+        if (err) {
+          return done(err)
+        }
+        expect(response.status).toBe(200)
+        expect(response.body).toBeTruthy()
+        const data = response.body.data
+        expect(data.users).toBeTruthy()
+        expect(data.users[0].id).toBeTruthy()
+        return done()
+      }
+    )
+  })
 })

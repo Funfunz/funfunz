@@ -21,9 +21,9 @@
     "build:js": "babel src -d lib --extensions \".js,.ts,.tsx\" --source-maps inline && cp -rf ./src/api/public ./lib/api",
     "start": "NODE_ENV=production node ./lib/index.js",
     "prepublishOnly": "npm run build",
-    "docker:start": "sh ./docker/start.sh",
-    "docker-compose:up": "docker-compose up -d && npm run docker:start",
-    "docker-compose:down": "docker-compose down --remove-orphans"
+    "docker-compose:up": "docker-compose up -d",
+    "docker-compose:down": "docker-compose down --remove-orphans",
+    "mysql:shell": "docker-compose exec mysqldb bash -c 'mysql -u root -p$MYSQL_ROOT_PASSWORD $MYSQL_DATABASE'"
   },
   "bin": {
     "funfunzmc": "./lib/generator/index.js"

@@ -1,83 +1,121 @@
-/* istanbul ignore file */
 export default {
   "name": "roles",
-  "verbose": "Roles",
-  "pk": ["id"],
-  "relations": {
-    "manyToMany": [
-      {
-        "verbose": "Users",
-        "relationTable": "usersroles",
-        "foreignKey": "roleId",
-        "localId": "id",
-        "remoteTable": "users",
-        "remoteForeignKey": "userId",
-        "remoteId": "id"
-      }
+  "visible": true,
+  "roles": {
+    "create": [
+      "all"
+    ],
+    "read": [
+      "all"
+    ],
+    "update": [
+      "all"
+    ],
+    "delete": [
+      "all"
     ]
   },
+  "relations": [
+    {
+      "type": "m:n",
+      "relationalTable": "usersroles",
+      "foreignKey": "roleId",
+      "remoteTable": "users",
+      "remoteForeignKey": "userId",
+    },
+  ],
   "columns": [
     {
       "name": "id",
-      "verbose": "id",
-      "type": "int(11)",
-      "allowNull": false,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": true,
+        "relation": true
       },
-      "editable": true,
-      "input": {
-        "type": "number"
+      "model": {
+        "type": "int",
+        "allowNull": false,
+        "isPk": true
+      },
+      "layout": {
+        "label": "Id",
+        "listColumn": {},
+        "editField": {
+          "type": "number"
+        }
       }
     },
     {
       "name": "name",
-      "verbose": "name",
-      "type": "varchar(255)",
-      "allowNull": false,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": true,
+        "relation": true,
       },
-      "editable": true,
-      "input": {
-        "type": "text"
+      "model": {
+        "type": "varchar(255)",
+        "allowNull": false
+      },
+      "layout": {
+        "label": "Name",
+        "listColumn": {},
+        "editField": {
+          "type": "text"
+        }
       }
     },
     {
       "name": "createdAt",
-      "verbose": "createdAt",
-      "type": "datetime",
-      "allowNull": false,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": false,
+        "relation": false
       },
-      "editable": true,
-      "input": {
-        "type": "date"
+      "model": {
+        "type": "datetime",
+        "allowNull": false
+      },
+      "layout": {
+        "label": "CreatedAt",
+        "listColumn": {},
+        "editField": {
+          "type": "date"
+        }
       }
     },
     {
       "name": "updatedAt",
-      "verbose": "updatedAt",
-      "type": "datetime",
-      "allowNull": false,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": false,
+        "relation": false
       },
-      "editable": true,
-      "input": {
-        "type": "date"
+      "model": {
+        "type": "datetime",
+        "allowNull": false
+      },
+      "layout": {
+        "label": "UpdatedAt",
+        "listColumn": {},
+        "editField": {
+          "type": "date"
+        }
       }
     }
   ],
-  "visible": true,
-  "roles": {
-    "read": ["all"],
-    "write": ["all"],
-    "delete": ["all"],
+  "layout": {
+    "label": "Roles",
+    "listPage": {},
+    "searchField": {},
+    "createButton": {},
+    "editButton": {},
+    "deleteButton": {},
+    "editPage": {
+      "sections": []
+    }
   }
 }

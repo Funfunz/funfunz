@@ -1,82 +1,127 @@
-/* istanbul ignore file */
 export default {
   "name": "usersroles",
-  "verbose": "usersroles",
-  "pk": ["roleId"],
+  "visible": true,
+  "roles": {
+    "create": [
+      "admin"
+    ],
+    "read": [
+      "admin"
+    ],
+    "update": [
+      "admin"
+    ],
+    "delete": [
+      "admin"
+    ]
+  },
   "columns": [
     {
       "name": "createdAt",
-      "verbose": "createdAt",
-      "type": "datetime",
-      "allowNull": false,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": false,
+        "relation": false
       },
-      "editable": true,
-      "input": {
-        "type": "date"
+      "model": {
+        "type": "datetime",
+        "allowNull": false
+      },
+      "layout": {
+        "label": "CreatedAt",
+        "listColumn": {},
+        "editField": {
+          "type": "date"
+        }
       }
     },
     {
       "name": "updatedAt",
-      "verbose": "updatedAt",
-      "type": "datetime",
-      "allowNull": false,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": false,
+        "relation": false
       },
-      "editable": true,
-      "input": {
-        "type": "date"
+      "model": {
+        "type": "datetime",
+        "allowNull": false
+      },
+      "layout": {
+        "label": "UpdatedAt",
+        "listColumn": {},
+        "editField": {
+          "type": "date"
+        }
       }
     },
     {
       "name": "userId",
-      "verbose": "userId",
-      "type": "int(11)",
-      "allowNull": false,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": true,
+        "relation": true
       },
-      "editable": true,
-      "input": {
-        "type": "number"
+      "model": {
+        "type": "int",
+        "allowNull": false,
+        "isPk": true
       },
-      "relation": {
-        "type": "oneToMany",
-        "table": "users",
-        "key": "id",
-        "display": "id"
+      "layout": {
+        "label": "UserId",
+        "listColumn": {},
+        "editField": {
+          "type": "number"
+        }
       }
     },
     {
       "name": "roleId",
-      "verbose": "roleId",
-      "type": "int(11)",
-      "allowNull": false,
+      "searchable": true,
       "visible": {
-        "main": true,
-        "detail": true
+        "list": true,
+        "detail": true,
+        "relation": true
       },
-      "editable": true,
-      "input": {
-        "type": "number"
+      "model": {
+        "type": "int",
+        "allowNull": false,
+        "isPk": true
       },
-      "relation": {
-        "type": "oneToMany",
-        "table": "roles",
-        "key": "id",
-        "display": "id"
+      "layout": {
+        "label": "RoleId",
+        "listColumn": {},
+        "editField": {
+          "type": "number"
+        }
       }
     }
   ],
-  "visible": false,
-  "roles": {
-    "read": ["admin"],
-    "write": ["admin"],
-    "delete": ["admin"],
-  }
+  "layout": {
+    "label": "Usersroles",
+    "listPage": {},
+    "searchField": {},
+    "createButton": {},
+    "editButton": {},
+    "deleteButton": {},
+    "editPage": {
+      "sections": []
+    }
+  },
+  "relations": [
+    {
+      "type": "n:1",
+      "relationalTable": "usersroles",
+      "foreignKey": "userId",
+      "remoteTable": "users"
+    },
+    {
+      "type": "n:1",
+      "relationalTable": "usersroles",
+      "foreignKey": "roleId",
+      "remoteTable": "roles"
+    }
+  ]
 }

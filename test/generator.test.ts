@@ -51,11 +51,11 @@ describe('parse mysql', () => {
 
   it('should generate the required files', (done) => {
     parse({
-      DBHost: 'localhost',
+      DBHost: '127.0.0.1',
       DBName: 'test_db',
       DBUser: 'root',
       DBPort: '3306',
-      DBPassword: process.env.DB_PASSWORD,
+      DBPassword: process.env.DB_PASSWORD || '',
     }, 'mysql', mysqlTargetPath).then(
       () => {
         expect(true).toBeTruthy()
