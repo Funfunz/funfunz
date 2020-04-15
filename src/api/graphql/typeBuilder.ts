@@ -1,6 +1,6 @@
 import { resolver } from '@root/api/graphql/resolver'
 import config from '@root/api/utils/configLoader'
-import { ITableInfo, IRelation, IRelationMN } from '@root/generator/configurationTypes'
+import { IRelation, IRelationMN, ITableInfo } from '@root/generator/configurationTypes'
 import Debug from 'debug'
 import {
   GraphQLBoolean,
