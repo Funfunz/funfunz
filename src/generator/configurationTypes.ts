@@ -71,23 +71,23 @@ export interface ITableInfo {
 }
 
 export interface IRelation1N {
+  type: '1:n',
   foreignKey: string,
   remoteTable: string,
 }
 export interface IRelationN1 {
+  type: 'n:1'
   foreignKey: string,
   remoteTable: string,
 }
 export interface IRelationMN {
+  type: 'm:n'
   relationalTable: string,
   foreignKey: string,
   remoteForeignKey: string,
   remoteTable: string,
 }
-export interface IRelationType {
-  type: '1:n'|'n:1'|'m:n'
-}
-export type IRelation = IRelationType & IRelation1N & IRelationN1 & IRelationMN
+export type IRelation = IRelation1N | IRelationN1 | IRelationMN
 
 export interface IColumnRelation {
   type: 'n:1',

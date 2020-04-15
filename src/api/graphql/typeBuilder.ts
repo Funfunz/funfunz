@@ -1,6 +1,6 @@
 import { resolver } from '@root/api/graphql/resolver'
 import config from '@root/api/utils/configLoader'
-import { ITableInfo } from '@root/generator/configurationTypes'
+import { ITableInfo, IRelation, IRelationMN } from '@root/generator/configurationTypes'
 import Debug from 'debug'
 import {
   GraphQLBoolean,
@@ -107,10 +107,13 @@ export function buildFields(table: ITableInfo, options: IBuildTypeOptions = { re
   if (table.relations && relations) {
     const oneToMany = table.relations && table.relations.filter((r) => r.type === '1:n')
     if (oneToMany) {
-      oneToMany.forEach((relation) => {
+      oneToMany.forEach((relation: IRelation) => {
         const columnName = relation.remoteTable
         const relationTable = config().settings.filter((settingsTable) => {
-          return settingsTable.name === (relation.relationalTable || relation.remoteTable)
+          if ((relation as IRelationMN).relationalTable) {
+            return settingsTable.name === (relation as IRelationMN).relationalTable
+          }
+          return settingsTable.name === relation.remoteTable
         })[0]
         result[columnName] = {
           type: new GraphQLList(buildType(relationTable)),
