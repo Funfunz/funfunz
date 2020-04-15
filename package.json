@@ -41,7 +41,6 @@
   },
   "homepage": "https://github.com/JWebCoder/funfunzmc#readme",
   "dependencies": {
-    "@babel/cli": "^7.7.7",
     "@types/mysql2": "github:types/mysql2",
     "codecov": "^3.6.1",
     "cookie-parser": "^1.4.4",
@@ -54,14 +53,15 @@
     "jsonschema": "^1.2.5",
     "knex": "^0.19.5",
     "metle": "^1.0.1",
-    "minimist": "^1.2.0",
+    "minimist": "^1.2.5",
     "mongodb": "^3.4.1",
     "morgan": "^1.9.1",
-    "mysql2": "^1.7.0",
+    "mysql2": "^2.1.0",
     "pluralize": "^8.0.0",
     "tslint": "^5.20.1"
   },
   "devDependencies": {
+    "@babel/cli": "^7.8.4",
     "@babel/core": "^7.7.7",
     "@babel/node": "^7.7.7",
     "@babel/plugin-proposal-class-properties": "^7.7.4",
@@ -86,7 +86,7 @@
     "babel-plugin-dynamic-import-node": "^2.3.0",
     "babel-plugin-module-resolver": "^3.2.0",
     "eslint": "^5.16.0",
-    "jest": "^24.9.0",
+    "jest": "^25.3.0",
     "supertest": "^4.0.2",
     "ts-jest": "^24.3.0",
     "typescript": "^3.7.4"
