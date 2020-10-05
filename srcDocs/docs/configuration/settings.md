@@ -4,8 +4,8 @@
 
 ```typescript
 {
-  name: string,
-  visible: boolean,
+  name: string, // sql table name
+  visible: boolean, // if this table is visible in the API
   relations: [
     {
       type: '1:n' | 'n:1' | 'm:n',
@@ -24,7 +24,7 @@
   },
   columns: [
     {
-      name: string,
+      name: string,  // column name
       searchable: boolean,  // field used on search
       visible: {
         list: boolean,  // field is returned on list requests
@@ -38,8 +38,8 @@
         ...  // other sql column options
       },
       layout: {
-        isTitle: boolean,
-        label: string,
+        isTitle: boolean, // if column is used as item title
+        label: string, // label used on frontend
         listColumn: boolean | {
           ...  // props for the frontend column component
         },
@@ -53,7 +53,7 @@
   ],
   ...
   layout: {
-    label: string,
+    label: string,  // table name used on frontend
     listPage: boolean | {
       chips: [
         { 
@@ -61,7 +61,7 @@
           columns: [ { name: string, label: { key: value, ... } }, ],
         },
       ],
-      ... // props for frontend table component
+      ... // other props for frontend table component
     },
     searchField: boolean | {
       ... // props for frontend search component
@@ -90,7 +90,6 @@
     }
   },
 }
-
 ```
 
 ## Hooks Object
