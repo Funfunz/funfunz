@@ -1,0 +1,6 @@
+bin/
+lib/
+include/
+site/
+.Python
+.vscode
