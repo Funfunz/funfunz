@@ -9,8 +9,8 @@
   "scripts": {
     "test": "jest --coverage --forceExit && codecov",
     "lint": "tslint src/**/*.ts",
-    "docs:build": "docker run -it --rm -v $PWD:/app -w /app/srcDocs python:2.7 bash -c 'pip install -r requirements.txt && mkdocs build -c -d ../docs'",
-    "docs:serve": "docker run -it --rm -v $PWD:/app -w /app/srcDocs -p 8000:8000 python:2.7 bash -c 'pip install -r requirements.txt && mkdocs serve -a 0.0.0.0:8000'",
+    "docs:build": "docker run -it --rm -v $PWD:/app -w /app/srcDocs python:3.7 bash -c 'pip install -r requirements.txt && mkdocs build -c -d ../docs'",
+    "docs:serve": "docker run -it --rm -v $PWD:/app -w /app/srcDocs -p 8000:8000 python:3.7 bash -c 'pip install -r requirements.txt && mkdocs serve -a 0.0.0.0:8000'",
     "dev": "DEBUG=funfunzmc:* NODE_ENV=development babel-node --extensions \".js,.ts,.tsx,.json\" ./dev.ts",
     "questions": "DEBUG=funfunzmc:* NODE_ENV=development babel-node --extensions \".js,.ts,.tsx,.json\" ./src/generator/index.ts",
     "clean": "rm -rf lib bin && mkdir lib",

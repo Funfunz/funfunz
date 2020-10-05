@@ -9,9 +9,9 @@
   relations: [
     {
       type: '1:n' | 'n:1' | 'm:n',
-      relationalTable: string,
-      foreignKey: string,
-      remoteForeignKey: string,
+      relationalTable: string, // the table containing the foreign keys
+      foreignKey: string, // local id in the relationalTable
+      remoteForeignKey: string, // remote id in the relationalTable 
       remoteTable: string,
     },
     ...
@@ -19,7 +19,7 @@
   roles: {
     create: [string],  // array of role names
     read: [string],
-    write: [string],
+    update: [string],
     delete: [string],
   },
   columns: [
@@ -83,53 +83,34 @@
     },
   },
   ...
-}
-```
-
-## Relations object
-
-```javascript
-  relations: {
-    manyToMany: [ // array of many to many relations
-      {
-        verbose: string, // name shown on the frontend
-        relationTable: string, // name of the relation table
-        foreignKey: string, // foreignKey of the current table on the relation table
-        localId: string, // relation field for the current table
-        remoteTable: string, // name of the remote table
-        remoteForeignKey: string, // foreignKey of the remote table on the relation table
-        remoteId: string // relation field for the remote table
-      }
-    ],
-    manyToOne: { // each key is a name of a related table
-      string /*table name*/: [ // array of keys used for the relation
-        {
-          fk: string, // foreign key on the related table
-          target: string // key in the current table
-        }
-      ]
+  hooks: {
+    [key in Hooks]?: {
+      before?: IHookFunction,
+      after?: IHookFunction,
     }
-  }
+  },
+}
+
 ```
 
 ## Hooks Object
 
-```javascript
-  hooks: {
-    getTableData: hookDefinition,
-    getTableCount: hookDefinition,
-    updateRow: hookDefinition,
-    insertRow: hookDefinition,
-    deleteRow: hookDefinition
-  }
+```typescript
+  type Hooks = 'getTableData'
+    | 'getDistinctTableData'
+    | 'getTableCount'
+    | 'getRow'
+    | 'insertRow'
+    | 'updateRow'
+    | 'deleteRow'
+  
 
-  hookDefinition = {
-    after: async (req /* express request */, res /* express response */, DB /* Knex instance */, tableName /* table name */, data /* current result */) => {
-      return data
-    },
-    before: async (req: /* express request */, res /* express response */, DB /* Knex instance */, tableName /* table name */, payload /* payload from the request */) => {
-      return payload
-    }
-  }
+  IHookFunction = (
+    req: express.Request,
+    res: express.Response,
+    DB: knex,
+    tableName: string,
+    data?: any
+  ) => Promise <any>
 
 ```

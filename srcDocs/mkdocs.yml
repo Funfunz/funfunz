@@ -1,6 +1,10 @@
 site_name: funfunzmc
 nav:
     - Home: index.md
+    - Usage:
+        - Quickstart: usage/quickstart.md
+        - Plugin: usage/plugin.md
+        - Standalone: usage/standalone.md
     - Configuration:
         - Config: configuration/config.md
         - Settings: configuration/settings.md
