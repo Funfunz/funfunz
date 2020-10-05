@@ -428,8 +428,8 @@
                 <h1 id="settings-file">Settings file</h1>
 <h2 id="model-structure">Model structure</h2>
 <div class="codehilite"><pre><span></span><code><span class="p">{</span>
-  <span class="nx">name</span>: <span class="kt">string</span><span class="p">,</span>
-  <span class="nx">visible</span>: <span class="kt">boolean</span><span class="p">,</span>
+  <span class="nx">name</span>: <span class="kt">string</span><span class="p">,</span> <span class="c1">// sql table name</span>
+  <span class="nx">visible</span>: <span class="kt">boolean</span><span class="p">,</span> <span class="c1">// if this table is visible in the API</span>
   <span class="nx">relations</span><span class="o">:</span> <span class="p">[</span>
     <span class="p">{</span>
       <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;1:n&#39;</span> <span class="o">|</span> <span class="s1">&#39;n:1&#39;</span> <span class="o">|</span> <span class="s1">&#39;m:n&#39;</span><span class="p">,</span>
@@ -448,7 +448,7 @@
   <span class="p">},</span>
   <span class="nx">columns</span><span class="o">:</span> <span class="p">[</span>
     <span class="p">{</span>
-      <span class="nx">name</span>: <span class="kt">string</span><span class="p">,</span>
+      <span class="nx">name</span>: <span class="kt">string</span><span class="p">,</span>  <span class="c1">// column name</span>
       <span class="nx">searchable</span>: <span class="kt">boolean</span><span class="p">,</span>  <span class="c1">// field used on search</span>
       <span class="nx">visible</span><span class="o">:</span> <span class="p">{</span>
         <span class="nx">list</span>: <span class="kt">boolean</span><span class="p">,</span>  <span class="c1">// field is returned on list requests</span>
@@ -462,8 +462,8 @@
         <span class="p">...</span>  <span class="c1">// other sql column options</span>
       <span class="p">},</span>
       <span class="nx">layout</span><span class="o">:</span> <span class="p">{</span>
-        <span class="nx">isTitle</span>: <span class="kt">boolean</span><span class="p">,</span>
-        <span class="nx">label</span>: <span class="kt">string</span><span class="p">,</span>
+        <span class="nx">isTitle</span>: <span class="kt">boolean</span><span class="p">,</span> <span class="c1">// if column is used as item title</span>
+        <span class="nx">label</span>: <span class="kt">string</span><span class="p">,</span> <span class="c1">// label used on frontend</span>
         <span class="nx">listColumn</span>: <span class="kt">boolean</span> <span class="o">|</span> <span class="p">{</span>
           <span class="p">...</span>  <span class="c1">// props for the frontend column component</span>
         <span class="p">},</span>
@@ -477,7 +477,7 @@
   <span class="p">],</span>
   <span class="p">...</span>
   <span class="nx">layout</span><span class="o">:</span> <span class="p">{</span>
-    <span class="nx">label</span>: <span class="kt">string</span><span class="p">,</span>
+    <span class="nx">label</span>: <span class="kt">string</span><span class="p">,</span>  <span class="c1">// table name used on frontend</span>
     <span class="nx">listPage</span>: <span class="kt">boolean</span> <span class="o">|</span> <span class="p">{</span>
       <span class="nx">chips</span><span class="o">:</span> <span class="p">[</span>
         <span class="p">{</span> 
@@ -485,7 +485,7 @@
           <span class="nx">columns</span><span class="o">:</span> <span class="p">[</span> <span class="p">{</span> <span class="nx">name</span>: <span class="kt">string</span><span class="p">,</span> <span class="nx">label</span><span class="o">:</span> <span class="p">{</span> <span class="nx">key</span>: <span class="kt">value</span><span class="p">,</span> <span class="p">...</span> <span class="p">}</span> <span class="p">},</span> <span class="p">],</span>
         <span class="p">},</span>
       <span class="p">],</span>
-      <span class="p">...</span> <span class="c1">// props for frontend table component</span>
+      <span class="p">...</span> <span class="c1">// other props for frontend table component</span>
     <span class="p">},</span>
     <span class="nx">searchField</span>: <span class="kt">boolean</span> <span class="o">|</span> <span class="p">{</span>
       <span class="p">...</span> <span class="c1">// props for frontend search component</span>
