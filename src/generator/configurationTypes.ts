@@ -50,15 +50,10 @@ export type Hooks = 'getTableData'
   | 'updateRow'
   | 'deleteRow'
 
-export interface IManyToOneRelation {
-  fk: string,
-  target: string,
-}
-
 export interface ITableInfo {
   name: string,
   visible: boolean,
-  relations?: ITableRelation[],
+  relations?: IRelation[],
   roles: {
     create: string[],
     read: string[],
@@ -75,13 +70,24 @@ export interface ITableInfo {
   layout?: any,
 }
 
-export interface ITableRelation {
-  type: '1:n' | 'n:1' | 'm:n',
-  relationalTable: string,
+export interface IRelation1N {
+  type: '1:n',
   foreignKey: string,
-  remoteForeignKey?: string,
   remoteTable: string,
 }
+export interface IRelationN1 {
+  type: 'n:1'
+  foreignKey: string,
+  remoteTable: string,
+}
+export interface IRelationMN {
+  type: 'm:n'
+  relationalTable: string,
+  foreignKey: string,
+  remoteForeignKey: string,
+  remoteTable: string,
+}
+export type IRelation = IRelation1N | IRelationN1 | IRelationMN
 
 export interface IColumnRelation {
   type: 'n:1',

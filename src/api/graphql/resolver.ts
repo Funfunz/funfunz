@@ -15,7 +15,7 @@ function getFields(table: ITableInfo, info: GraphQLResolveInfo): string[] {
           fields.push(columnName)
         }
         const relation = table.relations && table.relations.find((r) => {
-          return r.remoteTable === columnName && r.relationalTable === table.name
+          return r.remoteTable === columnName && r.type === 'n:1'
         })
         if (relation) {
           fields.push(relation.foreignKey)

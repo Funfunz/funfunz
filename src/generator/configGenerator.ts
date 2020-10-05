@@ -109,7 +109,6 @@ export function generateSettings(
                 }
                 table.relations.push({
                   type: 'n:1',
-                  relationalTable: table.name,
                   foreignKey: columnData.name,
                   remoteTable: schemaData.REFERENCED_TABLE_NAME || '',
                 })
