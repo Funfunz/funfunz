@@ -1,5 +1,5 @@
-import { generateConfig, generateSettings } from '@root/generator/configGenerator'
-import { databaseTypes } from '@root/generator/configurationTypes'
+import { generateConfig, generateSettings } from './configGenerator'
+import { databaseTypes } from './configurationTypes'
 
 export function parse(answers: any, databaseType: databaseTypes, selectedPath: string) {
   return import('./' + databaseType).then(

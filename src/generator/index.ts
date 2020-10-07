@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import { databaseTypes } from '@root/generator/configurationTypes'
-import { parse } from '@root/generator/parser'
-import { databaseQuestions, databaseTypeQuestion } from '@root/generator/questions'
-import { deleteFolderRecursive, isEmptyFolder } from '@root/generator/utils'
+import { databaseTypes } from './configurationTypes'
+import { parse } from './parser'
+import { databaseQuestions, databaseTypeQuestion } from './questions'
+import { deleteFolderRecursive, isEmptyFolder } from './utils'
 import { prompt } from 'enquirer'
 import minimist from 'minimist'
 import path from 'path'
