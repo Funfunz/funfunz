@@ -1,8 +1,8 @@
-import { describeInfo, IColumnInfo, ITableInfo, schemaInfo } from '../middleware/controllers/node_modules/@root/generator/configurationTypes'
-import Debug from '../middleware/node_modules/debug'
-import fs from '../middleware/routes/node_modules/fs'
-import path from '../middleware/node_modules/path'
-import pluralize from '../middleware/graphql/node_modules/pluralize'
+import { describeInfo, IColumnInfo, ITableInfo, schemaInfo } from './configurationTypes'
+import Debug from 'debug'
+import fs from 'fs'
+import path from 'path'
+import pluralize from 'pluralize'
 
 const debug = Debug('funfunz:config-generator')
 
