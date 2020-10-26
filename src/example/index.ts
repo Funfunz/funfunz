@@ -1,6 +1,6 @@
-import index from '../src/middleware'
-import config from '../src/test/configs/MCconfig'
-import settings from '../src/test/configs/MCsettings'
+import index from '../middleware'
+import config from '../test/configs/MCconfig'
+import settings from '../test/configs/MCsettings'
 import httpServer from './httpServer'
 
 const app = index({

@@ -42,15 +42,15 @@ const types: {
   [key: string]: GraphQLObjectType,
 } = {}
 
-export function buildFields(
+export function buildFields<TSource, TContext extends TUserContext>(
   table: ITableInfo,
   options: IBuildTypeOptions = {
     relations: true,
     pagination: true
   }
-): GraphQLFieldConfigArgumentMap {
+): GraphQLFieldConfigMap<TSource, TContext> {
   const { relations, required, include, pagination } = options
-  const result: GraphQLFieldConfigArgumentMap = {}
+  const result: GraphQLFieldConfigMap<TSource, TContext> = {}
   if (pagination) {
     result.limit = {
       type: GraphQLInt,
@@ -96,7 +96,7 @@ export function buildFields(
           type: buildType(relatedTable),
           description: column.layout.label,
           resolve: resolver(relatedTable, table),
-          args: buildFields(relatedTable, { relations: false, pagination: false }),
+          args: buildFields(relatedTable, { relations: false, pagination: false }) as GraphQLFieldConfigArgumentMap,
         }
         if (column.name !== columnName) {
           result[column.name] = {
@@ -127,7 +127,7 @@ export function buildFields(
           type: new GraphQLList(buildType(relationTable)),
           description: relationTable.name,
           resolve: resolver(relationTable, table),
-          args: buildFields(relationTable, { relations: false, pagination: true }),
+          args: buildFields(relationTable, { relations: false, pagination: true }) as GraphQLFieldConfigArgumentMap,
         }
       })
     }
@@ -142,7 +142,7 @@ export function buildFields(
           type: new GraphQLList(buildType(remoteTable)),
           description: remoteTable.name,
           resolve: resolver(remoteTable, table),
-          args: buildFields(remoteTable, { relations: false, pagination: true }),
+          args: buildFields(remoteTable, { relations: false, pagination: true }) as GraphQLFieldConfigArgumentMap,
         }
       })
     }

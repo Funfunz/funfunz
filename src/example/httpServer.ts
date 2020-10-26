@@ -1,4 +1,4 @@
-import config from '../src/middleware/utils/configLoader'
+import config from '../middleware/utils/configLoader'
 import Debug from 'debug'
 import express from 'express'
 import http from 'http'

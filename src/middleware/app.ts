@@ -34,7 +34,7 @@ class App {
 
     this.server.use('/', express.static(path.join(__dirname, './public')))
     const indexRouter = new IndexRouter()
-    this.server.use('/', indexRouter.getRouter())
+    this.server.use('/api', indexRouter.getRouter())
 
     this.server.use(errorHandler)
     debug('end')
