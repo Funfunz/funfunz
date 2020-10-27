@@ -14,7 +14,7 @@ export type TUserContext = {
   user: IUser,
 }
 
-export default function buildQueries(): Thunk<GraphQLFieldConfigMap<unknown, TUserContext>> {
+export function buildQueries(): Thunk<GraphQLFieldConfigMap<unknown, TUserContext>> {
   const configs = config()
   const queries: Thunk<GraphQLFieldConfigMap<unknown, TUserContext>> = {}
   configs.settings.forEach(

@@ -1,6 +1,6 @@
 'use strict'
 import mutations from './mutations'
-import queries from './queries'
+import { buildQueries } from './queries'
 import Debug from 'debug'
 import {
   GraphQLObjectType,
@@ -20,7 +20,7 @@ export default (): GraphQLSchema => {
     name: 'RootQueryType',
     description: 'This is the default root query provided by our application',
     fields: {
-      ...queries(),
+      ...buildQueries(),
     },
   })
   const RootMutation = new GraphQLObjectType({

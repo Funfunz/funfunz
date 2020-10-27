@@ -1,6 +1,6 @@
 import { resolver } from './resolver'
 import config from '../utils/configLoader'
-import { IRelation, IRelationMN, ITableInfo } from '../../generator/configurationTypes'
+import { IRelation, IRelation1N, IRelationMN, ITableInfo } from '../../generator/configurationTypes'
 import Debug from 'debug'
 import {
   GraphQLBoolean,
@@ -61,18 +61,24 @@ export function buildFields<TSource, TContext extends TUserContext>(
       description: 'Offset',
     }
   }
+  const tablePKs = getPKs(table)
+  const tableRelations = table.relations || []
+  const relationalColumns = tableRelations.map((relation) => relation.foreignKey)
   table.columns.forEach((column) => {
-    const isPk = getPKs(table).indexOf(column.name) >= 0
-    if (include && !include.includes(column.name) && !(isPk ? include.includes('pk') : false)) {
+    const isPk = tablePKs.indexOf(column.name) >= 0
+    /*
+     *  if include option is passed check if the column is present there
+     */
+    if (include && !include.includes(column.name) && !(isPk && include.includes('pk'))) {
       return
     }
     const isRequired = required && (
-      isPk
-        ? required.includes('pk')
-        : required.includes(column.name)
+      required.includes(column.name) || (
+        isPk && required.includes('pk')
+      )
     )
-    const relationalColumns = (table.relations && table.relations.map((relation) => relation.foreignKey)) || []
-    if (getPKs(table).indexOf(column.name) >= 0 || MATCHER[column.model.type]) {
+    
+    if (isPk || MATCHER[column.model.type]) {
       const type = isPk ? GraphQLID : MATCHER[column.model.type]
       result[column.name] = {
         type: isRequired ? new GraphQLNonNull(type) : type,
@@ -82,27 +88,26 @@ export function buildFields<TSource, TContext extends TUserContext>(
 
     if (relationalColumns.includes(column.name)) {
       if (relations) {
-        const relation = table.relations && table.relations.find((r) => r.foreignKey === column.name)
+        const relation = tableRelations.find((relation) => relation.foreignKey === column.name)
         if (!relation) {
-          throw new Error('Invalid relation configuration')
+          throw new Error('Invalid relation configuration: relation not found')
         }
-        const columnName = (relation.type === 'n:1' || relation.type === 'm:n')
-          ? relation.remoteTable
-          : column.name
-        const relatedTable = config().settings.filter(
-          (settingsTable) => settingsTable.name === relation.remoteTable
-        )[0]
-        result[columnName] = {
+        const remoteTable = relation.remoteTable
+        const relatedTable = config().settings.find(
+          (settingsTable) => settingsTable.name === remoteTable
+        )
+        if (!relatedTable) {
+          throw new Error('Invalid relation configuration: relatedTable not found')
+        }
+        result[remoteTable] = {
           type: buildType(relatedTable),
           description: column.layout.label,
           resolve: resolver(relatedTable, table),
           args: buildFields(relatedTable, { relations: false, pagination: false }) as GraphQLFieldConfigArgumentMap,
         }
-        if (column.name !== columnName) {
-          result[column.name] = {
-            type: GraphQLID,
-            description: column.layout.label,
-          }
+        result[column.name] = {
+          type: GraphQLID,
+          description: column.layout.label,
         }
       } else {
         result[column.name] = {
@@ -112,32 +117,37 @@ export function buildFields<TSource, TContext extends TUserContext>(
       }
     }
   })
-  if (table.relations && relations) {
-    const oneToMany = table.relations && table.relations.filter((r) => r.type === '1:n')
+  if (tableRelations && relations) {
+    const oneToMany = tableRelations.filter((r) => r.type === '1:n')
     if (oneToMany) {
       oneToMany.forEach((relation: IRelation) => {
-        const columnName = relation.remoteTable
-        const relationTable = config().settings.filter((settingsTable) => {
-          if ((relation as IRelationMN).relationalTable) {
-            return settingsTable.name === (relation as IRelationMN).relationalTable
-          }
-          return settingsTable.name === relation.remoteTable
-        })[0]
-        result[columnName] = {
-          type: new GraphQLList(buildType(relationTable)),
-          description: relationTable.name,
-          resolve: resolver(relationTable, table),
-          args: buildFields(relationTable, { relations: false, pagination: true }) as GraphQLFieldConfigArgumentMap,
+        const remoteTable = relation.remoteTable
+        const relatedTable = config().settings.find(
+          (settingsTable) => (
+            settingsTable.name === relation.remoteTable
+          )
+        )
+        if (!relatedTable) {
+          throw new Error('Invalid relation configuration: relatedTable not found')
+        }
+        result[remoteTable] = {
+          type: new GraphQLList(buildType(relatedTable)),
+          description: relatedTable.name,
+          resolve: resolver(relatedTable, table),
+          args: buildFields(relatedTable, { relations: false, pagination: true }) as GraphQLFieldConfigArgumentMap,
         }
       })
     }
-    const manyToMany = table.relations && table.relations.filter((r) => r.type === 'm:n')
+    const manyToMany = tableRelations.filter((r) => r.type === 'm:n')
     if (manyToMany) {
       manyToMany.forEach((relation) => {
         const columnName = relation.remoteTable
-        const remoteTable = config().settings.filter(
+        const remoteTable = config().settings.find(
           (settingsTable) => settingsTable.name === relation.remoteTable
-        )[0]
+        )
+        if (!remoteTable) {
+          throw new Error('Invalid relation configuration: remoteTable not found')
+        }
         result[columnName] = {
           type: new GraphQLList(buildType(remoteTable)),
           description: remoteTable.name,
@@ -156,7 +166,7 @@ export function capitalize(str: string) {
 
 export function buildType(table: ITableInfo, options: IBuildTypeOptions = { relations: true }): GraphQLObjectType {
   const name = table.name
-  debug(`Creating ${name}`)
+  debug(`Creating type for table ${name}`)
   if (!types[name]) {
     types[name] = new GraphQLObjectType({
       name,
@@ -164,7 +174,7 @@ export function buildType(table: ITableInfo, options: IBuildTypeOptions = { rela
         return buildFields(table, options)
       },
     })
-    debug(`Created ${name}`)
+    debug(`Created type for table ${name}`)
   }
   return types[name]
 }
