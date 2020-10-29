@@ -1,21 +1,21 @@
 import request from 'supertest'
-import app from '../middleware'
+import { Funfunz } from '../middleware'
 import config from './configs/MCconfig'
 import settings from './configs/MCsettings'
 
 import { authenticatedServer } from './utils'
 
-const application = app({
+const application = new Funfunz({
   config,
   settings,
   plugin: true,
-})
+}).middleware
 const authApplication = authenticatedServer(application)
 
 describe('Start server', () => {
   it('should throw an error if no config object set', () => {
     expect(() => {
-      app({
+      new Funfunz({
         settings: {},
       })
     }).toThrowError('"config"')
@@ -23,7 +23,7 @@ describe('Start server', () => {
 
   it('should throw an error if no settings object set', () => {
     expect(() => {
-      app({
+      new Funfunz({
         config: {},
       })
     }).toThrowError('"settings"')
@@ -31,7 +31,7 @@ describe('Start server', () => {
 
   it('should throw an error if one of the parameters is undefined', () => {
     expect(() => {
-      app({
+      new Funfunz({
         other: undefined,
         config,
         settings,
@@ -41,13 +41,13 @@ describe('Start server', () => {
 
   it('should throw an error if invalid settings or config', () => {
     expect(() => {
-      app({
+      new Funfunz({
         config,
         settings: {},
       })
     }).toThrowError('instance')
     expect(() => {
-      app({
+      new Funfunz({
         config: {},
         settings,
       })

@@ -3,9 +3,8 @@ import IndexRouter from './routes'
 import { errorHandler } from './utils'
 import cors from 'cors'
 import Debug from 'debug'
-import express from 'express'
+import express, { Application } from 'express'
 import logger from 'morgan'
-import path from 'path'
 
 const debug = Debug('funfunz:init')
 
@@ -17,7 +16,7 @@ class App {
 
   public server: express.Express
   constructor() {
-    debug('start')
+    debug('starting funfunz')
     database.initDBconnection()
     this.server = express()
     this.server.disable('x-powered-by')
@@ -27,17 +26,11 @@ class App {
       logger('dev'),
     ])
 
-    this.server.use(/\/((?!graphql).)*/, [
-      express.urlencoded({ extended: true }),
-      express.json(),
-    ])
-
-    this.server.use('/', express.static(path.join(__dirname, './public')))
     const indexRouter = new IndexRouter()
-    this.server.use('/api', indexRouter.getRouter())
+    this.server.use('/', indexRouter.getRouter())
 
     this.server.use(errorHandler)
-    debug('end')
+    debug('funfunz ready')
   }
 }
 

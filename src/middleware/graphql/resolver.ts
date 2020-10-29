@@ -8,7 +8,7 @@ import {
   ResolveTree,
   simplifyParsedResolveInfoFragmentWithType 
 } from 'graphql-parse-resolve-info'
-import { TUserContext } from './queries'
+import { TUserContext } from './schema'
 
 function getFields(
   table: ITableInfo,

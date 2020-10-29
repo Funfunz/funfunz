@@ -23,7 +23,7 @@ class Database {
 
     // creates a new sequelize instance
     const {
-      databaseName,
+      database,
       user,
       password,
       host,
@@ -32,7 +32,7 @@ class Database {
       log,
     } = configuration.mysql
     debug('Start')
-    debug('DB_NAME', databaseName)
+    debug('DB_NAME', database)
     debug('DB_USER', user)
     debug('DB_PASSWORD', password)
     debug('DB_HOST', host)

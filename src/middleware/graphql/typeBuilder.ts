@@ -1,6 +1,6 @@
 import { resolver } from './resolver'
 import config from '../utils/configLoader'
-import { IRelation, IRelation1N, IRelationMN, ITableInfo } from '../../generator/configurationTypes'
+import { IRelation, ITableInfo } from '../../generator/configurationTypes'
 import Debug from 'debug'
 import {
   GraphQLBoolean,
@@ -13,10 +13,9 @@ import {
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLString,
-  Thunk,
 } from 'graphql'
 import { getPKs } from '../utils'
-import { TUserContext } from './queries'
+import { TUserContext } from './schema'
 
 const debug = Debug('funfunz:graphql-type-builder')
 
@@ -42,15 +41,15 @@ const types: {
   [key: string]: GraphQLObjectType,
 } = {}
 
-export function buildFields<TSource, TContext extends TUserContext>(
+export function buildFields<TSource>(
   table: ITableInfo,
   options: IBuildTypeOptions = {
     relations: true,
     pagination: true
   }
-): GraphQLFieldConfigMap<TSource, TContext> {
+): GraphQLFieldConfigMap<TSource, TUserContext> {
   const { relations, required, include, pagination } = options
-  const result: GraphQLFieldConfigMap<TSource, TContext> = {}
+  const result: GraphQLFieldConfigMap<TSource, TUserContext> = {}
   if (pagination) {
     result.limit = {
       type: GraphQLInt,
@@ -160,8 +159,8 @@ export function buildFields<TSource, TContext extends TUserContext>(
   return result
 }
 
-export function capitalize(str: string) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+export function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
 export function buildType(table: ITableInfo, options: IBuildTypeOptions = { relations: true }): GraphQLObjectType {
@@ -178,7 +177,7 @@ export function buildType(table: ITableInfo, options: IBuildTypeOptions = { rela
   }
   return types[name]
 }
-export function buildDeleteMutationType(table: ITableInfo) {
+export function buildDeleteMutationType(table: ITableInfo): GraphQLObjectType<unknown, unknown> {
   const name = `delete${capitalize(table.name)}`
   debug(`Creating ${name}`)
   if (!types[name]) {

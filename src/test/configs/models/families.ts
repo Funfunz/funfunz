@@ -18,7 +18,6 @@ export default {
   "relations": [
     {
       "type": "1:n",
-      "relationalTable": "products",
       "foreignKey": "FamilyId",
       "remoteTable": "products"
     }

@@ -2,21 +2,25 @@ import GraphQLSchema from '../graphql/schema'
 import { Router } from 'express'
 import { graphqlHTTP } from 'express-graphql'
 
+
 class IndexRouter {
   public router: Router
-  constructor(router?: Router) {
-    this.router = router || Router()
+  constructor() {
+    const schema = GraphQLSchema()
+    const graph = graphqlHTTP((req: any, res) => ({
+      context: {
+        req,
+        res,
+        user: req.user,
+      },
+      graphiql: true,
+      schema
+    }))
+    
+    this.router = Router()
     this.router.use(
       '/',
-      graphqlHTTP((req: any, res: any) => ({
-        context: {
-          req,
-          res,
-          user: req.user,
-        },
-        graphiql: true,
-        schema: GraphQLSchema(),
-      }))
+      graph
     )
   }
 

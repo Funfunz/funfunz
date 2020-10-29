@@ -6,15 +6,22 @@ import {
   GraphQLObjectType,
   GraphQLSchema,
 } from 'graphql'
+import { IUser } from '../types'
+import { Request, Response } from 'express'
+
+export type TUserContext = {
+  user: IUser,
+  req: Request,
+  res: Response
+}
 
 const debug = Debug('funfunz:graphql-schema')
 
 export let schema: GraphQLSchema
 
 // export the schema
-debug('Created')
 export default (): GraphQLSchema => {
-  debug('Creating')
+  debug('Creating graphql schema')
   // lets define our root query
   const RootQuery = new GraphQLObjectType({
     name: 'RootQueryType',

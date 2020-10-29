@@ -120,7 +120,7 @@ export function generateSettings(
       )
 
       fs.writeFile(
-        path.join(selectedPath, '/models/' + table.name + '.js'),
+        path.join(selectedPath, '/models/' + table.name + '.ts'),
         'export default ' + JSON.stringify(table, null, 2),
         'utf8',
         (err) => {
@@ -134,7 +134,7 @@ export function generateSettings(
   )
 
   fs.writeFile(
-    path.join(selectedPath, '/MCsettings.js'),
+    path.join(selectedPath, '/MCsettings.ts'),
     resultData.map(
       (table) => `import ${table.name}Model from './models/${table.name}'\n`
     ).join('') +
@@ -176,7 +176,7 @@ export function generateConfig(answers: any, selectedPath: string) {
 
   fs.mkdirSync(selectedPath)
   fs.writeFile(
-    path.join(selectedPath, 'MCconfig.js'),
+    path.join(selectedPath, 'MCconfig.ts'),
     'export default ' + JSON.stringify(finalConfig, null, 2),
     'utf8',
     (err) => {

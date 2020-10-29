@@ -6,13 +6,9 @@ import { ITableInfo } from '../../generator/configurationTypes'
 import Debug from 'debug'
 import { GraphQLFieldConfig, GraphQLFieldConfigArgumentMap, GraphQLFieldConfigMap, GraphQLInt, GraphQLList, Thunk } from 'graphql'
 import pluralize from 'pluralize'
-import { IUser } from '../types'
+import { TUserContext } from './schema'
 
 const debug = Debug('funfunz:graphql-query-builder')
-
-export type TUserContext = {
-  user: IUser,
-}
 
 export function buildQueries(): Thunk<GraphQLFieldConfigMap<unknown, TUserContext>> {
   const configs = config()
@@ -27,7 +23,7 @@ export function buildQueries(): Thunk<GraphQLFieldConfigMap<unknown, TUserContex
   return queries
 }
 
-function buildQuery(table: ITableInfo) {
+function buildQuery(table: ITableInfo): GraphQLFieldConfig<unknown, TUserContext> {
   debug(`Creating ${table.name} query`)
   const query: GraphQLFieldConfig<unknown, TUserContext> = {
     type: new GraphQLList(buildType(table)),

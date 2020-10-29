@@ -111,3 +111,18 @@ export interface IColumnInfo {
   relation?: IColumnRelation,
   layout?: any,
 }
+
+export interface IConfig {
+  server: {
+    port: number
+  },
+  mysql?: {
+    host: string,
+    database: string,
+    user: string,
+    password: string,
+    port: string
+  }
+}
+
+export interface ISettings extends Array<ITableInfo> {}

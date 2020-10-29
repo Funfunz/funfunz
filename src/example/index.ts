@@ -1,9 +1,9 @@
-import index from '../middleware'
+import { Funfunz } from '../middleware'
 import config from '../test/configs/MCconfig'
 import settings from '../test/configs/MCsettings'
 import httpServer from './httpServer'
 
-const app = index({
+const funfunz = new Funfunz({
   config,
   settings,
 })
@@ -12,4 +12,4 @@ const app = index({
  * Create HTTP server if not loaded has a plugin.
  */
 
-httpServer(app.server)
+httpServer(funfunz.middleware)

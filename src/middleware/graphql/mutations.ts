@@ -5,18 +5,17 @@ import config from '../utils/configLoader'
 import { normalize as normalizeData } from '../utils/data'
 import { ITableInfo } from '../..//generator/configurationTypes'
 import Debug from 'debug'
-import { GraphQLResolveInfo } from 'graphql'
+import { GraphQLFieldConfig, GraphQLFieldConfigArgumentMap, GraphQLFieldConfigMap, Thunk } from 'graphql'
 import Knex from 'knex'
 import { applyQueryFilters, getPKs, requirementsCheck, runHook } from '../utils'
 import { resolver } from './resolver'
+import { TUserContext } from './schema'
 
 const debug = Debug('funfunz:graphql-mutation-builder')
 
-export default function buildMutations() {
+export default function buildMutations(): Thunk<GraphQLFieldConfigMap<unknown, TUserContext>> {
   const configs = config()
-  const mutations: {
-    [key: string]: any
-  } = {}
+  const mutations: Thunk<GraphQLFieldConfigMap<unknown, TUserContext>> = {}
   configs.settings.forEach((table) => {
     mutations[`add${capitalize(table.name)}`] = buildAddMutation(table)
     mutations[`update${capitalize(table.name)}`] = buildUpdateByIdMutation(table)
@@ -26,16 +25,16 @@ export default function buildMutations() {
   return mutations
 }
 
-function buildUpdateByIdMutation(table: ITableInfo) {
+function buildUpdateByIdMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUserContext> {
   debug(`Creating ${table.name} update mutation`)
-  const mutation = {
+  const mutation: GraphQLFieldConfig<unknown, TUserContext>  = {
     type: buildType(table, { relations: true }),
-    resolve: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
+    resolve: (parent, args, context, info) => {
       return requirementsCheck(table, 'update', context.user, database).then((db) => {
         const acceptedColumns: string[] = []
         table.columns.forEach((column) => {
           if (column.model.type === 'datetime') {
-            args[column.name] = new Date(args[column.name] || null)
+            args[column.name] = new Date((args[column.name] as string) || '')
           }
           if (args[column.name] !== undefined) {
             acceptedColumns.push(column.name)
@@ -48,7 +47,7 @@ function buildUpdateByIdMutation(table: ITableInfo) {
         ])
       }).then(([db, data]) => {
         let SQL = db(table.name)
-        const query: any = {}
+        const query = {}
         getPKs(table).forEach((pk) => {
           query[pk] = isNaN(args[pk]) ? args[pk] : Number(args[pk])
         })
@@ -64,18 +63,18 @@ function buildUpdateByIdMutation(table: ITableInfo) {
       })
     },
     args: {
-      ...buildFields(table, { relations: false, required: ['pk'], pagination: false }),
+      ...buildFields(table, { relations: false, required: ['pk'], pagination: false }) as GraphQLFieldConfigArgumentMap,
     },
   }
   debug(`Created ${table.name} add mutation`)
   return mutation
 }
 
-function buildAddMutation(table: ITableInfo) {
+function buildAddMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUserContext> {
   debug(`Creating ${table.name} add mutation`)
-  const mutation = {
+  const mutation: GraphQLFieldConfig<unknown, TUserContext>  = {
     type: buildType(table),
-    resolve: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
+    resolve: (parent, args, context, info) => {
       return requirementsCheck(table, 'create', context.user, database).then((db) => {
         const data = normalizeData(args, table)
         return Promise.all([
@@ -83,11 +82,11 @@ function buildAddMutation(table: ITableInfo) {
           runHook(table, 'insertRow', 'before', context.req, context.res, db, data),
         ])
       }).then(
-        ([db, data]: [Knex<any, any[]>, any]) => {
+        ([db, data]: [Knex<Record<string, unknown>, Record<string, unknown>[]>, Record<string, unknown>]) => {
           return Promise.all([
             db,
             db(table.name).insert(data).then((ids) => {
-              const query: any = {}
+              const query = {}
               getPKs(table).forEach((key, index) => {
                 query[key] = args[key] || ids[index]
               })
@@ -102,18 +101,18 @@ function buildAddMutation(table: ITableInfo) {
       )
     },
     args: {
-      ...buildFields(table, { relations: false, pagination: false }),
+      ...buildFields(table, { relations: false, pagination: false }) as GraphQLFieldConfigArgumentMap,
     },
   }
   debug(`Created ${table.name} add mutation`)
   return mutation
 }
 
-function buildDeleteMutation(table: ITableInfo) {
+function buildDeleteMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUserContext> {
   debug(`Creating ${table.name} delete mutation`)
-  const mutation = {
+  const mutation: GraphQLFieldConfig<unknown, TUserContext>  = {
     type: buildDeleteMutationType(table),
-    resolve: (parent: any, args: any, context: any) => {
+    resolve: (parent, args, context) => {
       return requirementsCheck(table, 'delete', context.user, database).then((db) => {
         return Promise.all([
           db,
@@ -133,7 +132,7 @@ function buildDeleteMutation(table: ITableInfo) {
       })
     },
     args: {
-      ...buildFields(table, { relations: false, include: ['pk'], required: ['pk'], pagination: false }),
+      ...buildFields(table, { relations: false, include: ['pk'], required: ['pk'], pagination: false }) as GraphQLFieldConfigArgumentMap,
     },
   }
   debug(`Created ${table.name} delete mutation`)
