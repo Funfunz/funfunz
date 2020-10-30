@@ -9,7 +9,7 @@ class Database {
   constructor() {
     this.db = null
   }
-  public initDBconnection() {
+  public initDBconnection(): void {
     const configuration = config().config
     if (configuration.mysql) {
       this.db = knex({

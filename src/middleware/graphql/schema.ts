@@ -24,15 +24,13 @@ export default (): GraphQLSchema => {
   debug('Creating graphql schema')
   // lets define our root query
   const RootQuery = new GraphQLObjectType({
-    name: 'RootQueryType',
-    description: 'This is the default root query provided by our application',
+    name: 'Query',
     fields: {
       ...buildQueries(),
     },
   })
   const RootMutation = new GraphQLObjectType({
     name: 'Mutation',
-    description: 'This is the default root mutation provided by our application',
     fields: {
       ...mutations(),
     },

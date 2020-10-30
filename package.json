@@ -63,6 +63,7 @@
     "express-graphql": "^0.11.0",
     "graphql": "^15.3.0",
     "graphql-parse-resolve-info": "^4.9.0",
+    "graphql-type-json": "^0.3.2",
     "jsonschema": "^1.2.8",
     "morgan": "^1.10.0",
     "pluralize": "^8.0.0"
