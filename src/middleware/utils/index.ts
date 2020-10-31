@@ -65,7 +65,7 @@ export function hasAuthorization(
     ],
   }
 ): boolean {
-  let isAuthorized: boolean = true
+  let isAuthorized = true
   if (roles && roles.length) {
     isAuthorized = !!roles.find(
       (role: string) => {
@@ -281,9 +281,9 @@ export function applyParentTableFilters(
 
 export function applyQueryFilters(
   QUERY: Knex.QueryBuilder,
-  filters: string | {[key: string]: any},
+  filters: string | Record<string, unknown>,
   TABLE_CONFIG: ITableInfo
-) {
+): Knex.QueryBuilder<Record<string, unknown>, unknown> {
   const columnsByName = getColumnsByName(TABLE_CONFIG)
   const FILTERS = typeof filters === 'string' ? JSON.parse(filters) : filters
   Object.keys(FILTERS).forEach(
@@ -307,13 +307,13 @@ export function applyQueryFilters(
           (
             FILTERS[key] === null
               ? QUERY.andWhere((innerQuery) => {
-                  innerQuery.whereNull(key)
-                })
+                innerQuery.whereNull(key)
+              })
               : Array.isArray(FILTERS[key])
                 ? QUERY.whereIn(key, FILTERS[key])
                 : QUERY.andWhere({
-                    [key]: FILTERS[key],
-                  })
+                  [key]: FILTERS[key],
+                })
           )
       } else {
         index === 0 ?
@@ -327,8 +327,8 @@ export function applyQueryFilters(
           (
             FILTERS[key] === null
               ? QUERY.andWhere((innerQuery) => {
-                  innerQuery.whereNull(key)
-                })
+                innerQuery.whereNull(key)
+              })
               : Array.isArray(FILTERS[key])
                 ? QUERY.whereIn(key, FILTERS[key])
                 : QUERY.andWhere(key, 'like', '%' + FILTERS[key] + '%')

@@ -29,11 +29,11 @@ function toRequestBuilder(relation: IColumnRelation, columnName: string): IToReq
   }
 }
 
-export function  addVerboseRelatedData(results: any[], TABLE_CONFIG: ITableInfo, DB: Knex) {
+export function  addVerboseRelatedData(results: Record<string, unknown>[], TABLE_CONFIG: ITableInfo, DB: Knex): Promise<unknown[]> {
   const toRequest: IToRequest = {}
   const COLUMNS_WITH_RELATIONS = getColumnsWithRelations(TABLE_CONFIG)
   results.forEach(
-    (row: any, index: number) => {
+    (row) => {
       COLUMNS_WITH_RELATIONS.forEach(
         (column) => {
           if (row[column.name]) {
@@ -45,8 +45,7 @@ export function  addVerboseRelatedData(results: any[], TABLE_CONFIG: ITableInfo,
             if (!toRequest[RELATION_TABLE_NAME]) {
               toRequest[RELATION_TABLE_NAME] = toRequestBuilder(column.relation, column.name)
             }
-
-            toRequest[RELATION_TABLE_NAME].values.add(row[column.name])
+            toRequest[RELATION_TABLE_NAME].values.add(row[column.name] as number)
           }
         }
       )
@@ -64,7 +63,7 @@ export function  addVerboseRelatedData(results: any[], TABLE_CONFIG: ITableInfo,
     }
   )
 
-  return Promise.all<any[]>(relationQueries).then(
+  return Promise.all<Record<string, unknown>[]>(relationQueries).then(
     (relationResults) => {
       const MATCHER: {
         [foreignKeyColumn: string]: {
@@ -76,20 +75,20 @@ export function  addVerboseRelatedData(results: any[], TABLE_CONFIG: ITableInfo,
           const FOREIGN_KEY_COLUMN = requestedTable.foreignKeyColumn
           MATCHER[FOREIGN_KEY_COLUMN] = {}
           relationResults[index].forEach(
-            (relationRow: any) => {
-              const CURRENT_VALUE = relationRow[requestedTable.key]
-              const VALUE_TO_DISPLAY = relationRow[requestedTable.display]
+            (relationRow) => {
+              const CURRENT_VALUE: string = relationRow[requestedTable.key] as string
+              const VALUE_TO_DISPLAY = relationRow[requestedTable.display] as string
               MATCHER[FOREIGN_KEY_COLUMN][CURRENT_VALUE] = VALUE_TO_DISPLAY
             }
           )
         }
       )
       return results.map(
-        (row: any) => {
+        (row) => {
           Object.values(toRequest).forEach(
             (requestedTable) => {
               const ROW_KEY = requestedTable.foreignKeyColumn
-              row[ROW_KEY] = MATCHER[ROW_KEY][row[ROW_KEY]]
+              row[ROW_KEY] = MATCHER[ROW_KEY][row[ROW_KEY] as string]
             }
           )
           return row
