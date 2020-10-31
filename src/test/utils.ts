@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 import express, { Express } from 'express'
 
-export function authenticatedServer(funfunz: Express) {
+export function authenticatedServer(funfunz: Express): Express {
   const server = express()
   server.use((req: any, res, next) => {
     req.user = {

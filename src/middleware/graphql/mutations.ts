@@ -31,15 +31,6 @@ function buildUpdateByIdMutation(table: ITableInfo): GraphQLFieldConfig<unknown,
     type: buildType(table, { relations: true }),
     resolve: (parent, args, context, info) => {
       return requirementsCheck(table, 'update', context.user, database).then((db) => {
-        const acceptedColumns: string[] = []
-        table.columns.forEach((column) => {
-          if (column.model.type === 'datetime') {
-            args[column.name] = new Date((args[column.name] as string) || '')
-          }
-          if (args[column.name] !== undefined) {
-            acceptedColumns.push(column.name)
-          }
-        })
         const newData = normalizeData(args, table)
         return Promise.all([
           db,
@@ -52,6 +43,7 @@ function buildUpdateByIdMutation(table: ITableInfo): GraphQLFieldConfig<unknown,
           query[pk] = isNaN(args[pk]) ? args[pk] : Number(args[pk])
         })
         SQL = applyQueryFilters(SQL, query, table)
+        console.log('BEFORE UPDATE: ', data)
         return Promise.all([
           db,
           SQL.update(data).then(() => {
@@ -76,7 +68,7 @@ function buildAddMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUserC
     type: buildType(table),
     resolve: (parent, args, context, info) => {
       return requirementsCheck(table, 'create', context.user, database).then((db) => {
-        const data = normalizeData(args, table)
+        const data = normalizeData(args, table, true)
         return Promise.all([
           db,
           runHook(table, 'insertRow', 'before', context.req, context.res, db, data),

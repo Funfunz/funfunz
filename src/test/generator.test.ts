@@ -1,9 +1,11 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+require('mysql2/node_modules/iconv-lite').encodingExists('foo')
 import fs from 'fs'
 import path from 'path'
 import { parse } from '../generator/parser'
 import { deleteFolderRecursive, isEmptyFolder } from '../generator/utils'
 
-const mongoTargetPath = path.join(process.cwd(), '/test/generatedConfigsMongo')
+const mongoTargetPath = path.join(process.cwd(), '/src/test/generatedConfigsMongo')
 deleteFolderRecursive(mongoTargetPath)
 
 describe('parse mongo', () => {
@@ -37,7 +39,7 @@ describe('parse mongo', () => {
   */
 })
 
-const mysqlTargetPath = path.join(process.cwd(), '/test/generatedConfigsMysql')
+const mysqlTargetPath = path.join(process.cwd(), '/src/test/generatedConfigsMysql')
 deleteFolderRecursive(mysqlTargetPath)
 
 describe('parse mysql', () => {

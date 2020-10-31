@@ -13,23 +13,23 @@ function promptUserAboutDatabase(selectedPath: string) {
       const databaseType: databaseTypes = answers.DBType
 
       switch (databaseType) {
-        case 'pgsql':
-          throw Error('Database not yet supported')
-        default:
-          return Promise.all([
-            prompt(databaseQuestions[databaseType]),
-            databaseType,
-          ])
+      case 'pgsql':
+        throw Error('Database not yet supported')
+      default:
+        return Promise.all([
+          prompt(databaseQuestions[databaseType]),
+          databaseType,
+        ])
       }
     }
   ).then(
     ([answers, databaseType]: [any, databaseTypes]) => {
       switch (databaseType) {
-        case 'pgsql':
-          throw Error('Parser for ' + databaseType + ' not yet integrated')
-        case 'mysql':
-        case 'mongoDB':
-          return parse(answers, databaseType, selectedPath)
+      case 'pgsql':
+        throw Error('Parser for ' + databaseType + ' not yet integrated')
+      case 'mysql':
+      case 'mongoDB':
+        return parse(answers, databaseType, selectedPath)
       }
     }
   ).catch(
