@@ -1,35 +1,33 @@
 #!/usr/bin/env node
-import { databaseTypes } from '@root/generator/configurationTypes'
-import { parse } from '@root/generator/parser'
-import { databaseQuestions, databaseTypeQuestion } from '@root/generator/questions'
-import { deleteFolderRecursive, isEmptyFolder } from '@root/generator/utils'
+import { databaseTypes } from './configurationTypes'
+import { parse } from './parser'
+import { databaseQuestions, databaseTypeQuestion } from './questions'
+import { deleteFolderRecursive, isEmptyFolder } from './utils'
 import { prompt } from 'enquirer'
 import minimist from 'minimist'
 import path from 'path'
 
 function promptUserAboutDatabase(selectedPath: string) {
-  prompt(databaseTypeQuestion).then(
-    (answers: any) => {
-      const databaseType: databaseTypes = answers.DBType
+  prompt<Record<string, string>>(databaseTypeQuestion).then(
+    (answers) => {
+      const databaseType: databaseTypes = answers.DBType as databaseTypes
 
       switch (databaseType) {
-        case 'pgsql':
-          throw Error('Database not yet supported')
-        default:
-          return Promise.all([
-            prompt(databaseQuestions[databaseType]),
-            databaseType,
-          ])
+      case 'pgsql':
+        throw Error('Database not yet supported')
+      default:
+        return Promise.all([
+          prompt<Record<string, string>>(databaseQuestions[databaseType]),
+          databaseType,
+        ])
       }
     }
   ).then(
-    ([answers, databaseType]: [any, databaseTypes]) => {
+    ([answers, databaseType]) => {
       switch (databaseType) {
-        case 'pgsql':
-          throw Error('Parser for ' + databaseType + ' not yet integrated')
-        case 'mysql':
-        case 'mongoDB':
-          return parse(answers, databaseType, selectedPath)
+      case 'mysql':
+      case 'mongoDB':
+        return parse(answers, databaseType, selectedPath)
       }
     }
   ).catch(
@@ -40,12 +38,12 @@ function promptUserAboutDatabase(selectedPath: string) {
 }
 
 function promptUserToDeleteFolder(selectedPath: string) {
-  return prompt({
+  return prompt<Record<string, string>>({
     type: 'confirm',
     name: 'delete',
     message: 'The target folder is not empty, do you want to clear its contents?',
   }).then(
-    (answers: any) => {
+    (answers) => {
       if (answers && answers.delete) {
         deleteFolderRecursive(selectedPath)
       } else {

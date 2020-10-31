@@ -1,5 +1,5 @@
 // get the client
-import { describeInfo, IDatabaseData, schemaInfo } from '@root/generator/configurationTypes'
+import { describeInfo, IDatabaseData, schemaInfo } from '../../generator/configurationTypes'
 import mysql from 'mysql2'
 
 let userAnswers: any = {}

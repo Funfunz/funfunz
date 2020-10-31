@@ -1,0 +1,10 @@
+- [Home](/)
+- Usage
+  - [Quickstart](usage/quickstart.md)
+  - [Plugin](usage/plugin.md)
+  - [Standalone](usage/standalone.md)
+- Configuration
+  - [Config](configuration/config.md)
+  - [Settings](configuration/settings.md)
+- [End Goals](endgoals.md)
+- [Contributing](contributing.md)
