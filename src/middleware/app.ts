@@ -3,7 +3,7 @@ import IndexRouter from './routes'
 import { errorHandler } from './utils'
 import cors from 'cors'
 import Debug from 'debug'
-import express, { Application } from 'express'
+import express from 'express'
 import logger from 'morgan'
 
 const debug = Debug('funfunz:init')

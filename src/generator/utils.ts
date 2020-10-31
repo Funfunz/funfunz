@@ -1,6 +1,6 @@
 import fs from 'fs'
 
-export function deleteFolderRecursive(pathSelected: string) {
+export function deleteFolderRecursive(pathSelected: string): void {
   if (fs.existsSync(pathSelected)) {
     fs.readdirSync(pathSelected).forEach((file) => {
       const curPath = pathSelected + '/' + file
@@ -16,7 +16,7 @@ export function deleteFolderRecursive(pathSelected: string) {
   }
 }
 
-export function isEmptyFolder(pathSelected: string) {
+export function isEmptyFolder(pathSelected: string): boolean {
   if (fs.existsSync(pathSelected)) {
     return fs.readdirSync(pathSelected).length <= 0
   }

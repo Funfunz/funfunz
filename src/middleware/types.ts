@@ -4,14 +4,14 @@ export class HttpException extends Error {
   public status: number;
   public message: string;
   constructor(status: number, message: string) {
-    super(message);
-    this.status = status;
-    this.message = message;
+    super(message)
+    this.status = status
+    this.message = message
   }
 }
 
 export interface IUser {
-  [key: string]: any,
+  [key: string]: unknown,
   roles: Array<{
     id: number,
     name: string,
@@ -19,7 +19,7 @@ export interface IUser {
 }
 
 export interface IFunfunzResponse extends express.Response {
-  data?: any
+  data?: Record<string, unknown>
 }
 
 export interface IFunfunzRequest extends express.Request {

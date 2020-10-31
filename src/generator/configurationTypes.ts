@@ -6,8 +6,8 @@ type IHookFunction = (
   res: express.Response,
   DB: knex,
   tableName: string,
-  data?: any
-) => Promise <any>
+  data?: Record<string, unknown>
+) => Promise <Record<string, unknown>>
 
 export interface IDatabaseData {
   schema: schemaInfo,
@@ -67,7 +67,7 @@ export interface ITableInfo {
       after?: IHookFunction,
     }
   },
-  layout?: any,
+  layout: Record<string, unknown>,
 }
 
 export interface IRelation1N {
@@ -109,7 +109,7 @@ export interface IColumnInfo {
     allowNull: boolean,
   },
   relation?: IColumnRelation,
-  layout?: any,
+  layout: Record<string, unknown>,
 }
 
 export interface IConfig {
@@ -125,4 +125,4 @@ export interface IConfig {
   }
 }
 
-export interface ISettings extends Array<ITableInfo> {}
+export type ISettings = ITableInfo[]

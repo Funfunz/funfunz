@@ -1,5 +1,5 @@
 import database from '../db'
-import { HttpException, IFunfunzRequest, IFunfunzResponse } from '../types'
+import { HttpException } from '../types'
 import {
   addToResponse,
   applyPKFilters,

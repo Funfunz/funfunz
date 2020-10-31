@@ -8,25 +8,23 @@ import minimist from 'minimist'
 import path from 'path'
 
 function promptUserAboutDatabase(selectedPath: string) {
-  prompt(databaseTypeQuestion).then(
-    (answers: any) => {
-      const databaseType: databaseTypes = answers.DBType
+  prompt<Record<string, string>>(databaseTypeQuestion).then(
+    (answers) => {
+      const databaseType: databaseTypes = answers.DBType as databaseTypes
 
       switch (databaseType) {
       case 'pgsql':
         throw Error('Database not yet supported')
       default:
         return Promise.all([
-          prompt(databaseQuestions[databaseType]),
+          prompt<Record<string, string>>(databaseQuestions[databaseType]),
           databaseType,
         ])
       }
     }
   ).then(
-    ([answers, databaseType]: [any, databaseTypes]) => {
+    ([answers, databaseType]) => {
       switch (databaseType) {
-      case 'pgsql':
-        throw Error('Parser for ' + databaseType + ' not yet integrated')
       case 'mysql':
       case 'mongoDB':
         return parse(answers, databaseType, selectedPath)
@@ -40,12 +38,12 @@ function promptUserAboutDatabase(selectedPath: string) {
 }
 
 function promptUserToDeleteFolder(selectedPath: string) {
-  return prompt({
+  return prompt<Record<string, string>>({
     type: 'confirm',
     name: 'delete',
     message: 'The target folder is not empty, do you want to clear its contents?',
   }).then(
-    (answers: any) => {
+    (answers) => {
       if (answers && answers.delete) {
         deleteFolderRecursive(selectedPath)
       } else {

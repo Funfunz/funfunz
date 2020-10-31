@@ -7,7 +7,7 @@ import { IConfig, ISettings } from '../generator/configurationTypes'
 class Funfunz {
   public middleware: Express
 
-  constructor(configs: {config: IConfig, settings: ISettings, [key: string]: any}) {
+  constructor(configs: {config: IConfig, settings: ISettings, [key: string]: unknown}) {
     const debug = Debug('funfunz:server')
 
     if (!configs.settings) {

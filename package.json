@@ -9,7 +9,7 @@
   "scripts": {
     "docs": "docsify serve ./docs",
     "test": "jest --coverage --forceExit && codecov",
-    "lint": "tslint src/**/*.ts",
+    "lint": "eslint src/**/*.ts",
     "dev": "DEBUG=funfunz:* NODE_ENV=development ts-node ./src/example/index.ts",
     "questions": "DEBUG=funfunz:* NODE_ENV=development ts-node ./src/generator/index.ts",
     "clean": "rm -rf lib && mkdir lib",
