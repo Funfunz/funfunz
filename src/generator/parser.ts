@@ -1,7 +1,7 @@
-import { generateConfig, generateSettings } from '@root/generator/configGenerator'
-import { databaseTypes } from '@root/generator/configurationTypes'
+import { generateConfig, generateSettings } from './configGenerator'
+import { databaseTypes } from './configurationTypes'
 
-export function parse(answers: any, databaseType: databaseTypes, selectedPath: string) {
+export function parse(answers: Record<string, unknown>, databaseType: databaseTypes, selectedPath: string): Promise<void> {
   return import('./' + databaseType).then(
     (dbModule) => {
       return Promise.all([

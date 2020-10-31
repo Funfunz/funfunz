@@ -1,5 +1,5 @@
 {
-  "name": "funfunzmc",
+  "name": "funfunz",
   "version": "0.2.1",
   "description": "backoffice generator",
   "main": "lib/api/index.js",
@@ -7,16 +7,14 @@
     "node": ">=9.11.1"
   },
   "scripts": {
+    "docs": "docsify serve ./docs",
     "test": "jest --coverage --forceExit && codecov",
-    "lint": "tslint src/**/*.ts",
-    "dev": "DEBUG=funfunzmc:* NODE_ENV=development babel-node --extensions \".js,.ts,.tsx,.json\" ./dev.ts",
-    "questions": "DEBUG=funfunzmc:* NODE_ENV=development babel-node --extensions \".js,.ts,.tsx,.json\" ./src/generator/index.ts",
-    "clean": "rm -rf lib bin && mkdir lib",
-    "type-check": "tsc",
-    "type-check:watch": "npm run type-check -- --watch",
-    "build": "npm run lint && npm run clean && npm run build:types && npm run build:js",
-    "build:types": "tsc",
-    "build:js": "babel src -d lib --extensions \".js,.ts,.tsx\" --source-maps inline && cp -rf ./src/api/public ./lib/api",
+    "lint": "eslint src/**/*.ts",
+    "dev": "DEBUG=funfunz:* NODE_ENV=development ts-node ./src/example/index.ts",
+    "questions": "DEBUG=funfunz:* NODE_ENV=development ts-node ./src/generator/index.ts",
+    "clean": "rm -rf lib && mkdir lib",
+    "build": "npm run lint && npm run clean && npm run build:js",
+    "build:js": "tsc",
     "start": "NODE_ENV=production node ./lib/index.js",
     "prepublishOnly": "npm run build",
     "docker-compose:up": "docker-compose up -d",
@@ -24,11 +22,11 @@
     "mysql:shell": "docker-compose exec mysqldb bash -c 'mysql -u root -p$MYSQL_ROOT_PASSWORD $MYSQL_DATABASE'"
   },
   "bin": {
-    "funfunzmc": "./lib/generator/index.js"
+    "funfunz": "./lib/generator/index.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JWebCoder/funfunzmc.git"
+    "url": "git+https://github.com/JWebCoder/funfunz.git"
   },
   "keywords": [
     "backoffice",
@@ -37,58 +35,47 @@
   "author": "João Moura",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/JWebCoder/funfunzmc/issues"
+    "url": "https://github.com/JWebCoder/funfunz/issues"
   },
-  "homepage": "https://github.com/JWebCoder/funfunzmc#readme",
-  "dependencies": {
-    "@types/mysql2": "github:types/mysql2",
-    "codecov": "^3.6.1",
-    "cookie-parser": "^1.4.4",
-    "cors": "^2.8.5",
-    "debug": "^4.1.1",
-    "enquirer": "^2.3.2",
-    "express": "^4.17.1",
-    "express-graphql": "^0.8.0",
-    "graphql": "^14.5.8",
-    "jsonschema": "^1.2.5",
-    "knex": "^0.19.5",
-    "metle": "^1.0.1",
-    "minimist": "^1.2.5",
-    "mongodb": "^3.4.1",
-    "morgan": "^1.9.1",
-    "mysql2": "^2.1.0",
-    "pluralize": "^8.0.0",
-    "tslint": "^5.20.1"
-  },
+  "homepage": "https://github.com/JWebCoder/funfunz#readme",
   "devDependencies": {
-    "@babel/cli": "^7.8.4",
-    "@babel/core": "^7.7.7",
-    "@babel/node": "^7.7.7",
-    "@babel/plugin-proposal-class-properties": "^7.7.4",
-    "@babel/plugin-proposal-object-rest-spread": "^7.7.7",
-    "@babel/preset-env": "^7.7.7",
-    "@babel/preset-typescript": "^7.7.7",
-    "@types/bluebird": "^3.5.29",
-    "@types/cookie-parser": "^1.4.2",
-    "@types/cors": "^2.8.6",
+    "@babel/core": "^7.12.3",
+    "@babel/preset-env": "^7.12.1",
+    "@babel/preset-typescript": "^7.12.1",
+    "@types/cors": "^2.8.7",
     "@types/debug": "^4.1.5",
-    "@types/dotenv": "^6.1.1",
-    "@types/express": "^4.17.2",
-    "@types/express-graphql": "^0.8.2",
-    "@types/graphql": "^14.5.0",
-    "@types/jest": "^24.0.25",
-    "@types/minimist": "^1.2.0",
-    "@types/mongodb": "^3.3.14",
-    "@types/morgan": "^1.7.37",
-    "@types/node": "^12.12.24",
+    "@types/express": "^4.17.8",
+    "@types/jest": "^26.0.14",
+    "@types/mongodb": "^3.5.27",
+    "@types/morgan": "^1.9.1",
+    "@types/node": "^14.11.3",
     "@types/pluralize": "0.0.29",
-    "@types/supertest": "^2.0.8",
-    "babel-plugin-dynamic-import-node": "^2.3.0",
-    "babel-plugin-module-resolver": "^3.2.0",
-    "eslint": "^5.16.0",
-    "jest": "^25.3.0",
-    "supertest": "^4.0.2",
-    "ts-jest": "^24.3.0",
-    "typescript": "^3.7.4"
+    "@types/supertest": "^2.0.10",
+    "@typescript-eslint/eslint-plugin": "^4.4.0",
+    "@typescript-eslint/parser": "^4.4.0",
+    "babel-jest": "^26.6.1",
+    "codecov": "^3.8.0",
+    "docsify-cli": "^4.4.1",
+    "eslint": "^7.10.0",
+    "jest": "^26.5.0",
+    "supertest": "^5.0.0",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.5"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "express-graphql": "^0.11.0",
+    "graphql": "^15.3.0",
+    "graphql-parse-resolve-info": "^4.9.0",
+    "graphql-type-json": "^0.3.2",
+    "jsonschema": "^1.2.8",
+    "morgan": "^1.10.0",
+    "pluralize": "^8.0.0"
+  },
+  "optionalDependencies": {
+    "knex": "^0.21.6",
+    "mongodb": "^3.6.2",
+    "mysql2": "^2.2.5"
   }
 }

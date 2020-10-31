@@ -1,10 +1,10 @@
-import { describeInfo, IColumnInfo, ITableInfo, schemaInfo } from '@root/generator/configurationTypes'
+import { describeInfo, IColumnInfo, IConfig, ISettings, ITableInfo, schemaInfo } from './configurationTypes'
 import Debug from 'debug'
 import fs from 'fs'
 import path from 'path'
 import pluralize from 'pluralize'
 
-const debug = Debug('funfunzmc:config-generator')
+const debug = Debug('funfunz:config-generator')
 
 const INPUT_TYPES: {
   [key: string]: 'text' | 'checkbox' | 'number' | 'date'
@@ -42,7 +42,7 @@ function buildTableInfo(): ITableInfo {
   }
 }
 
-function buildColumnInfo(): IColumnInfo {
+function buildColumnInfo(): IColumnInfo & { layout : {editField : Record<string, unknown>}}{
   return {
     name: '',
     searchable: true,
@@ -65,9 +65,9 @@ function buildColumnInfo(): IColumnInfo {
 
 function isEditable(fieldName: string) {
   switch (fieldName) {
-    case 'createdAt':
-    case 'updatedAt':
-      return false
+  case 'createdAt':
+  case 'updatedAt':
+    return false
   }
   return true
 }
@@ -75,8 +75,8 @@ function isEditable(fieldName: string) {
 export function generateSettings(
   DBData: Array<{ schema: schemaInfo, describe: describeInfo }>,
   selectedPath: string
-): any {
-  const resultData: any[] = []
+): void {
+  const resultData: ISettings = []
   fs.mkdirSync(path.join(selectedPath, '/models/'))
   DBData.forEach(
     (tableData) => {
@@ -120,7 +120,7 @@ export function generateSettings(
       )
 
       fs.writeFile(
-        path.join(selectedPath, '/models/' + table.name + '.js'),
+        path.join(selectedPath, '/models/' + table.name + '.ts'),
         'export default ' + JSON.stringify(table, null, 2),
         'utf8',
         (err) => {
@@ -134,7 +134,7 @@ export function generateSettings(
   )
 
   fs.writeFile(
-    path.join(selectedPath, '/MCsettings.js'),
+    path.join(selectedPath, '/MCsettings.ts'),
     resultData.map(
       (table) => `import ${table.name}Model from './models/${table.name}'\n`
     ).join('') +
@@ -152,17 +152,17 @@ export function generateSettings(
   )
 }
 
-export function generateConfig(answers: any, selectedPath: string) {
-  const finalConfig: any = {
+export function generateConfig(answers: Record<string, string>, selectedPath: string): void {
+  const finalConfig: IConfig = {
     [answers.DBType]: {
-        host: answers.DBHost,
-        database: answers.DBName,
-        user: answers.DBUser || '',
-        password: answers.DBPassword || '',
-        port: answers.DBPort || '',
+      host: answers.DBHost,
+      database: answers.DBName,
+      user: answers.DBUser || '',
+      password: answers.DBPassword || '',
+      port: answers.DBPort || '',
     },
     server: {
-        port: 3004,
+      port: 3004,
     },
   }
 
@@ -176,7 +176,7 @@ export function generateConfig(answers: any, selectedPath: string) {
 
   fs.mkdirSync(selectedPath)
   fs.writeFile(
-    path.join(selectedPath, 'MCconfig.js'),
+    path.join(selectedPath, 'MCconfig.ts'),
     'export default ' + JSON.stringify(finalConfig, null, 2),
     'utf8',
     (err) => {

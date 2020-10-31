@@ -1,4 +1,4 @@
-# funfunzmc
+# funfunz
 
 [![Donate on patreon](https://img.shields.io/badge/donate-patreon-F96854.svg)](https://patreon.com/jwebcoder)
 [![Build Status][travis-badge]][travis]
@@ -11,9 +11,9 @@
 [![GitHub][license-badge]][license]
 
 
-## What is funfunzmc?
+## What is funfunz?
 
-funfunzmc was created due the lack of a functional back office generator in the NodeJS community.
+funfunz was created due the lack of a functional back office generator in the NodeJS community.
 
 The goal is to generate a fully automated back office that can be used to directly handle all the database data.
 
@@ -26,31 +26,31 @@ The goal is to generate a fully automated back office that can be used to direct
 
 ## Documentation
 
-Just follow the link: https://jwebcoder.github.io/funfunzmc/
+Just follow the link: https://jwebcoder.github.io/funfunz/
 
 ## License
 
 MIT
 
-[travis-badge]: https://travis-ci.com/JWebCoder/funfunzmc.svg?branch=master
-[travis]: https://travis-ci.com/JWebCoder/funfunzmc
+[travis-badge]: https://travis-ci.com/JWebCoder/funfunz.svg?branch=master
+[travis]: https://travis-ci.com/JWebCoder/funfunz
 
-[codecov-badge]: https://codecov.io/gh/JWebCoder/funfunzmc/branch/master/graph/badge.svg
-[codecov]: https://codecov.io/gh/JWebCoder/funfunzmc
+[codecov-badge]: https://codecov.io/gh/JWebCoder/funfunz/branch/master/graph/badge.svg
+[codecov]: https://codecov.io/gh/JWebCoder/funfunz
 
-[node]: https://img.shields.io/node/v/funfunzmc.svg
+[node]: https://img.shields.io/node/v/funfunz.svg
 
-[npm-badge]: https://badge.fury.io/js/funfunzmc.svg
-[npm]: https://badge.fury.io/js/funfunzmc
+[npm-badge]: https://badge.fury.io/js/funfunz.svg
+[npm]: https://badge.fury.io/js/funfunz
 
-[dependencies-badge]: https://david-dm.org/JWebCoder/funfunzmc/status.svg
-[dependencies]: https://david-dm.org/JWebCoder/funfunzmc
+[dependencies-badge]: https://david-dm.org/JWebCoder/funfunz/status.svg
+[dependencies]: https://david-dm.org/JWebCoder/funfunz
 
-[dev-dependencies-badge]: https://david-dm.org/JWebCoder/funfunzmc/dev-status.svg
-[dev-dependencies]: https://david-dm.org/JWebCoder/funfunzmc?type=dev
+[dev-dependencies-badge]: https://david-dm.org/JWebCoder/funfunz/dev-status.svg
+[dev-dependencies]: https://david-dm.org/JWebCoder/funfunz?type=dev
 
 [prs-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg
 [prs]: http://makeapullrequest.com
 
-[license-badge]: https://img.shields.io/github/license/JWebCoder/funfunzmc.svg
-[license]: https://github.com/JWebCoder/funfunzmc/blob/master/LICENSE
+[license-badge]: https://img.shields.io/github/license/JWebCoder/funfunz.svg
+[license]: https://github.com/JWebCoder/funfunz/blob/master/LICENSE
