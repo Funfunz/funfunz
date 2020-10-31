@@ -81,7 +81,7 @@ export function buildFields<TSource>(
       const type = isPk ? GraphQLID : MATCHER[column.model.type]
       result[column.name] = {
         type: isRequired ? new GraphQLNonNull(type) : type,
-        description: column.layout.label,
+        description: column.layout.label as string,
       }
     }
 
@@ -100,18 +100,18 @@ export function buildFields<TSource>(
         }
         result[remoteTable] = {
           type: buildType(relatedTable),
-          description: column.layout.label,
+          description: column.layout.label as string,
           resolve: resolver(relatedTable, table),
           args: buildFields(relatedTable, { relations: false, pagination: false }) as GraphQLFieldConfigArgumentMap,
         }
         result[column.name] = {
           type: GraphQLID,
-          description: column.layout.label,
+          description: column.layout.label as string,
         }
       } else {
         result[column.name] = {
           type: isRequired ? new GraphQLNonNull(GraphQLID) : GraphQLID,
-          description: column.layout.label,
+          description: column.layout.label as string,
         }
       }
     }
