@@ -1,6 +1,6 @@
 'use strict'
 import { resolver, resolverCount } from './resolver'
-import { buildFields, buildType } from './typeBuilder'
+import { buildArgs, buildType } from './typeBuilder'
 import config from '../utils/configLoader'
 import { ITableInfo } from '../../generator/configurationTypes'
 import Debug from 'debug'
@@ -32,7 +32,7 @@ function buildQuery(table: ITableInfo): GraphQLFieldConfig<unknown, TUserContext
     type: new GraphQLList(buildType(table)),
     description: `This will return all the ${pluralize(table.name)}.`,
     resolve: resolver(table),
-    args: buildFields(table, { relations: false, pagination: true }) as GraphQLFieldConfigArgumentMap,
+    args: buildArgs(table, { pagination: true }) as GraphQLFieldConfigArgumentMap,
   }
   debug(`Created ${table.name} query`)
   return query
@@ -44,7 +44,7 @@ function buildCount(table: ITableInfo) {
     type: GraphQLInt,
     description: `This will return the ${pluralize(table.name)} count.`,
     resolve: resolverCount(table),
-    args: buildFields(table, { relations: false, pagination: false }) as GraphQLFieldConfigArgumentMap,
+    args: buildArgs(table, { pagination: false }) as GraphQLFieldConfigArgumentMap,
   }
   debug(`Created ${table.name} count`)
   return query

@@ -1,5 +1,5 @@
 import database from '../db'
-import { applyParentTableFilters, applyQueryFilters, getPKs, requirementsCheck } from '../utils'
+import { applyParentTableFilters, applyQueryFilters, getPKs, requirementsCheck, Values } from '../utils'
 import { ITableInfo } from '../../generator/configurationTypes'
 import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
 import Knex from 'knex'
@@ -46,16 +46,13 @@ export function resolver<TSource, TContext extends TUserContext>(
     return requirementsCheck(table, 'read', context.user, database).then((DB) => {
       const fields = getFields(table, info)
       let QUERY = DB(table.name).select(fields)
-      const queryFilters = {}
-      for (const key in args) {
-        if (key !== 'limit' && key !== 'offset') {
-          queryFilters[key] = args[key]
-        }
+      console.log(args.filter)
+      if (args.filter) {
+        QUERY = applyQueryFilters(QUERY, args.filter)
       }
-      QUERY = applyQueryFilters(QUERY, queryFilters, table)
-      paginate(QUERY, args.offset, args.limit)
+      paginate(QUERY, args.skip, args.take)
       if (parentTable) {
-        return applyParentTableFilters(QUERY, table, parentTable, parent)
+        return applyParentTableFilters(QUERY, table, parentTable, parent as unknown as Record<string, Values>)
       } else {
         return QUERY
       }
@@ -69,7 +66,9 @@ export function resolverCount<TSource, TContext extends TUserContext>(
   return (parent, args, context) => {
     return requirementsCheck(table, 'read', context.user, database).then((DB) => {
       let QUERY = DB(table.name).select([])
-      QUERY = applyQueryFilters(QUERY, args, table)
+      if (args.filter) {
+        QUERY = applyQueryFilters(QUERY, args.filter)
+      }
       return QUERY.count('*', {as: 'count'}).first().then((res) => res.count)
     })
   }

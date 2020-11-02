@@ -1,7 +1,7 @@
 import database, { Database } from '../db'
 import { HttpException, IFunfunzRequest, IFunfunzResponse, IUser } from '../types'
 import config from '../utils/configLoader'
-import { Hooks, IColumnInfo, ITableInfo } from '../../generator/configurationTypes'
+import { Hooks, IColumnInfo, IRelation, IRelation1N, IRelationMN, IRelationN1, ITableInfo } from '../../generator/configurationTypes'
 import { ErrorRequestHandler, NextFunction } from 'express'
 import Knex from 'knex'
 
@@ -74,7 +74,7 @@ export function hasAuthorization(
         }
         return !!(user.roles && user.roles.find(
           (userRole) => {
-            return (userRole.name === role);
+            return (userRole.name === role)
           }
         ))
       }
@@ -91,7 +91,7 @@ export function hasAuthorization(
  *
  * @returns {IColumnInfo[]} array of filtered columns
  */
-export function filterVisibleTableColumns(table: ITableInfo, target: 'list' | 'detail' | 'relation') {
+export function filterVisibleTableColumns(table: ITableInfo, target: 'list' | 'detail' | 'relation'): string[] {
   return table.columns.filter((column) => {
     if (column.model.isPk) {
       return true
@@ -115,23 +115,19 @@ export function runHook(
   instance: 'after' | 'before',
   req: IFunfunzRequest,
   res: IFunfunzResponse,
-  databaseTnstance: Knex | null,
-  results?: any
-) {
+  databaseInstance: Knex | null,
+  results?: Record<string, unknown>
+): Promise<number | Record<string, unknown> | undefined> {
   if (TABLE.hooks && TABLE.hooks[hook]) {
     const HOOK = TABLE.hooks[hook]
-    if (databaseTnstance && HOOK && HOOK[instance]) {
+    if (databaseInstance && HOOK && HOOK[instance]) {
       const CALLER  = HOOK[instance]
-      return CALLER ?
-        instance === 'before' ?
-          CALLER(req, res, databaseTnstance, TABLE.name, results)
-          :
-          CALLER(req, res, databaseTnstance, TABLE.name, results)
-        :
-        Promise.resolve(hook === 'getTableCount' ? results.length : results)
+      return CALLER
+        ? CALLER(req, res, databaseInstance, TABLE.name, results)
+        : Promise.resolve(hook === 'getTableCount' ? (results?.length as number) : results)
     }
   }
-  return Promise.resolve(hook === 'getTableCount' ? results.length : results)
+  return Promise.resolve(hook === 'getTableCount' ? (results?.length as number) : results)
 }
 
 /**
@@ -140,7 +136,7 @@ export function runHook(
  *
  * @returns {ITableInfo} table configuration
  */
-export function getTableConfig(TABLE_NAME: string) {
+export function getTableConfig(TABLE_NAME: string): ITableInfo {
   return config().settings.filter(
     (tableItem) => tableItem.name === TABLE_NAME
   )[0]
@@ -153,7 +149,9 @@ export function getTableConfig(TABLE_NAME: string) {
  *
  * @returns {{ [key: string]: IColumnInfo }} {[columnName]:[columnConfig]} object
  */
-export function getColumnsByName(TABLE_CONFIG: ITableInfo) {
+export function getColumnsByName(TABLE_CONFIG: ITableInfo): {
+  [key: string]: IColumnInfo;
+} {
   const columnsByName: {
     [key: string]: IColumnInfo
   } = {}
@@ -173,7 +171,7 @@ export function getColumnsByName(TABLE_CONFIG: ITableInfo) {
  *
  * @returns {IColumnInfo[]} array of relation columns
  */
-export function getColumnsWithRelations(TABLE_CONFIG: ITableInfo) {
+export function getColumnsWithRelations(TABLE_CONFIG: ITableInfo): IColumnInfo[] {
   return TABLE_CONFIG.columns.filter(
     (column) => column.relation
   )
@@ -189,43 +187,38 @@ export function getColumnsWithRelations(TABLE_CONFIG: ITableInfo) {
  */
 export function applyQueryFiltersSearch(
   DB_QUERY: Knex.QueryBuilder,
-  reqQuery: {[key: string]: any},
-  TABLE_CONFIG: ITableInfo
-) {
-  if (reqQuery.filter) {
-    DB_QUERY = applyQueryFilters(DB_QUERY, reqQuery.filter, TABLE_CONFIG)
-  }
-  if (reqQuery.search) {
-    DB_QUERY = applyQuerySearch(DB_QUERY, reqQuery.search, TABLE_CONFIG)
-  }
-  return DB_QUERY
+  reqQuery: IFilter,
+): Knex.QueryBuilder<Record<string, unknown>, unknown> {
+  return applyQueryFilters(DB_QUERY, reqQuery)
 }
 
-const oneToManyRelation = (table: ITableInfo, parentTable: ITableInfo) => {
-  return parentTable.relations && parentTable.relations.find((relation) => {
-    return relation.type === '1:n' && relation.remoteTable === table.name
-  })
+const oneToManyRelation = (table: ITableInfo, parentTable: ITableInfo): IRelation1N | undefined => {
+  return parentTable.relations && parentTable.relations.find(
+    (relation) => {
+      return relation.type === '1:n' && relation.remoteTable === table.name
+    }
+  ) as IRelation1N | undefined
 }
 
-const manyToOneRelation = (table: ITableInfo, parentTable: ITableInfo) => {
+const manyToOneRelation = (table: ITableInfo, parentTable: ITableInfo): IRelationN1 | undefined => {
   return parentTable.relations && parentTable.relations.find((relation) => {
     return relation.type === 'n:1' && relation.remoteTable === table.name
-  })
+  }) as IRelationN1 | undefined
 }
 
-const manyToManyRelation = (table: ITableInfo, parentTable: ITableInfo) => {
+const manyToManyRelation = (table: ITableInfo, parentTable: ITableInfo): IRelationMN | undefined => {
   return parentTable.relations && parentTable.relations.find((relation) => {
     return relation.type === 'm:n' && relation.remoteTable === table.name
-  })
+  }) as IRelationMN | undefined
 }
 
 export function applyParentTableFilters(
   QUERY: Knex.QueryBuilder,
   table: ITableInfo,
   parentTable: ITableInfo,
-  parentObj: any
-) {
-  let relation: any = oneToManyRelation(table, parentTable)
+  parentObj: Record<string, Values>
+): Promise<unknown> | null | undefined {
+  let relation: IRelation | undefined = oneToManyRelation(table, parentTable)
   if (relation) {
     const pks = getPKs(parentTable)
     if (pks.length > 1) {
@@ -233,7 +226,7 @@ export function applyParentTableFilters(
     }
     const pk = pks[0]
     const value = parentObj[pk]
-    return applyQueryFilters(QUERY, { [relation.foreignKey]: value }, table)
+    return applyQueryFilters(QUERY, { [relation.foreignKey]: { $eq: value }})
   }
 
   relation = manyToOneRelation(table, parentTable)
@@ -244,7 +237,7 @@ export function applyParentTableFilters(
     }
     const pk = pks[0]
     const value = parentObj[relation.foreignKey]
-    return applyQueryFilters(QUERY, { [pk]: value }, table).first()
+    return applyQueryFilters(QUERY, { [pk]: { $eq: value }}).first()
   }
 
   relation = manyToManyRelation(table, parentTable)
@@ -269,70 +262,150 @@ export function applyParentTableFilters(
       parentObj[remotePk]
     ).then((results) => {
       const IDS = results.map((obj) => {
-        return obj[relation.remoteForeignKey]
+        return obj[(relation as IRelationMN).remoteForeignKey]
       })
       const filter = {
-        [pk]: IDS,
+        [pk]: {
+          $in: IDS
+        }
       }
-      return applyQueryFilters(QUERY, filter, table)
+      return applyQueryFilters(QUERY, filter)
     })
   }
 }
 
+type Operators =
+  | '_eq'
+  | '_neq'
+  | '_lt'
+  | '_lte'
+  | '_gt'
+  | '_gte'
+  | '_in'
+  | '_nin'
+  | '_like'
+  | '_nlike'
+  | '_is_null'
+
+export type Values =
+  | string
+  | number
+  | boolean
+  | null
+  | Date
+  | string[]
+  | number[]
+  | Date[]
+  | boolean[]
+  | Buffer
+
+interface IFilter {
+  [key: string]: {[key in Operators]: Values } | unknown
+  _and?: IFilter[]
+  _or?: IFilter[]
+  _not?: IFilter[]
+  _exists?: {
+    [key: string]: boolean
+  }
+  
+}
+
+
+function whereMatcher(
+  operator: Operators,
+  column: string,
+  value: Values,
+  query: Knex.QueryBuilder,
+  unionOperator?: string
+) {
+  let where = 'where'
+  if (unionOperator) {
+    where = `${unionOperator}Where`
+  }
+  switch (operator) {
+  case '_eq':
+    return query[where](column, value)
+  case '_neq':
+    return query[`${where}Not`](column, value)
+  case '_lt':
+    return query[where](column, '>', value)
+  case '_lte':
+    return query[where](column, '<=', value) 
+  case '_gt':
+    return query[where](column, '>', value)
+  case '_gte':
+    return query[where](column, '>=', value)
+  case '_in':
+    return query[`${where}In`](column, value as Values[]) 
+  case '_nin':
+    return query[`${where}NotIn`](column, value as Values[])
+  case '_like':
+    return query[where](column, 'like', value)
+  case '_nlike':
+    return query[where](column, 'not like', value) 
+  case '_is_null':
+    return query[`${where}Null`](column) 
+  }
+  
+}
+
 export function applyQueryFilters(
   QUERY: Knex.QueryBuilder,
-  filters: string | Record<string, unknown>,
-  TABLE_CONFIG: ITableInfo
+  filters: IFilter,
+  unionOperator?: string,
+  prevIndex?: number
 ): Knex.QueryBuilder<Record<string, unknown>, unknown> {
-  const columnsByName = getColumnsByName(TABLE_CONFIG)
-  const FILTERS = typeof filters === 'string' ? JSON.parse(filters) : filters
-  Object.keys(FILTERS).forEach(
+  Object.keys(filters).forEach(
     (key, index) => {
-      if (
-        columnsByName[key].model.type === 'int(11)'
-        || columnsByName[key].model.type === 'int'
-        || columnsByName[key].model.type === 'smallint(5)'
-        || columnsByName[key].model.type === 'datetime'
-      ) {
-        index === 0 ?
-          (
-            FILTERS[key] === null
-              ? QUERY.whereNull(key)
-              : Array.isArray(FILTERS[key])
-                ? QUERY.whereIn(key, FILTERS[key])
-                : QUERY.where({
-                  [key]: FILTERS[key],
-                })
-          ) :
-          (
-            FILTERS[key] === null
-              ? QUERY.andWhere((innerQuery) => {
-                innerQuery.whereNull(key)
-              })
-              : Array.isArray(FILTERS[key])
-                ? QUERY.whereIn(key, FILTERS[key])
-                : QUERY.andWhere({
-                  [key]: FILTERS[key],
-                })
-          )
+      let newIndex = index
+      if (prevIndex) {
+        newIndex += prevIndex
+      }
+      if (key === '_and' || key === '_or') {
+        console.log('FOUND KEY:', key)
+        const newFilters = {}
+        const value = (filters[key] as IFilter['_and'] | IFilter['_or']) || []
+      
+        value.forEach(
+          (entry) => {
+            const entryKey = Object.keys(entry)[0]
+            newFilters[entryKey] = entry[entryKey]
+          }
+        )
+        console.log('NEWFILTERS:', newFilters)
+        let where = 'where'
+        if (newIndex > 0) {
+          where = 'andWhere'
+        }
+        if (unionOperator) {
+          where = `${unionOperator}Where`
+        }
+        QUERY[where](
+          (innerQuery) => {
+            applyQueryFilters(
+              innerQuery,
+              newFilters,
+              key === '_and' ? 'and' : 'or',
+              index
+            )
+          }
+        )
+      } else if (key === '_not') {
+        console.log('not')
+      } else if (key === '_exists') {
+        console.log('exists')
       } else {
-        index === 0 ?
-          (
-            FILTERS[key] === null
-              ? QUERY.whereNull(key)
-              : Array.isArray(FILTERS[key])
-                ? QUERY.whereIn(key, FILTERS[key])
-                : QUERY.where(key, 'like', '%' + FILTERS[key] + '%')
-          ) :
-          (
-            FILTERS[key] === null
-              ? QUERY.andWhere((innerQuery) => {
-                innerQuery.whereNull(key)
-              })
-              : Array.isArray(FILTERS[key])
-                ? QUERY.whereIn(key, FILTERS[key])
-                : QUERY.andWhere(key, 'like', '%' + FILTERS[key] + '%')
-          )
+        const OPERATOR: Operators = Object.keys(filters[key] as Record<Operators, Values>)[0] as Operators
+        let finalUnionOperator = ''
+        
+        if (newIndex > 0) {
+          finalUnionOperator = 'and'
+        }
+        if (unionOperator) {
+          finalUnionOperator = unionOperator
+        }
+        whereMatcher(OPERATOR, key, (filters[key] as Record<string, Values>)[OPERATOR], QUERY, finalUnionOperator)
+        console.log(QUERY.toSQL())
       }
     }
   )

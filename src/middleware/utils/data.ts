@@ -5,7 +5,7 @@ export default {
   normalize,
 }
 
-export function normalize(data: Record<string, unknown>, TABLE_CONFIG: ITableInfo, includeRequired = false): unknown {
+export function normalize(data: Record<string, unknown>, TABLE_CONFIG: ITableInfo, includeRequired = false): Record<string, unknown> {
   TABLE_CONFIG.columns.forEach(
     (column) => {
       switch (column.model.type) {
