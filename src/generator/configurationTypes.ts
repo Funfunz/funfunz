@@ -117,14 +117,16 @@ export interface IColumnInfo {
 
 export interface IConfig {
   server: {
-    port: number
+    port: string | number | false
   },
   mysql?: {
     host: string,
     database: string,
     user: string,
     password: string,
-    port: string
+    port: string,
+    dialect?: string,
+    log?: boolean
   }
 }
 

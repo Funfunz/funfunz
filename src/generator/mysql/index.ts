@@ -2,7 +2,7 @@
 import { describeInfo, IDatabaseData, schemaInfo } from '../../generator/configurationTypes'
 import mysql from 'mysql2'
 
-let userAnswers: any = {}
+let userAnswers: Record<string, string> = {}
 
 // create the connection to database
 function createPoolSchema() {
@@ -113,9 +113,9 @@ function createConnection() {
   })
 }
 
-const getDatabaseData = (answers: any): PromiseLike<IDatabaseData[]> => {
+const getDatabaseData = (answers: Record<string, string>): Promise<IDatabaseData[]> => {
   userAnswers = answers
-  return new Promise<any>(
+  return new Promise<{connection: mysql.Connection, tables: string[]}>(
     (res, rej) => {
       const connection = createConnection()
       connection.execute(

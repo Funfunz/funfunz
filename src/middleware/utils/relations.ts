@@ -5,6 +5,7 @@ import {
   getColumnsWithRelations,
   getPKs,
   getTableConfig,
+  Values,
 } from '../utils'
 import { IColumnRelation, IRelation, IRelationMN, ITableInfo } from '../../generator/configurationTypes'
 import Knex from 'knex'
@@ -98,9 +99,12 @@ export function  addVerboseRelatedData(results: Record<string, unknown>[], TABLE
   )
 }
 
-export function  getManyToOneRelationQueries(TABLE_CONFIG: ITableInfo, parentData: any) {
+export function  getManyToOneRelationQueries(TABLE_CONFIG: ITableInfo, parentData: Record<string, Values>):Promise<{
+  results: unknown[];
+  tableName: string;
+}>[] {
   const relationQueries: Array<Promise<{
-    results: any[];
+    results: unknown[];
     tableName: string;
   }>> = []
   const MANY_TO_ONE = TABLE_CONFIG.relations && TABLE_CONFIG.relations.filter((r) => r.type === 'n:1')
@@ -119,8 +123,8 @@ export function  getManyToOneRelationQueries(TABLE_CONFIG: ITableInfo, parentDat
   return relationQueries
 }
 
-export function  getManyToManyRelationQueries(TABLE_CONFIG: ITableInfo, parentData: any) {
-  let relationQueries: Array<Promise<{}>> = []
+export function  getManyToManyRelationQueries(TABLE_CONFIG: ITableInfo, parentData: Record<string, Values>): Promise<[string, unknown[]]>[] {
+  let relationQueries: Array<Promise<[string, unknown[]]>> = []
   const relations = TABLE_CONFIG.relations && TABLE_CONFIG.relations.filter((r) => r.type === 'm:n')
   if (relations && relations.length > 0) {
     if (!database.db) {
@@ -133,11 +137,11 @@ export function  getManyToManyRelationQueries(TABLE_CONFIG: ITableInfo, parentDa
     const tablePk = tablePks[0]
     const DB = database.db
     relationQueries = relations.map((relation) => {
-        return DB((relation as IRelationMN).relationalTable || relation.remoteTable).select()
-          .where(relation.foreignKey, parentData[tablePk]).then(
-          (relationResult: any) => {
+      return DB((relation as IRelationMN).relationalTable || relation.remoteTable).select()
+        .where(relation.foreignKey, parentData[tablePk]).then(
+          (relationResult) => {
             return relationResult.map(
-              (relationRow: any) => {
+              (relationRow) => {
                 if (!(relation as IRelationMN).remoteForeignKey) {
                   throw new Error('Invalid remoteForeignKey key')
                 }
@@ -160,19 +164,22 @@ export function  getManyToManyRelationQueries(TABLE_CONFIG: ITableInfo, parentDa
             ])
           }
         )
-      }
+    }
     )
   }
 
   return relationQueries
 }
 
-export function getRelatedRow(tableName: string, tableRelation: IRelation, parentData: any) {
+export function getRelatedRow(tableName: string, tableRelation: IRelation, parentData: Record<string, Values>): Promise<{
+  results: unknown[];
+  tableName: string;
+}> {
   if (!database.db) {
     throw new HttpException(500, 'No database')
   }
   const TABLE_CONFIG = getTableConfig(tableName)
-  const tablePks = getPKs(TABLE_CONFIG);
+  const tablePks = getPKs(TABLE_CONFIG)
   if (tablePks.length > 1) {
     throw new Error('Multiple pks not supported for n:1 relations')
   }
@@ -191,10 +198,19 @@ export function getRelatedRow(tableName: string, tableRelation: IRelation, paren
   )
 }
 
-export function mergeRelatedData([results, manyToOneRelations, manyToManyRelations]: any) {
+export function mergeRelatedData(
+  [
+    results,
+    manyToOneRelations,
+    manyToManyRelations
+  ]: [
+    Record<string, unknown>,
+    {tableName: string, results: unknown[]}[],
+    [string, unknown[]][]
+  ]): Record<string, unknown> {
   if (manyToOneRelations && manyToOneRelations.length) {
     manyToOneRelations.forEach(
-      (relation: {tableName: string, results: any[]}) => {
+      (relation: {tableName: string, results: unknown[]}) => {
         results[relation.tableName] = relation.results
       }
     )
@@ -202,7 +218,7 @@ export function mergeRelatedData([results, manyToOneRelations, manyToManyRelatio
 
   if (manyToManyRelations && manyToManyRelations.length) {
     manyToManyRelations.forEach(
-      ([verbose, relationsData]: [string, any[]]) => {
+      ([verbose, relationsData]) => {
         results[verbose] = relationsData
       }
     )
@@ -211,7 +227,7 @@ export function mergeRelatedData([results, manyToOneRelations, manyToManyRelatio
   return results
 }
 
-export function getRelatedData(tableConfig: ITableInfo, result: any) {
+export function getRelatedData(tableConfig: ITableInfo, result: Record<string, Values>): Promise<Record<string, unknown>> {
   const manyToOneRelationQueries = getManyToOneRelationQueries(tableConfig, result)
   const manyToManyRelationQueries = getManyToManyRelationQueries(tableConfig, result)
   return Promise.all([

@@ -30,7 +30,7 @@ class Database {
       port,
       dialect = 'mysql2',
       log,
-    } = configuration.mysql
+    } = configuration.mysql || {}
     debug('Start')
     debug('DB_NAME', database)
     debug('DB_USER', user)

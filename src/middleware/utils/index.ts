@@ -2,37 +2,8 @@ import database, { Database } from '../db'
 import { HttpException, IFunfunzRequest, IFunfunzResponse, IUser } from '../types'
 import config from '../utils/configLoader'
 import { Hooks, IColumnInfo, IRelation, IRelation1N, IRelationMN, IRelationN1, ITableInfo } from '../../generator/configurationTypes'
-import { ErrorRequestHandler, NextFunction } from 'express'
+import { ErrorRequestHandler } from 'express'
 import Knex from 'knex'
-
-export function catchMiddleware(next: NextFunction, err: HttpException) {
-  if (next) {
-    return next(err)
-  }
-  throw err
-}
-
-export function addToResponse(res: IFunfunzResponse, target: string) {
-  return function(data: any) {
-    if (res) {
-      res.data = {
-        ...res.data,
-        [target]: data,
-      }
-      return res
-    }
-    throw new HttpException(500, 'Response object not valid')
-  }
-}
-
-export function nextAndReturn(next: NextFunction) {
-  return function(data: any) {
-    if (next) {
-      next()
-    }
-    return Promise.resolve(data)
-  }
-}
 
 // error handler
 export const errorHandler: ErrorRequestHandler = (err, req, res) => {
@@ -413,7 +384,7 @@ export function applyQueryFilters(
   return QUERY
 }
 
-export function applyQuerySearch(QUERY: Knex.QueryBuilder, search: string, TABLE_CONFIG: ITableInfo) {
+export function applyQuerySearch(QUERY: Knex.QueryBuilder, search: string, TABLE_CONFIG: ITableInfo): Knex.QueryBuilder<Record<string, unknown>, unknown> {
   const searchFields = TABLE_CONFIG.columns.filter((c) => c.searchable).map((c) => c.name) || []
   QUERY.where(function() {
     searchFields.forEach(
@@ -428,12 +399,6 @@ export function applyQuerySearch(QUERY: Knex.QueryBuilder, search: string, TABLE
   return QUERY
 }
 
-interface IBodyWithPK {
-  pk: {
-    [key: string]: string | number
-  }
-}
-
 export function getPKs(TABLE_CONFIG: ITableInfo): string[] {
   return TABLE_CONFIG.columns.filter((column) => {
     return column.model.isPk
@@ -443,69 +408,12 @@ export function getPKs(TABLE_CONFIG: ITableInfo): string[] {
 }
 
 /**
- * adds the necessary filters to filter a query by primary key
- * @param {Knex.QueryBuilder} QUERY - the Knex query builder
- * @param {IBodyWithPK} body - the express req.body object containing the primary keys object
- * @param {ITableInfo} TABLE_CONFIG - table configuration object
- *
- * @returns {Knex.QueryBuilder} the update Knex query builder with the filters set
- */
-export function applyPKFilters(QUERY: Knex.QueryBuilder, body: IBodyWithPK, TABLE_CONFIG: ITableInfo) {
-  const PKS = Object.keys(body.pk)
-  const tablePKs = getPKs(TABLE_CONFIG)
-  if (typeof tablePKs === 'string' && PKS.length !== 1) {
-    throw new HttpException(412, 'Incorrect set of primary keys')
-  }
-
-  if (Array.isArray(tablePKs) && tablePKs.length !== PKS.length) {
-    throw new HttpException(412, 'Incorrect set of primary keys')
-  }
-
-  const columnsByName = getColumnsByName(TABLE_CONFIG)
-
-  /**
-   * goes through each primary key sent on the request
-   * if a sent key is missing from the table it interrupts the cycle and throws an error
-   */
-  for (let index = 0; index < PKS.length; index += 1) {
-    let valid = false
-    if (Array.isArray(tablePKs)) {
-      if (tablePKs.indexOf(PKS[index]) !== -1) {
-        valid = true
-      }
-    } else if (tablePKs === PKS[index]) {
-      valid = true
-    }
-
-    if (!valid) {
-      throw new HttpException(412, `Primary key ${PKS[index]} missing on table`)
-    }
-
-    if (columnsByName[PKS[index]].model.type === 'int' || columnsByName[PKS[index]].model.type === 'int(11)') {
-      index === 0 ?
-        QUERY.where({
-          [PKS[index]]: body.pk[PKS[index]],
-        }) :
-        QUERY.andWhere({
-          [PKS[index]]: body.pk[PKS[index]],
-        })
-    } else {
-      index === 0 ?
-        QUERY.where(PKS[index], 'like', '%' + body.pk[PKS[index]] + '%') :
-        QUERY.andWhere(PKS[index], 'like', '%' + body.pk[PKS[index]] + '%')
-    }
-  }
-
-  return QUERY
-}
-
-/**
  * helper function to check for undefined, null, and empty values
  * @param {any} val - a variable
  *
  * @returns {boolean} true or false if val is a nullable value
  */
-export function isNull(val: any) {
+export function isNull(val: unknown): boolean {
   return val === '' || val === undefined || val === null
 }
 
@@ -523,7 +431,7 @@ export function requirementsCheck(
   accessType: 'read' | 'create' | 'update' | 'delete',
   user: IUser | undefined,
   dbInstance: Database
-) {
+): Promise<Knex<Record<string, unknown>, unknown[]>> {
   if (!hasAuthorization(tableConfig.roles[accessType], user)) {
     return Promise.reject(new HttpException(401, 'Not authorized'))
   }
