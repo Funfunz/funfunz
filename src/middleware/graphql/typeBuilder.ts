@@ -246,6 +246,9 @@ function argFilterBuilder(table: ITableInfo, options: IBuildArgsOptions, isPk: b
     _eq: {
       type: isPk ? GraphQLID : matchedType
     },
+    _neq: {
+      type: isPk ? GraphQLID : matchedType
+    },
     _like: {
       type: isPk ? GraphQLID : matchedType
     }

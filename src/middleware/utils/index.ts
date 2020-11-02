@@ -226,7 +226,8 @@ export function applyParentTableFilters(
     }
     const pk = pks[0]
     const value = parentObj[pk]
-    return applyQueryFilters(QUERY, { [relation.foreignKey]: { $eq: value }})
+    console.log({ [relation.foreignKey]: { _eq: value }})
+    return applyQueryFilters(QUERY, { [relation.foreignKey]: { _eq: value }})
   }
 
   relation = manyToOneRelation(table, parentTable)
@@ -237,7 +238,7 @@ export function applyParentTableFilters(
     }
     const pk = pks[0]
     const value = parentObj[relation.foreignKey]
-    return applyQueryFilters(QUERY, { [pk]: { $eq: value }}).first()
+    return applyQueryFilters(QUERY, { [pk]: { _eq: value }}).first()
   }
 
   relation = manyToManyRelation(table, parentTable)
@@ -328,7 +329,7 @@ function whereMatcher(
   case '_neq':
     return query[`${where}Not`](column, value)
   case '_lt':
-    return query[where](column, '>', value)
+    return query[where](column, '<', value)
   case '_lte':
     return query[where](column, '<=', value) 
   case '_gt':
@@ -362,36 +363,37 @@ export function applyQueryFilters(
         newIndex += prevIndex
       }
       if (key === '_and' || key === '_or') {
-        console.log('FOUND KEY:', key)
-        const newFilters = {}
+        
         const value = (filters[key] as IFilter['_and'] | IFilter['_or']) || []
       
-        value.forEach(
-          (entry) => {
-            const entryKey = Object.keys(entry)[0]
-            newFilters[entryKey] = entry[entryKey]
-          }
-        )
-        console.log('NEWFILTERS:', newFilters)
         let where = 'where'
-        if (newIndex > 0) {
+        if (key === '_or'){
+          where = 'orWhere'
+        } else if (key === '_and') {
           where = 'andWhere'
-        }
-        if (unionOperator) {
+        } else if (unionOperator) {
           where = `${unionOperator}Where`
         }
-        QUERY[where](
-          (innerQuery) => {
-            applyQueryFilters(
-              innerQuery,
-              newFilters,
-              key === '_and' ? 'and' : 'or',
-              index
+
+        value.forEach(
+          (entry) => {
+            const newFilters = {} 
+            const entryKey = Object.keys(entry)[0]
+            newFilters[entryKey] = entry[entryKey]
+            console.log('NEWFILTERS:', newFilters)
+            QUERY[where](
+              (innerQuery) => {
+                applyQueryFilters(
+                  innerQuery,
+                  newFilters,
+                  key === '_and' ? 'and' : 'or',
+                  0
+                )
+                console.log('Finished inner')
+              }
             )
           }
         )
-      } else if (key === '_not') {
-        console.log('not')
       } else if (key === '_exists') {
         console.log('exists')
       } else {
@@ -405,11 +407,9 @@ export function applyQueryFilters(
           finalUnionOperator = unionOperator
         }
         whereMatcher(OPERATOR, key, (filters[key] as Record<string, Values>)[OPERATOR], QUERY, finalUnionOperator)
-        console.log(QUERY.toSQL())
       }
     }
   )
-
   return QUERY
 }
 

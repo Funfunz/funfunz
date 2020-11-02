@@ -43,20 +43,23 @@ export function resolver<TSource, TContext extends TUserContext>(
   parentTable?: ITableInfo
 ): GraphQLFieldResolver<TSource, TContext> {
   return (parent, args, context, info) => {
-    return requirementsCheck(table, 'read', context.user, database).then((DB) => {
-      const fields = getFields(table, info)
-      let QUERY = DB(table.name).select(fields)
-      console.log(args.filter)
-      if (args.filter) {
-        QUERY = applyQueryFilters(QUERY, args.filter)
+    return requirementsCheck(table, 'read', context.user, database).then(
+      (DB) => {
+        const fields = getFields(table, info)
+        let QUERY = DB(table.name).select(fields)
+        console.log(args.filter)
+        if (args.filter) {
+          QUERY = applyQueryFilters(QUERY, args.filter)
+          console.log(QUERY.toSQL())
+        }
+        paginate(QUERY, args.skip, args.take)
+        if (parentTable) {
+          return applyParentTableFilters(QUERY, table, parentTable, parent as unknown as Record<string, Values>)
+        } else {
+          return QUERY
+        }
       }
-      paginate(QUERY, args.skip, args.take)
-      if (parentTable) {
-        return applyParentTableFilters(QUERY, table, parentTable, parent as unknown as Record<string, Values>)
-      } else {
-        return QUERY
-      }
-    })
+    )
   }
 }
 
@@ -64,13 +67,15 @@ export function resolverCount<TSource, TContext extends TUserContext>(
   table: ITableInfo
 ): GraphQLFieldResolver<TSource, TContext> {
   return (parent, args, context) => {
-    return requirementsCheck(table, 'read', context.user, database).then((DB) => {
-      let QUERY = DB(table.name).select([])
-      if (args.filter) {
-        QUERY = applyQueryFilters(QUERY, args.filter)
+    return requirementsCheck(table, 'read', context.user, database).then(
+      async (DB) => {
+        let QUERY = DB(table.name).select([])
+        if (args.filter) {
+          QUERY = await applyQueryFilters(QUERY, args.filter)
+        }
+        return QUERY.count('*', {as: 'count'}).first().then((res) => res.count)
       }
-      return QUERY.count('*', {as: 'count'}).first().then((res) => res.count)
-    })
+    )
   }
 }
 
