@@ -4,6 +4,7 @@ import express, { Express } from 'express'
 export function authenticatedServer(funfunz: Express): Express {
   const server = express()
   server.use((req: any, res, next) => {
+    console.log('Hello')
     req.user = {
       id: 1,
       email: 'jwebcoder@mymail.com',

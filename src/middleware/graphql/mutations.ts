@@ -43,15 +43,14 @@ function buildUpdateByIdMutation(table: ITableInfo): GraphQLFieldConfig<unknown,
         const query = {}
         getPKs(table).forEach((pk) => {
           query[pk] = {
-            $eq: isNaN(args[pk]) ? args[pk] : Number(args[pk])
+            _eq: isNaN(args[pk]) ? args[pk] : Number(args[pk])
           }
         })
         SQL = applyQueryFilters(SQL, query)
-        console.log('BEFORE UPDATE: ', data)
         return Promise.all([
           db,
           SQL.update(data as Record<string, unknown>).then(() => {
-            return resolver(table)(parent, query, context, info)
+            return resolver(table)(parent, { filter: query }, context, info)
           }),
         ])
       }).then(([db, results]) => {
@@ -119,7 +118,7 @@ function buildDeleteMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUs
         const query = {}
         getPKs(table).forEach((pk) => {
           query[pk] = {
-            $eq: isNaN(args[pk]) ? args[pk] : Number(args[pk])
+            _eq: isNaN(args[pk]) ? args[pk] : Number(args[pk])
           }
         })
         QUERY = applyQueryFilters(QUERY, query)

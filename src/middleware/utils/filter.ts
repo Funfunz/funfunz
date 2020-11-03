@@ -1,26 +1,30 @@
 import Knex from 'knex'
 import { getPKs } from './index'
-import { ITableInfo, IRelation1N, IRelationN1, IRelationMN, IRelation } from '../../generator/configurationTypes'
+import { ITableInfo, IRelationMN, IRelation } from '../../generator/configurationTypes'
 import database from '../db'
 
-const oneToManyRelation = (table: ITableInfo, parentTable: ITableInfo): IRelation1N | undefined => {
-  return parentTable.relations && parentTable.relations.find(
+const oneToManyRelation = (table: ITableInfo, parentTable: ITableInfo): IRelation | undefined => {
+  return parentTable.relations?.find(
     (relation) => {
       return relation.type === '1:n' && relation.remoteTable === table.name
     }
-  ) as IRelation1N | undefined
+  )
 }
 
-const manyToOneRelation = (table: ITableInfo, parentTable: ITableInfo): IRelationN1 | undefined => {
-  return parentTable.relations && parentTable.relations.find((relation) => {
-    return relation.type === 'n:1' && relation.remoteTable === table.name
-  }) as IRelationN1 | undefined
+const manyToOneRelation = (table: ITableInfo, parentTable: ITableInfo): IRelation | undefined => {
+  return parentTable.relations?.find(
+    (relation) => {
+      return relation.type === 'n:1' && relation.remoteTable === table.name
+    }
+  )
 }
 
-const manyToManyRelation = (table: ITableInfo, parentTable: ITableInfo): IRelationMN | undefined => {
-  return parentTable.relations && parentTable.relations.find((relation) => {
-    return relation.type === 'm:n' && relation.remoteTable === table.name
-  }) as IRelationMN | undefined
+const manyToManyRelation = (table: ITableInfo, parentTable: ITableInfo): IRelation | undefined => {
+  return parentTable.relations?.find(
+    (relation) => {
+      return relation.type === 'm:n' && relation.remoteTable === table.name
+    }
+  )
 }
 
 export function applyParentTableFilters(
@@ -37,7 +41,6 @@ export function applyParentTableFilters(
     }
     const pk = pks[0]
     const value = parentObj[pk]
-    console.log({ [relation.foreignKey]: { _eq: value }})
     return applyQueryFilters(QUERY, { [relation.foreignKey]: { _eq: value }})
   }
 
@@ -52,7 +55,7 @@ export function applyParentTableFilters(
     return applyQueryFilters(QUERY, { [pk]: { _eq: value }}).first()
   }
 
-  relation = manyToManyRelation(table, parentTable)
+  relation = manyToManyRelation(table, parentTable) as IRelationMN
   if (relation) {
     const pks = getPKs(table)
     if (pks.length > 1) {

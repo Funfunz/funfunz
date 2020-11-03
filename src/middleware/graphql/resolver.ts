@@ -49,7 +49,6 @@ export function resolver<TSource, TContext extends TUserContext>(
       (DB) => {
         const fields = getFields(table, info)
         let QUERY = DB(table.name).select(fields)
-        console.log(args.filter)
         if (args.filter) {
           QUERY = applyQueryFilters(QUERY, args.filter)
           console.log(QUERY.toSQL())

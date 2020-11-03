@@ -8,8 +8,7 @@ import { authenticatedServer } from './utils'
 
 const application = new Funfunz({
   config,
-  settings,
-  plugin: true,
+  settings
 }).middleware
 const authApplication = authenticatedServer(application)
 
@@ -77,30 +76,6 @@ describe('graphql', () => {
                 }
               }
             }
-          }
-        }`,
-      })
-      .set('Accept', 'application/json').end(
-        (err, response) => {
-          if (err) {
-            return done(err)
-          }
-          expect(response.status).toBe(200)
-          return done()
-        }
-      )
-  })
-
-  it('graphql endpoint filter with null should return 200', (done) => {
-    return request(application)
-      .post('/api')
-      .send({
-        query: `{
-          families (order: null, imageUrl: null) {
-            id
-          }
-          families (imageUrl: null, order: null) {
-            name
           }
         }`,
       })
@@ -232,7 +207,7 @@ describe('graphql', () => {
         query: `{
           families {
             id
-            products (id: 1) {
+            products (filter: { id: { _eq: 1}}) {
               id
             }
           }
@@ -258,7 +233,7 @@ describe('graphql', () => {
       .post('/api')
       .send({
         query: `mutation {
-          addUsers (name: "Francisco",email: "francisco@mail.com", id: 50) {
+          addUsers (name: "Francisco", email: "francisco@mail.com", id: 50) {
             id
             name
             email
@@ -401,6 +376,7 @@ describe('graphql', () => {
           if (err) {
             return done(err)
           }
+          console.log(response.body)
           expect(response.status).toBe(200)
           expect(response.body).toBeTruthy()
           const data = response.body.data
@@ -414,7 +390,7 @@ describe('graphql', () => {
       .post('/api')
       .send({
         query: `{
-         users(limit:1, offset: 1) {
+         users(take:1, skip: 1) {
            id
          }
         }`,

@@ -30,7 +30,7 @@ export function hasAuthorization(
         if (role === 'all') {
           return true
         }
-        return !!(user.roles && user.roles.find(
+        return !!(user.roles?.find(
           (userRole) => {
             return (userRole.name === role)
           }
@@ -38,7 +38,6 @@ export function hasAuthorization(
       }
     )
   }
-
   return isAuthorized
 }
 
