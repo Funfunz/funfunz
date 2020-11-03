@@ -1,10 +1,10 @@
 import database from './db'
 import IndexRouter from './routes'
-import { errorHandler } from './utils'
 import cors from 'cors'
 import Debug from 'debug'
-import express from 'express'
+import express, { Response, Request } from 'express'
 import logger from 'morgan'
+import { HttpException } from './utils/exception'
 
 const debug = Debug('funfunz:init')
 
@@ -29,7 +29,16 @@ class App {
     const indexRouter = new IndexRouter()
     this.server.use('/', indexRouter.getRouter())
 
-    this.server.use(errorHandler)
+    this.server.use((err: HttpException, req: Request, res: Response) => {
+      res.status(err.status || 500)
+      if (process.env.NODE_ENV !== 'developement' && process.env.NODE_ENV !== 'test') {
+        res.send('Error')
+      } else {
+        res.json({
+          message: err.message,
+        })
+      }
+    })
     debug('funfunz ready')
   }
 }

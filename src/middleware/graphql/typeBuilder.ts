@@ -4,20 +4,16 @@ import { IRelation, ITableInfo } from '../../generator/configurationTypes'
 import Debug from 'debug'
 import {
   GraphQLBoolean,
-  GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
   GraphQLID,
-  GraphQLInputFieldConfigMap,
-  GraphQLInputObjectType,
-  GraphQLInt,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLScalarType,
-  GraphQLString,
 } from 'graphql'
-import { getPKs } from '../utils'
+import { capitalize, getPKs } from '../utils'
 import { TUserContext } from './schema'
+import { buildArgs } from './argumentsBuilder'
+import { MATCHER } from './helpers'
 
 const debug = Debug('funfunz:graphql-type-builder')
 
@@ -28,26 +24,7 @@ interface IBuildTypeOptions {
   relations?: boolean,
 }
 
-interface IBuildArgsOptions {
-  required?: ['pk' | string],
-  include?: ['pk' | string],
-  exclude?: ['pk' | string],
-  pagination?: boolean,
-}
-
-const MATCHER: {
-  [key: string]: GraphQLScalarType
-} = {
-  'varchar(255)': GraphQLString,
-  'int(11)': GraphQLInt,
-  'int': GraphQLInt,
-  'tinyint(1)': GraphQLBoolean,
-  'datetime': GraphQLString,
-}
-
-const types: {
-  [key: string]: GraphQLObjectType,
-} = {}
+const entitiesType: Record<string, GraphQLObjectType> = {}
 
 export function buildFields<TSource>(
   table: ITableInfo,
@@ -157,113 +134,11 @@ export function buildFields<TSource>(
   return result
 }
 
-const args: Record<string, GraphQLFieldConfigArgumentMap> = {} 
-
-export function buildArgs(
-  table: ITableInfo,
-  options: IBuildArgsOptions = {
-    pagination: true
-  }
-): GraphQLFieldConfigArgumentMap {
-  if (args[table.name]) {
-    return args[table.name]
-  }
-  const {required, include, pagination } = options
-  args[table.name] = {}
-  if (pagination) {
-    args[table.name].take = {
-      type: GraphQLInt,
-      description: 'Take N items',
-    }
-    args[table.name].skip = {
-      type: GraphQLInt,
-      description: 'Skip N items',
-    }
-  }
-
-  args[table.name].filter = {
-    type: new GraphQLInputObjectType({
-      name: `Filter${table.name}Data`,
-      description: `Filter for the ${table.name} data`,
-      fields: () => {
-        const inputFields: GraphQLInputFieldConfigMap = {}
-        const tablePKs = getPKs(table)
-  
-        table.columns.forEach(
-          (column) => {
-            const isPk = tablePKs.indexOf(column.name) >= 0
-            /*
-            *  if include option is passed check if the column is present there
-            */
-            if (include && !include.includes(column.name) && !(isPk && include.includes('pk'))) {
-              return
-            }
-
-            /*
-            *  Checks if the column name is present or if it's a primary key checks for the 'pk' key
-            */
-            const isRequired = required && (
-              required.includes(column.name) || (
-                isPk && required.includes('pk')
-              )
-            )
-            
-            const matchedType = MATCHER[column.model.type]
-
-            if (isPk || matchedType) {
-              const type = new GraphQLInputObjectType({
-                name: `table${table.name}Field${column.name}`,
-                description: `Filter for the field ${column.name}`,
-                fields: () => argFilterBuilder(table, options, isPk, matchedType)
-              })
-              inputFields[column.name] = {
-                type: isRequired ? new GraphQLNonNull(type) : type,
-                description: column.layout.label,
-              }
-            }
-          }
-        )
-        inputFields._and = {
-          type: new GraphQLList(
-            buildArgs(table, options).filter.type
-          )
-        }
-        inputFields._or = {
-          type: new GraphQLList(
-            buildArgs(table, options).filter.type
-          )
-        }
-        return inputFields
-      },
-    }),
-    description: 'Query filter'
-  }
-  return args[table.name]
-}
-
-function argFilterBuilder(table: ITableInfo, options: IBuildArgsOptions, isPk: boolean, matchedType: GraphQLScalarType) {
-  return {
-    _eq: {
-      type: isPk ? GraphQLID : matchedType
-    },
-    _neq: {
-      type: isPk ? GraphQLID : matchedType
-    },
-    _like: {
-      type: isPk ? GraphQLID : matchedType
-    }
-  }
-}
-
-export function capitalize(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1)
-}
-
 export function buildType(table: ITableInfo, options: IBuildTypeOptions = { relations: true }): GraphQLObjectType {
   const name = table.name
   debug(`Creating type for table ${name}`)
-  if (!types[name]) {
-    types[name] = new GraphQLObjectType({
+  if (!entitiesType[name]) {
+    entitiesType[name] = new GraphQLObjectType({
       name,
       fields: () => {
         return buildFields(table, options)
@@ -271,13 +146,13 @@ export function buildType(table: ITableInfo, options: IBuildTypeOptions = { rela
     })
     debug(`Created type for table ${name}`)
   }
-  return types[name]
+  return entitiesType[name]
 }
 export function buildDeleteMutationType(table: ITableInfo): GraphQLObjectType<unknown, unknown> {
   const name = `delete${capitalize(table.name)}`
   debug(`Creating ${name}`)
-  if (!types[name]) {
-    types[name] = new GraphQLObjectType({
+  if (!entitiesType[name]) {
+    entitiesType[name] = new GraphQLObjectType({
       name,
       fields: () => ({
         success: {
@@ -287,5 +162,5 @@ export function buildDeleteMutationType(table: ITableInfo): GraphQLObjectType<un
     })
     debug(`Created ${name}`)
   }
-  return types[name]
+  return entitiesType[name]
 }

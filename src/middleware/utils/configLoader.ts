@@ -1,5 +1,5 @@
-import configSchema from '../utils/configSchema'
-import settingsSchema from '../utils/settingsSchema'
+import configSchema from '../../schemas/configSchema'
+import settingsSchema from '../../schemas/settingsSchema'
 import { IConfig, ITableInfo } from '../../generator/configurationTypes'
 import { Validator } from 'jsonschema'
 

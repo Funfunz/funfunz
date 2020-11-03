@@ -1,14 +1,17 @@
 'use strict'
 import database from '../db'
-import { buildDeleteMutationType, buildFields, buildType, capitalize } from './typeBuilder'
+import { buildDeleteMutationType, buildFields, buildType } from './typeBuilder'
 import config from '../utils/configLoader'
 import { normalize as normalizeData } from '../utils/data'
 import { ITableInfo } from '../..//generator/configurationTypes'
 import Debug from 'debug'
 import { GraphQLFieldConfig, GraphQLFieldConfigArgumentMap, GraphQLFieldConfigMap, Thunk } from 'graphql'
-import { applyQueryFilters, getPKs, requirementsCheck, runHook } from '../utils'
+import { capitalize, getPKs } from '../utils'
 import { resolver } from './resolver'
 import { TUserContext } from './schema'
+import { requirementsCheck } from '../utils/dataAccess'
+import { runHook } from '../utils/lifeCycle'
+import { applyQueryFilters } from '../utils/filter'
 
 const debug = Debug('funfunz:graphql-mutation-builder')
 

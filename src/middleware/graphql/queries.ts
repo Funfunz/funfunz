@@ -1,6 +1,6 @@
 'use strict'
 import { resolver, resolverCount } from './resolver'
-import { buildArgs, buildType } from './typeBuilder'
+import { buildType } from './typeBuilder'
 import config from '../utils/configLoader'
 import { ITableInfo } from '../../generator/configurationTypes'
 import Debug from 'debug'
@@ -8,6 +8,7 @@ import GraphQLJSON from 'graphql-type-json'
 import { GraphQLFieldConfig, GraphQLFieldConfigArgumentMap, GraphQLFieldConfigMap, GraphQLInt, GraphQLList, GraphQLObjectType, GraphQLString, Thunk } from 'graphql'
 import pluralize from 'pluralize'
 import { TUserContext } from './schema'
+import { buildArgs } from './argumentsBuilder'
 
 const debug = Debug('funfunz:graphql-query-builder')
 

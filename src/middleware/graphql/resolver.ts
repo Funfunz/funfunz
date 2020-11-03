@@ -1,5 +1,5 @@
 import database from '../db'
-import { applyParentTableFilters, applyQueryFilters, getPKs, requirementsCheck, Values } from '../utils'
+import { getPKs } from '../utils'
 import { ITableInfo } from '../../generator/configurationTypes'
 import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
 import Knex from 'knex'
@@ -9,6 +9,8 @@ import {
   simplifyParsedResolveInfoFragmentWithType 
 } from 'graphql-parse-resolve-info'
 import { TUserContext } from './schema'
+import { requirementsCheck } from '../utils/dataAccess'
+import { applyQueryFilters, applyParentTableFilters, FilterValues } from '../utils/filter'
 
 function getFields(
   table: ITableInfo,
@@ -54,7 +56,7 @@ export function resolver<TSource, TContext extends TUserContext>(
         }
         paginate(QUERY, args.skip, args.take)
         if (parentTable) {
-          return applyParentTableFilters(QUERY, table, parentTable, parent as unknown as Record<string, Values>)
+          return applyParentTableFilters(QUERY, table, parentTable, parent as unknown as Record<string, FilterValues>)
         } else {
           return QUERY
         }
