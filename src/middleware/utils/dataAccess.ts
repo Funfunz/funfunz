@@ -1,4 +1,4 @@
-import { Database } from '../db'
+import { Database } from '../db/index'
 import { IUser } from '../types'
 import { HttpException } from './exception'
 import { ITableInfo } from '../../generator/configurationTypes'

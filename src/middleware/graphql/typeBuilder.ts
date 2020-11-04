@@ -10,7 +10,7 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
 } from 'graphql'
-import { capitalize, getPKs } from '../utils'
+import { capitalize, getPKs } from '../utils/index'
 import { TUserContext } from './schema'
 import { buildArgs } from './argumentsBuilder'
 import { MATCHER } from './helpers'

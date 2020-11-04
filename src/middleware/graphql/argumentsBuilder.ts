@@ -10,7 +10,7 @@ import {
   GraphQLNonNull,
   GraphQLScalarType,
 } from 'graphql'
-import { getPKs } from '../utils'
+import { getPKs } from '../utils/index'
 import { MATCHER } from './helpers'
 import { operators } from '../utils/filter'
 

@@ -1,7 +1,7 @@
 import Knex from 'knex'
 import { getPKs } from './index'
 import { ITableInfo, IRelationMN, IRelation } from '../../generator/configurationTypes'
-import database from '../db'
+import database from '../db/index'
 
 const oneToManyRelation = (table: ITableInfo, parentTable: ITableInfo): IRelation | undefined => {
   return parentTable.relations?.find(

@@ -1,5 +1,5 @@
-import database from '../db'
-import { getPKs } from '../utils'
+import database from '../db/index'
+import { getPKs } from '../utils/index'
 import { ITableInfo } from '../../generator/configurationTypes'
 import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
 import Knex from 'knex'

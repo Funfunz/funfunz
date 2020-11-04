@@ -1,5 +1,5 @@
-import database from './db'
-import IndexRouter from './routes'
+import database from './db/index'
+import IndexRouter from './routes/index'
 import cors from 'cors'
 import Debug from 'debug'
 import express, { Response, Request } from 'express'

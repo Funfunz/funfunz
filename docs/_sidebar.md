@@ -3,7 +3,7 @@
   - [Quickstart](usage/quickstart.md)
   - [Plugin](usage/middleware.md)
   - [Standalone](usage/standalone.md)
-  - [Filter](usage/filter.md)
+  - [Filters](usage/filters.md)
 - Configuration
   - [Config](configuration/config.md)
   - [Settings](configuration/settings.md)

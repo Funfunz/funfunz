@@ -1,4 +1,4 @@
-import { isNull, getPKs } from './'
+import { isNull, getPKs } from './index'
 import { ITableInfo } from '../../generator/configurationTypes'
 
 export default {

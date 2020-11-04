@@ -18,7 +18,7 @@ node_modules/.bin/funfunz
 
 ## Running the application
 
-You can run the application using the template project or through the middleware
+You can run the application using the template project or through the exported middleware
 
 ### Template project
 
