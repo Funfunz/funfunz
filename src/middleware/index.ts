@@ -2,12 +2,12 @@ import App from './app'
 import config, { setConfig } from './utils/configLoader'
 import { Express } from 'express'
 import Debug from 'debug'
-import { IConfig, ISettings } from '../generator/configurationTypes'
+import { IFunfunzConfig } from './types'
 
 class Funfunz {
   public middleware: Express
 
-  constructor(configs: {config: IConfig, settings: ISettings, [key: string]: unknown}) {
+  constructor(configs: IFunfunzConfig) {
     const debug = Debug('funfunz:server')
 
     if (!configs.settings) {
@@ -17,8 +17,6 @@ class Funfunz {
     if (!configs.config) {
       throw new Error('Missing object "config" on the cofiguration')
     }
-
-    setConfig(true, 'defaultInterface')
 
     Object.keys(configs).forEach(
       (configKey) => {

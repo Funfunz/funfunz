@@ -41,7 +41,7 @@ function normalizePort(val: string | number | false) {
   return false
 }
 
-export function setConfig(configs: IConfig | ITableInfo[] | unknown, target: string): void {
+export function setConfig(configs: IConfig | ITableInfo[], target: string): void {
   if (configCheck(configs, target)) {
     if ((configs as IConfig).server && (configs as IConfig).server.port) {
       (configs as IConfig).server.port = normalizePort((configs as IConfig).server.port)
@@ -53,7 +53,6 @@ export function setConfig(configs: IConfig | ITableInfo[] | unknown, target: str
         }
       )
     }
-    config[target] = configs
   }
 }
 

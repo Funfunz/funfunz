@@ -1,4 +1,5 @@
 import express from 'express'
+import { IConfig, ISettings } from '../generator/configurationTypes'
 
 export interface IUser {
   [key: string]: unknown,
@@ -10,6 +11,11 @@ export interface IUser {
 
 export interface IFunfunzResponse extends express.Response {
   data?: Record<string, unknown>
+}
+
+export interface IFunfunzConfig {
+  config: IConfig
+  settings: ISettings
 }
 
 export interface IFunfunzRequest extends express.Request {
