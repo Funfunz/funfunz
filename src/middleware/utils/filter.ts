@@ -195,7 +195,6 @@ export function applyQueryFilters(
             const newFilters = {} 
             const entryKey = Object.keys(entry)[0]
             newFilters[entryKey] = entry[entryKey]
-            console.log('NEWFILTERS:', newFilters)
             QUERY[where](
               (innerQuery) => {
                 applyQueryFilters(
@@ -204,7 +203,6 @@ export function applyQueryFilters(
                   key === '_and' ? 'and' : 'or',
                   0
                 )
-                console.log('Finished inner')
               }
             )
           }

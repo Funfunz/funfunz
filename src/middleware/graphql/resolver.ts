@@ -51,7 +51,6 @@ export function resolver<TSource, TContext extends TUserContext>(
         let QUERY = DB(table.name).select(fields)
         if (args.filter) {
           QUERY = applyQueryFilters(QUERY, args.filter)
-          console.log(QUERY.toSQL())
         }
         paginate(QUERY, args.skip, args.take)
         if (parentTable) {

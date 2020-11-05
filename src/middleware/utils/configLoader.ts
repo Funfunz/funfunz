@@ -53,6 +53,7 @@ export function setConfig(configs: IConfig | ITableInfo[], target: string): void
         }
       )
     }
+    config[target] = configs
   }
 }
 
