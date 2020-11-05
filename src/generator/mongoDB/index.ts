@@ -7,14 +7,14 @@ function mongoURIBuilder() {
   const password = process.env.DBPassword
 
   if (username && password) {
-      mongoURI = `${mongoURI}${username}:${password}@`
+    mongoURI = `${mongoURI}${username}:${password}@`
   }
 
   mongoURI = `${mongoURI}${process.env.DBHost}:${process.env.DBPort || '27017'}/${process.env.DBAuthSorce || 'admin'}`
 
   const authMechanism = process.env.DBAuthMechanism
   if (authMechanism) {
-      mongoURI = `${mongoURI}?authMechanism=${authMechanism}`
+    mongoURI = `${mongoURI}?authMechanism=${authMechanism}`
   }
 
   return mongoURI
@@ -37,18 +37,16 @@ function columnData(name: string): IDescribeItem {
 }
 
 function buildCollectionData(
-  items: Array<{[key: string]: any}>,
+  items: Record<string, boolean>[],
   collection: {name: string}
 ): IDatabaseData {
-  const columnNames: {
-    [key: string]: {}
-  } = {}
+  const columnNames: Record<string, boolean> = {}
   items.forEach(
-    (item: any) => {
+    (item) => {
       Object.keys(item).forEach(
-          (key) => {
-            columnNames[key] = true
-          }
+        (key) => {
+          columnNames[key] = true
+        }
       )
     }
   )

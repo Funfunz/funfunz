@@ -1,24 +1,34 @@
-import configSchema from '../utils/configSchema'
-import settingsSchema from '../utils/settingsSchema'
-import { ITableInfo } from '../../generator/configurationTypes'
+import configSchema from '../../schemas/configSchema'
+import settingsSchema from '../../schemas/settingsSchema'
+import { IConfig, ITableInfo } from '../../generator/configurationTypes'
 import { Validator } from 'jsonschema'
 
-const config: {
+type FunfunzConfig = {
   settings: ITableInfo[],
-  config: any,
-  [key: string]: any,
-} = {
+  config: IConfig,
+  [key: string]: unknown,
+}
+
+const config: FunfunzConfig = {
   settings: [],
-  config: {},
+  config: {
+    server: {
+      port: 3004
+    }
+  },
 }
 
 /**
  * Normalize a port into a number, string, or false.
  */
-function normalizePort(val: string) {
-  const port = parseInt(val, 10)
+function normalizePort(val: string | number | false) {
+  let port = val
+  if (typeof val === 'string') {
+    port = parseInt(val, 10)
+  }
+  
 
-  if (isNaN(port)) {
+  if (isNaN(port as number)) {
     // named pipe
     return val
   }
@@ -31,14 +41,14 @@ function normalizePort(val: string) {
   return false
 }
 
-export function setConfig(configs: any, target: string) {
+export function setConfig(configs: IConfig | ITableInfo[], target: string): void {
   if (configCheck(configs, target)) {
-    if (configs.server && configs.server.port) {
-      configs.server.port = normalizePort(configs.server.port)
+    if ((configs as IConfig).server && (configs as IConfig).server.port) {
+      (configs as IConfig).server.port = normalizePort((configs as IConfig).server.port)
     }
     if (target === 'settings') {
-      configs.forEach(
-        (table: ITableInfo) => {
+      (configs as ITableInfo[]).forEach(
+        (table) => {
           table.roles.read = Array.from(new Set<string>([...table.roles.read, ...table.roles.update]))
         }
       )
@@ -47,8 +57,8 @@ export function setConfig(configs: any, target: string) {
   }
 }
 
-function configCheck(configs: any, target: string) {
-  const validator = new Validator();
+function configCheck(configs: unknown, target: string) {
+  const validator = new Validator()
 
   if (configs === undefined) {
     throw new Error('Configuration is missing')
@@ -68,6 +78,6 @@ function configCheck(configs: any, target: string) {
   return true
 }
 
-export default function() {
+export default function(): FunfunzConfig {
   return config
 }

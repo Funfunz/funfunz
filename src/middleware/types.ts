@@ -1,14 +1,5 @@
 import express from 'express'
-
-export class HttpException extends Error {
-  public status: number;
-  public message: string;
-  constructor(status: number, message: string) {
-    super(message)
-    this.status = status
-    this.message = message
-  }
-}
+import { IConfig, ISettings } from '../generator/configurationTypes'
 
 export interface IUser {
   [key: string]: unknown,
@@ -20,6 +11,11 @@ export interface IUser {
 
 export interface IFunfunzResponse extends express.Response {
   data?: Record<string, unknown>
+}
+
+export interface IFunfunzConfig {
+  config: IConfig
+  settings: ISettings
 }
 
 export interface IFunfunzRequest extends express.Request {

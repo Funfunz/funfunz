@@ -7,15 +7,19 @@ class IndexRouter {
   public router: Router
   constructor() {
     const schema = GraphQLSchema()
-    const graph = graphqlHTTP((req: unknown, res) => ({
-      context: {
-        req,
-        res,
-        user: (req as Record<string, unknown>).user,
-      },
-      graphiql: true,
-      schema
-    }))
+    const graph = graphqlHTTP(
+      (req: unknown, res) => {
+        return {
+          context: {
+            req,
+            res,
+            user: (req as Record<string, unknown>).user,
+          },
+          graphiql: true,
+          schema
+        }
+      }
+    )
     
     this.router = Router()
     this.router.use(

@@ -68,8 +68,6 @@
   },
   "exclude": [
     "*.ts",
-    "src/test/",
-    "src/middleware/controllers/",
     "lib/*.ts",
     "lib/**/*.ts"
   ]

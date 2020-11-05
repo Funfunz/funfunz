@@ -18,16 +18,16 @@ node_modules/.bin/funfunz
 
 ## Running the application
 
-You can run the application in standalone or plugin mode.
+You can run the application using the template project or through the exported middleware
 
-### Standalone
+### Template project
 
-Please see the [standalone project](standalone.md) for further details.
+Please see the [template project](usage/standalone.md) for further details
 
-This mode will start the application without the need of any other package, the only requirements are the configuration files.
+This mode will start the application without the need of any other package, the only requirements are the configuration files
 
-### Plugin
+### Middleware
 
-Please see the [plugin project](plugin.md) for further details.
+Please see the [middleware](middleware.md) for further details
 
-Running the application in plugin mode will make Funfunz to return an expressJS middleware that you can use inside your expressJS applications.
+The middleware is an express middleware so that you can use it inside ExpressJS or any other compatible system

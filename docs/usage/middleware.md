@@ -8,7 +8,7 @@ const path = require('path')
 const cookieParser = require('cookie-parser')
 const mcConfig = require('./mc/MCconfig.json')
 const mcSettings = require('./mc/MCsettings,json')
-const funfunzMC = require('funfunzmc')
+const Funfunz = require('funfunz')
 
 const indexRouter = require('./routes/index')
 
@@ -20,11 +20,10 @@ app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 
 app.use('/', indexRouter)
-app.use('/admin/api', funfunzMC({
+app.use('/admin/api', new Funfunz({
   config: mcConfig,
-  settings: mcSettings,
-  plugin: true,
-}))
+  settings: mcSettings
+}).middleware)
 
 // error handler
 app.use(function(err, req, res) {

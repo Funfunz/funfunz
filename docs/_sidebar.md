@@ -1,8 +1,9 @@
 - [Home](/)
 - Usage
   - [Quickstart](usage/quickstart.md)
-  - [Plugin](usage/plugin.md)
+  - [Plugin](usage/middleware.md)
   - [Standalone](usage/standalone.md)
+  - [Filters](usage/filters.md)
 - Configuration
   - [Config](configuration/config.md)
   - [Settings](configuration/settings.md)
