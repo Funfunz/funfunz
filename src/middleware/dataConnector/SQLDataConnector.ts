@@ -40,7 +40,6 @@ export class SQLDataConnector {
     if (args.skip || args.take) {
       this.paginate(query, args.skip, args.take)
     }
-    console.log(query.toSQL())
     return query.then(
       (results: unknown[]) => {
         if (!results) {
