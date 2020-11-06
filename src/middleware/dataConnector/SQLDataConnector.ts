@@ -1,7 +1,7 @@
 import { IConnector } from '../../generator/configurationTypes'
 import Knex from 'knex'
 import Debug from 'debug'
-import type { IQueryArgs } from './index'
+import type { ICreateArgs, IQueryArgs, IRemoveArgs, IUpdateArgs } from './index'
 import { FilterValues, IFilter, OperatorsType } from '../utils/filter'
 
 const debug = Debug('funfunz:SQLDataConnector')
@@ -48,6 +48,44 @@ export class SQLDataConnector {
         return args.relation === 'N1' ? results[0] : results
       }
     )
+  }
+
+  public update(args: IUpdateArgs): Promise<unknown[] | unknown> {
+    const updateQuery = this.db(args.entityName)
+
+    if (args.filter) {
+      this.applyQueryFilters(updateQuery, args.filter)
+    }
+
+    return updateQuery.update(args.data).then(
+      (updatedCount) => {
+        if (updatedCount === 0) {
+          return []
+        }
+        return this.query(args)
+      }
+    )
+  }
+
+  public create(args: ICreateArgs): Promise<unknown[] | unknown> {
+    const createQuery = this.db(args.entityName)
+    
+    return createQuery.insert(args.data, args.fields || ['*']).then(
+      (ids) => {
+        if (ids.length === 0) {
+          return []
+        }
+        return this.query(args)
+      }
+    )
+  }
+
+  public remove(args: IRemoveArgs): Promise<number> {
+    const removeQuery = this.db(args.entityName)
+
+    this.applyQueryFilters(removeQuery, args.filter)
+
+    return removeQuery.del()
   }
 
   private paginate(query: Knex.QueryBuilder, skip = 0, take = 0) {

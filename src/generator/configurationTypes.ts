@@ -6,8 +6,8 @@ type IHookFunction = (
   res: express.Response,
   DB: knex,
   tableName: string,
-  data?: Record<string, unknown> | number
-) => Promise<Record<string, unknown>>
+  data?: unknown
+) => Promise<unknown>
 
 export interface IDatabaseData {
   schema: schemaInfo,

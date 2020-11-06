@@ -1,43 +1,10 @@
 import { query } from '../dataConnector/index'
-import { getPKs } from '../utils/index'
+import { getFields } from '../utils/index'
 import { ITableInfo } from '../../generator/configurationTypes'
-import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
-import {
-  parseResolveInfo,
-  ResolveTree,
-  simplifyParsedResolveInfoFragmentWithType 
-} from 'graphql-parse-resolve-info'
+import { GraphQLFieldResolver } from 'graphql'
 import { TUserContext } from './schema'
 import { requirementsCheck } from '../utils/dataAccess'
 import { getParentEntryFilter, FilterValues, ParentFilterResult } from '../utils/filter'
-
-function getFields(
-  table: ITableInfo,
-  info: GraphQLResolveInfo
-): string[] {
-  const fields = [...(getPKs(table))]
-  const parsedResolveInfoFragment = parseResolveInfo(info)
-  if (parsedResolveInfoFragment) {
-    const {fields: columns} = simplifyParsedResolveInfoFragmentWithType(
-      parsedResolveInfoFragment as ResolveTree,
-      info.returnType
-    )
-    Object.keys(columns).forEach(
-      (columnName) => {
-        if (table.columns.find((c) => c.name === columnName)) {
-          fields.push(columnName)
-        }
-        const relation = table.relations && table.relations.find((r) => {
-          return r.remoteTable === columnName && r.type === 'n:1'
-        })
-        if (relation) {
-          fields.push(relation.foreignKey)
-        }
-      }
-    )
-  }
-  return [...new Set(fields)]
-}
 
 export function resolver<TSource, TContext extends TUserContext>(
   table: ITableInfo,

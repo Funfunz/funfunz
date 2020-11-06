@@ -10,11 +10,36 @@ export interface IQueryArgs {
   entityName: string,
   count?: boolean,
   fields?: string[],
-  filter: IFilter,
+  filter?: IFilter,
   skip?: number,
   take?: number,
   relation?: string,
 }
+
+export interface IUpdateArgs {
+  entityName: string,
+  count?: boolean,
+  fields?: string[],
+  filter: IFilter,
+  skip?: number,
+  take?: number,
+  data: Record<string, unknown>
+}
+
+export interface ICreateArgs {
+  entityName: string,
+  count?: boolean,
+  fields?: string[],
+  skip?: number,
+  take?: number,
+  data: Record<string, unknown>
+}
+
+export interface IRemoveArgs {
+  entityName: string,
+  filter: IFilter
+}
+
 const connectors: Record<string, SQLDataConnector> = {} 
 
 export const initDatabases = (): void => {
@@ -48,6 +73,18 @@ export const initDatabases = (): void => {
 
 export const query = (connectorName: string, args: IQueryArgs): Promise<unknown[] | unknown> => {
   return connectors[connectorName].query(args)
+}
+
+export const update = (connectorName: string, args: IUpdateArgs): Promise<unknown[] | unknown> => {
+  return connectors[connectorName].update(args)
+}
+
+export const create = (connectorName: string, args: ICreateArgs): Promise<unknown[] | unknown> => {
+  return connectors[connectorName].create(args)
+}
+
+export const remove = (connectorName: string, args: IRemoveArgs): Promise<number> => {
+  return connectors[connectorName].remove(args)
 }
 
 export const database = (connectorName: string): Knex=> {
