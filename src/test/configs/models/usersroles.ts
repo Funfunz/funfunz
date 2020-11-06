@@ -1,5 +1,6 @@
 export default {
   'name': 'usersroles',
+  'connector': 'mainDatabase',
   'visible': true,
   'roles': {
     'create': [

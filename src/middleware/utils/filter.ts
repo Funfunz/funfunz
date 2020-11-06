@@ -1,7 +1,7 @@
-import Knex from 'knex'
-import { getPKs } from './index'
+import { isNull, getPKs } from './index'
 import { ITableInfo, IRelationMN, IRelation } from '../../generator/configurationTypes'
-import database from '../db/index'
+import { globalGraph } from '../routes'
+import Knex from 'knex'
 
 const oneToManyRelation = (table: ITableInfo, parentTable: ITableInfo): IRelation | undefined => {
   return parentTable.relations?.find(
@@ -27,12 +27,21 @@ const manyToManyRelation = (table: ITableInfo, parentTable: ITableInfo): IRelati
   )
 }
 
-export function applyParentTableFilters(
-  QUERY: Knex.QueryBuilder,
+export type ParentFilterResult = {
+  filter: Record<
+    string, {
+      _eq?: FilterValues,
+      _in?: FilterValues
+    }
+  >,
+  relation: string
+}
+
+export async function getParentEntryFilter(
   table: ITableInfo,
   parentTable: ITableInfo,
   parentObj: Record<string, FilterValues>
-): Promise<unknown> | null | undefined {
+): Promise<ParentFilterResult | undefined> {
   let relation: IRelation | undefined = oneToManyRelation(table, parentTable)
   if (relation) {
     const pks = getPKs(parentTable)
@@ -41,7 +50,10 @@ export function applyParentTableFilters(
     }
     const pk = pks[0]
     const value = parentObj[pk]
-    return applyQueryFilters(QUERY, { [relation.foreignKey]: { _eq: value }})
+    return {
+      filter: { [relation.foreignKey]: { _eq: value }},
+      relation: '1N'
+    }
   }
 
   relation = manyToOneRelation(table, parentTable)
@@ -52,7 +64,10 @@ export function applyParentTableFilters(
     }
     const pk = pks[0]
     const value = parentObj[relation.foreignKey]
-    return applyQueryFilters(QUERY, { [pk]: { _eq: value }}).first()
+    return {
+      filter: { [pk]: { _eq: value }},
+      relation: 'N1'
+    }
   }
 
   relation = manyToManyRelation(table, parentTable) as IRelationMN
@@ -67,25 +82,41 @@ export function applyParentTableFilters(
       throw new Error('Multiple pks relation not supported')
     }
     const remotePk = remotePks[0]
-    return database && database.db && database.db(
-      relation.relationalTable
-    ).select([
-      relation.foreignKey,
-      relation.remoteForeignKey,
-    ]).where(
-      relation.foreignKey,
-      parentObj[remotePk]
-    ).then((results) => {
-      const IDS = results.map((obj) => {
-        return obj[(relation as IRelationMN).remoteForeignKey]
-      })
-      const filter = {
-        [pk]: {
-          $in: IDS
+    const relationalTable = relation.relationalTable
+    const remoteForeignKey = relation.remoteForeignKey
+    const result = globalGraph(`query {
+      ${relationalTable} (
+        filter: {
+          ${relation.foreignKey}: {
+            _eq: ${parentObj[remotePk]}
+          }
+        }
+      ){
+        ${relation.foreignKey}
+        ${relation.remoteForeignKey}
+      }
+    }`)
+
+    return result.then(
+      (results) => {
+        if (results && results.data) {
+          const ids = results.data[relationalTable].map(
+            (obj) => {
+              return obj[remoteForeignKey]
+            }
+          ).filter(id => !isNull(id))
+  
+          return {
+            filter: {
+              [pk]: {
+                _in: ids
+              }
+            },
+            relation: 'MN'
+          }
         }
       }
-      return applyQueryFilters(QUERY, filter)
-    })
+    )
   }
 }
 
@@ -103,7 +134,7 @@ export const operators = [
   '_is_null'
 ]
 
-type OperatorsType = typeof operators[0]
+export type OperatorsType = typeof operators[0]
 
 export type FilterValues =
   | string
@@ -117,10 +148,9 @@ export type FilterValues =
   | boolean[]
   | Buffer
 
-interface IFilter extends Record<string, Record<Partial<OperatorsType>, FilterValues> | unknown> {
+export interface IFilter extends Record<string, Record<Partial<OperatorsType>, FilterValues> | unknown> {
   _and?: IFilter[]
   _or?: IFilter[]
-  _not?: IFilter[]
   _exists?: {
     [key: string]: boolean
   }

@@ -1,5 +1,6 @@
 export default {
   'name': 'products',
+  'connector': 'mainDatabase',
   'visible': true,
   'roles': {
     'create': [

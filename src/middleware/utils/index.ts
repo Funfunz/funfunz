@@ -68,6 +68,18 @@ export function isNull(val: unknown): boolean {
   return val === '' || val === undefined || val === null
 }
 
+/**
+ * helper function to check value is a promise
+ * @param {any} val - a variable
+ *
+ * @returns {boolean} true or false if val is a nullable value
+ */
+
+export function isPromise<T>(value: unknown): value is Promise<T> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return typeof (value as any)?.then === 'function'
+}
+
 
 /**
  * Uppercase the first letter of a string

@@ -1,8 +1,7 @@
-import database from '../db/index'
+import { query } from '../dataConnector/index'
 import { getPKs } from '../utils/index'
 import { ITableInfo } from '../../generator/configurationTypes'
 import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
-import Knex from 'knex'
 import {
   parseResolveInfo,
   ResolveTree,
@@ -10,7 +9,7 @@ import {
 } from 'graphql-parse-resolve-info'
 import { TUserContext } from './schema'
 import { requirementsCheck } from '../utils/dataAccess'
-import { applyQueryFilters, applyParentTableFilters, FilterValues } from '../utils/filter'
+import { getParentEntryFilter, FilterValues, ParentFilterResult } from '../utils/filter'
 
 function getFields(
   table: ITableInfo,
@@ -45,19 +44,35 @@ export function resolver<TSource, TContext extends TUserContext>(
   parentTable?: ITableInfo
 ): GraphQLFieldResolver<TSource, TContext> {
   return (parent, args, context, info) => {
-    return requirementsCheck(table, 'read', context.user, database).then(
-      (DB) => {
+    return requirementsCheck(table, 'read', context.user).then(
+      async () => {
         const fields = getFields(table, info)
-        let QUERY = DB(table.name).select(fields)
-        if (args.filter) {
-          QUERY = applyQueryFilters(QUERY, args.filter)
-        }
-        paginate(QUERY, args.skip, args.take)
+        let filter = args.filter || undefined
+        let parentFilter: ParentFilterResult | undefined
         if (parentTable) {
-          return applyParentTableFilters(QUERY, table, parentTable, parent as unknown as Record<string, FilterValues>)
-        } else {
-          return QUERY
+          parentFilter = await getParentEntryFilter(table, parentTable, parent as unknown as Record<string, FilterValues>)
+          if (filter) {
+            filter = {
+              _and: [
+                filter,
+                parentFilter?.filter
+              ]
+            }
+          } else {
+            filter = parentFilter?.filter
+          }
         }
+        return query(
+          table.connector,
+          {
+            entityName: table.name,
+            fields,
+            filter,
+            relation: parentFilter?.relation,
+            skip: args.skip,
+            take: args.take
+          }
+        )
       }
     )
   }
@@ -67,23 +82,19 @@ export function resolverCount<TSource, TContext extends TUserContext>(
   table: ITableInfo
 ): GraphQLFieldResolver<TSource, TContext> {
   return (parent, args, context) => {
-    return requirementsCheck(table, 'read', context.user, database).then(
-      async (DB) => {
-        let QUERY = DB(table.name).select([])
-        if (args.filter) {
-          QUERY = await applyQueryFilters(QUERY, args.filter)
-        }
-        return QUERY.count('*', {as: 'count'}).first().then((res) => res.count)
+    return requirementsCheck(table, 'read', context.user).then(
+      async () => {
+        return query(
+          table.connector,
+          {
+            entityName: table.name,
+            count: true,
+            filter: args.filter,
+            skip: args.skip,
+            take: args.take
+          }
+        )
       }
     )
   }
-}
-
-function paginate(query: Knex.QueryBuilder, offset = 0, limit = 0) {
-  offset = typeof offset === 'string' ? parseInt(offset, 10) : offset
-  limit = typeof limit === 'string' ? parseInt(limit, 10) : limit
-  if (limit > 0) {
-    query.offset((offset) * limit).limit(limit)
-  }
-  return query
 }

@@ -1,8 +1,6 @@
-import { Database } from '../db/index'
 import { IUser } from '../types'
 import { HttpException } from './exception'
 import { ITableInfo } from '../../generator/configurationTypes'
-import Knex from 'knex'
 
 /**
  * checks for user authorization against a list of roles
@@ -54,15 +52,11 @@ export function requirementsCheck(
   tableConfig: ITableInfo,
   accessType: 'read' | 'create' | 'update' | 'delete',
   user: IUser | undefined,
-  dbInstance: Database
-): Promise<Knex<Record<string, unknown>, unknown[]>> {
+): Promise<boolean> {
   if (!hasAuthorization(tableConfig.roles[accessType], user)) {
     return Promise.reject(new HttpException(401, 'Not authorized'))
   }
-  if (!dbInstance.db) {
-    return Promise.reject(new HttpException(500, 'No database'))
-  }
-  return Promise.resolve(dbInstance.db)
+  return Promise.resolve(true)
 }
 
 /**

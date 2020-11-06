@@ -1,12 +1,23 @@
 import GraphQLSchema from '../graphql/schema'
 import { Router } from 'express'
 import { graphqlHTTP } from 'express-graphql'
+import { execute, parse, GraphQLSchema as Schema, ExecutionResult } from 'graphql'
+import { isPromise } from '../utils/index'
 
+let schema: Schema
+
+export const globalGraph = (document: string): Promise<ExecutionResult> => {
+  const result = execute(schema, parse(document))
+  if (isPromise<ExecutionResult>(result)) {
+    return result
+  }
+  return Promise.resolve<ExecutionResult>(result)
+}
 
 class IndexRouter {
   public router: Router
   constructor() {
-    const schema = GraphQLSchema()
+    schema = GraphQLSchema()
     const graph = graphqlHTTP(
       (req: unknown, res) => {
         return {
@@ -20,7 +31,6 @@ class IndexRouter {
         }
       }
     )
-    
     this.router = Router()
     this.router.use(
       '/',

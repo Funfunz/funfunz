@@ -2,24 +2,12 @@
 export default {
   type: 'object',
   required: [
-    'mysql',
+    'connectors',
     'server',
   ],
   properties: {
-    mysql: {
+    connectors: {
       type: 'object',
-      properties: {
-        host: {type: 'string'},
-        database: {type: 'string'},
-        user: {type: 'string'},
-        password: {type: 'string'},
-      },
-      required: [
-        'host',
-        'database',
-        'user',
-        'password',
-      ],
     },
     server: {
       type: 'object',
