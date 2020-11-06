@@ -81,7 +81,7 @@ export function buildArgs(
               const type = new GraphQLInputObjectType({
                 name: `table${table.name}Field${column.name}`,
                 description: `Filter for the field ${column.name}`,
-                fields: () => argFilterBuilder(table, options, isPk, matchedType)
+                fields: () => argFilterBuilder(isPk, matchedType)
               })
               inputFields[column.name] = {
                 type: isRequired ? new GraphQLNonNull(type) : type,
@@ -109,7 +109,7 @@ export function buildArgs(
   return args[table.name]
 }
 
-function argFilterBuilder(table: ITableInfo, options: IBuildArgsOptions, isPk: boolean, matchedType: GraphQLScalarType) {
+function argFilterBuilder(isPk: boolean, matchedType: GraphQLScalarType) {
   const argFilter = {}
   operators.forEach(
     operator => {

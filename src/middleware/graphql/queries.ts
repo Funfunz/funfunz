@@ -8,7 +8,7 @@ import GraphQLJSON from 'graphql-type-json'
 import { GraphQLFieldConfig, GraphQLFieldConfigArgumentMap, GraphQLFieldConfigMap, GraphQLInt, GraphQLList, GraphQLObjectType, GraphQLString, Thunk } from 'graphql'
 import pluralize from 'pluralize'
 import { TUserContext } from './schema'
-import { buildArgs } from './argumentsBuilder'
+import { buildArgs } from './queryArgumentsBuilder'
 
 const debug = Debug('funfunz:graphql-query-builder')
 
@@ -33,7 +33,7 @@ function buildQuery(table: ITableInfo): GraphQLFieldConfig<unknown, TUserContext
     type: new GraphQLList(buildType(table)),
     description: `This will return all the ${pluralize(table.name)}.`,
     resolve: resolver(table),
-    args: buildArgs(table, { pagination: true }) as GraphQLFieldConfigArgumentMap,
+    args: buildArgs(table, { pagination: true }),
   }
   debug(`Created ${table.name} query`)
   return query

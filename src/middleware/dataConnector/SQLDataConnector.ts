@@ -3,6 +3,7 @@ import Knex from 'knex'
 import Debug from 'debug'
 import type { ICreateArgs, IQueryArgs, IRemoveArgs, IUpdateArgs } from './index'
 import { FilterValues, IFilter, OperatorsType } from '../utils/filter'
+import { getPKs, getTableConfig } from '../utils'
 
 const debug = Debug('funfunz:SQLDataConnector')
 
@@ -62,7 +63,14 @@ export class SQLDataConnector {
         if (updatedCount === 0) {
           return []
         }
-        return this.query(args)
+        return this.query(args).then(
+          (results) => {
+            if (Array.isArray(results) && results.length) {
+              return results[0]
+            }
+            return undefined
+          }
+        )
       }
     )
   }
@@ -70,12 +78,41 @@ export class SQLDataConnector {
   public create(args: ICreateArgs): Promise<unknown[] | unknown> {
     const createQuery = this.db(args.entityName)
     
-    return createQuery.insert(args.data, args.fields || ['*']).then(
+    return createQuery.insert(args.data).then(
       (ids) => {
         if (ids.length === 0) {
           return []
         }
-        return this.query(args)
+        const tableConfig = getTableConfig(args.entityName)
+        const pks = getPKs(tableConfig)
+        
+        const queryArgs: IQueryArgs = args
+        queryArgs.filter = {
+          _and: []
+        }
+        
+        ids.forEach(
+          (id) => {
+            pks.forEach(
+              (pk, index) => {
+                queryArgs.filter?._and?.push({
+                  [pk]: {
+                    _eq: Array.isArray(id) ? id[index] : id
+                  }
+                })
+              }
+            )
+          }
+        )
+        
+        return this.query(queryArgs).then(
+          (results) => {
+            if (Array.isArray(results) && results.length) {
+              return results[0]
+            }
+            return undefined
+          }
+        )
       }
     )
   }

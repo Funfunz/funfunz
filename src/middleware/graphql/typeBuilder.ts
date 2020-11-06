@@ -3,16 +3,16 @@ import config from '../utils/configLoader'
 import { IRelation, ITableInfo } from '../../generator/configurationTypes'
 import Debug from 'debug'
 import {
-  GraphQLBoolean,
   GraphQLFieldConfigMap,
   GraphQLID,
+  GraphQLInt,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
 } from 'graphql'
 import { capitalize, getPKs } from '../utils/index'
 import { TUserContext } from './schema'
-import { buildArgs } from './argumentsBuilder'
+import { buildArgs } from './queryArgumentsBuilder'
 import { MATCHER } from './helpers'
 
 const debug = Debug('funfunz:graphql-type-builder')
@@ -155,8 +155,8 @@ export function buildDeleteMutationType(table: ITableInfo): GraphQLObjectType<un
     entitiesType[name] = new GraphQLObjectType({
       name,
       fields: () => ({
-        success: {
-          type: GraphQLBoolean,
+        deleted: {
+          type: GraphQLInt,
         },
       }),
     })

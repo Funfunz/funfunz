@@ -1,14 +1,15 @@
-import { buildDeleteMutationType, buildFields, buildType } from './typeBuilder'
+import { buildDeleteMutationType, buildType } from './typeBuilder'
 import config from '../utils/configLoader'
 import { ITableInfo } from '../..//generator/configurationTypes'
 import Debug from 'debug'
-import { GraphQLFieldConfig, GraphQLFieldConfigArgumentMap, GraphQLFieldConfigMap, Thunk } from 'graphql'
+import { GraphQLFieldConfig, GraphQLFieldConfigMap, Thunk } from 'graphql'
 import { capitalize, getFields } from '../utils/index'
 import { TUserContext } from './schema'
 import { requirementsCheck } from '../utils/dataAccess'
 import { runHook } from '../utils/lifeCycle'
 import { normalize } from '../utils/data'
 import { update, create, remove } from '../dataConnector/index'
+import { buildArgs } from './mutationArgumentsBuilder'
 
 const debug = Debug('funfunz:graphql-mutation-builder')
 
@@ -28,6 +29,7 @@ function buildUpdateByIdMutation(table: ITableInfo): GraphQLFieldConfig<unknown,
   debug(`Creating ${table.name} update mutation`)
   const mutation: GraphQLFieldConfig<unknown, TUserContext>  = {
     type: buildType(table, { relations: true }),
+    args: buildArgs(table, { pagination: true, data: true, filter: true }),
     resolve: (parent, args, context, info) => {
       return requirementsCheck(table, 'update', context.user).then(
         () => {
@@ -56,9 +58,6 @@ function buildUpdateByIdMutation(table: ITableInfo): GraphQLFieldConfig<unknown,
         }
       )
     },
-    args: {
-      ...buildFields(table, { relations: false, required: ['pk'] }) as GraphQLFieldConfigArgumentMap,
-    },
   }
   debug(`Created ${table.name} add mutation`)
   return mutation
@@ -68,6 +67,7 @@ function buildAddMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUserC
   debug(`Creating ${table.name} add mutation`)
   const mutation: GraphQLFieldConfig<unknown, TUserContext>  = {
     type: buildType(table),
+    args: buildArgs(table, { data: true }),
     resolve: (parent, args, context, info) => {
       return requirementsCheck(table, 'create', context.user).then(
         () => {
@@ -90,12 +90,10 @@ function buildAddMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUserC
         }
       ).then(
         (results) => {
+          console.log(results)
           return runHook(table, 'insertRow', 'after', context.req, context.res, null, results)
         }
       )
-    },
-    args: {
-      ...buildFields(table, { relations: false }) as GraphQLFieldConfigArgumentMap,
     },
   }
   debug(`Created ${table.name} add mutation`)
@@ -106,6 +104,7 @@ function buildDeleteMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUs
   debug(`Creating ${table.name} delete mutation`)
   const mutation: GraphQLFieldConfig<unknown, TUserContext>  = {
     type: buildDeleteMutationType(table),
+    args: buildArgs(table, { filter: true }),
     resolve: (parent, args, context) => {
       return requirementsCheck(table, 'create', context.user).then(
         () => {
@@ -127,12 +126,9 @@ function buildDeleteMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUs
         }
       ).then(
         (result) => {
-          return { success: !!result }
+          return result
         }
       )
-    },
-    args: {
-      ...buildFields(table, { relations: false, include: ['pk'], required: ['pk'] }) as GraphQLFieldConfigArgumentMap,
     },
   }
   debug(`Created ${table.name} delete mutation`)
