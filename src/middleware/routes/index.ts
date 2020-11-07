@@ -26,7 +26,9 @@ class IndexRouter {
             res,
             user: (req as Record<string, unknown>).user,
           },
-          graphiql: true,
+          graphiql: {
+            headerEditorEnabled: true
+          },
           schema
         }
       }

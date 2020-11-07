@@ -1,0 +1,61 @@
+POST http://localhost:3004
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+query {
+  families (
+    filter: {
+      id: {
+        _eq: 1
+      }
+    }
+  ){
+    id
+    name
+  }
+}
+
+###
+POST http://localhost:3004
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+query {
+  families (
+    filter: {
+      _or: [
+        {
+          id: {
+            _eq: 1
+          }
+        }
+        {
+          id: {
+            _eq: 2
+          }
+        }
+      ]
+    }
+  ){
+    id
+    name
+  }
+}
+
+###
+POST http://localhost:3004
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+query {
+  families (
+    filter: {
+      id: {
+        _in: [1,2]
+      }
+    }
+  ){
+    id
+    name
+  }
+}

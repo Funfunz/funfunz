@@ -154,7 +154,6 @@ export interface IFilter extends Record<string, Record<Partial<OperatorsType>, F
   _exists?: {
     [key: string]: boolean
   }
-  
 }
 
 function operatorMatcher(

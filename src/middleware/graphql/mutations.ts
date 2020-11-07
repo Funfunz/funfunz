@@ -9,7 +9,7 @@ import { requirementsCheck } from '../utils/dataAccess'
 import { runHook } from '../utils/lifeCycle'
 import { normalize } from '../utils/data'
 import { update, create, remove } from '../dataConnector/index'
-import { buildArgs } from './mutationArgumentsBuilder'
+import { buildArgs } from './argumentsBuilder'
 
 const debug = Debug('funfunz:graphql-mutation-builder')
 

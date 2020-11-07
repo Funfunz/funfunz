@@ -1,3 +1,4 @@
+import { operators } from '../utils/filter'
 import { ITableInfo } from '../../generator/configurationTypes'
 import Debug from 'debug'
 import {
@@ -13,7 +14,6 @@ import {
 } from 'graphql'
 import { getPKs } from '../utils/index'
 import { MATCHER } from './helpers'
-import { operators } from '../utils/filter'
 
 const debug = Debug('funfunz:graphql-args-builder')
 
@@ -59,7 +59,7 @@ export function buildArgs(
     } else {
       args[tableId].filter = filters[filterId] = {
         type: new GraphQLInputObjectType({
-          name: `filter${table.name}Data`,
+          name: filterId,
           description: `Filter for the ${table.name} data`,
           fields: () => {
             const inputFields: GraphQLInputFieldConfigMap = {}
@@ -88,9 +88,9 @@ export function buildArgs(
     
                 if (isPk || matchedType) {
                   const type = new GraphQLInputObjectType({
-                    name: `mutationTable${table.name}Field${column.name}`,
+                    name: `table${table.name}Field${column.name}`,
                     description: `Filter for the field ${column.name}`,
-                    fields: () => argFilterBuilder(isPk, matchedType)
+                    fields: () => argFieldBuilder(isPk, matchedType)
                   })
                   inputFields[column.name] = {
                     type: isRequired ? new GraphQLNonNull(type) : type,
@@ -172,7 +172,8 @@ export function buildArgs(
   return args[tableId]
 }
 
-function argFilterBuilder(isPk: boolean, matchedType: GraphQLScalarType) {
+
+export function argFieldBuilder(isPk: boolean, matchedType: GraphQLScalarType): GraphQLInputFieldConfigMap {
   const argFilter = {}
   operators.forEach(
     operator => {

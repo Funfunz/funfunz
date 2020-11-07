@@ -12,7 +12,7 @@ import {
 } from 'graphql'
 import { capitalize, getPKs } from '../utils/index'
 import { TUserContext } from './schema'
-import { buildArgs } from './queryArgumentsBuilder'
+import { buildArgs } from './argumentsBuilder'
 import { MATCHER } from './helpers'
 
 const debug = Debug('funfunz:graphql-type-builder')
@@ -77,7 +77,7 @@ export function buildFields<TSource>(
           type: buildType(relatedTable),
           description: column.layout.label as string,
           resolve: resolver(relatedTable, table),
-          args: buildArgs(relatedTable, { pagination: false }),
+          args: buildArgs(relatedTable, { pagination: false, filter: true }),
         }
         result[column.name] = {
           type: GraphQLID,
@@ -108,7 +108,7 @@ export function buildFields<TSource>(
           type: new GraphQLList(buildType(relatedTable)),
           description: relatedTable.name,
           resolve: resolver(relatedTable, table),
-          args: buildArgs(relatedTable, { pagination: true }),
+          args: buildArgs(relatedTable, { pagination: true, filter: true }),
         }
       })
     }
@@ -126,7 +126,7 @@ export function buildFields<TSource>(
           type: new GraphQLList(buildType(remoteTable)),
           description: remoteTable.name,
           resolve: resolver(remoteTable, table),
-          args: buildArgs(remoteTable, { pagination: true }),
+          args: buildArgs(remoteTable, { pagination: true, filter: true }),
         }
       })
     }
