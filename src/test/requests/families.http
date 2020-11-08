@@ -11,7 +11,38 @@ query {
     }
   ){
     id
-    name
+    products (
+      filter: {
+        _and: [
+          {
+            id: {
+              _in: [1,2,3,4]
+            }
+          }
+          {
+            _or: [
+              {
+                name: {
+                  _like: "name1"
+                }
+              }
+              {
+                name: {
+                  _like: "name2"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ){
+      id
+      name
+      FamilyId
+      families {
+        id
+      }
+    }
   }
 }
 
@@ -23,18 +54,9 @@ X-REQUEST-TYPE: GraphQL
 query {
   families (
     filter: {
-      _or: [
-        {
-          id: {
-            _eq: 1
-          }
-        }
-        {
-          id: {
-            _eq: 2
-          }
-        }
-      ]
+      id: {
+        _eq: "NonExistingId"
+      }
     }
   ){
     id
@@ -53,6 +75,22 @@ query {
       id: {
         _in: [1,2]
       }
+    }
+  ){
+    id
+    name
+  }
+}
+
+###
+POST http://localhost:3004
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+mutation {
+  addFamilies (
+    data: {
+      name: "TestFamily"
     }
   ){
     id

@@ -31,19 +31,19 @@ export class SQLDataConnector {
     if (args.fields) {
       query.select(args.fields)
     }
-    if (args.count) {
-      query.count('*', {as: 'count'}).first()
-    }
     if (args.filter) {
       this.applyQueryFilters(query, args.filter)
     }
     if (args.skip || args.take) {
       this.paginate(query, args.skip, args.take)
     }
+    if (args.count) {
+      query.count('*', {as: 'count'})
+    }
     return query.then(
-      (results: unknown[]) => {
-        if (!results) {
-          return []
+      (results: Record<string, unknown>[]) => {
+        if (args.count) {
+          return results[0].count || 0
         }
         return args.relation === 'N1' ? results[0] : results
       }
@@ -137,14 +137,9 @@ export class SQLDataConnector {
     QUERY: Knex.QueryBuilder,
     filters: IFilter,
     unionOperator?: string,
-    prevIndex?: number
   ): Knex.QueryBuilder<Record<string, unknown>, unknown> {
     Object.keys(filters).forEach(
-      (key, index) => {
-        let newIndex = index
-        if (prevIndex) {
-          newIndex += prevIndex
-        }
+      (key) => {
         if (key === '_and' || key === '_or') {
           
           const value = (filters[key] as IFilter['_and'] | IFilter['_or']) || []
@@ -154,8 +149,6 @@ export class SQLDataConnector {
             where = 'orWhere'
           } else if (key === '_and') {
             where = 'andWhere'
-          } else if (unionOperator) {
-            where = `${unionOperator}Where`
           }
   
           value.forEach(
@@ -168,8 +161,7 @@ export class SQLDataConnector {
                   this.applyQueryFilters(
                     innerQuery,
                     newFilters,
-                    key === '_and' ? 'and' : 'or',
-                    0
+                    key === '_and' ? 'and' : 'or'
                   )
                 }
               )
@@ -180,10 +172,6 @@ export class SQLDataConnector {
         } else {
           const OPERATOR: OperatorsType = Object.keys(filters[key] as Record<OperatorsType, FilterValues>)[0] as OperatorsType
           let finalUnionOperator = ''
-          
-          if (newIndex > 0) {
-            finalUnionOperator = 'and'
-          }
           if (unionOperator) {
             finalUnionOperator = unionOperator
           }
@@ -203,7 +191,7 @@ export class SQLDataConnector {
   ) {
     let where = 'where'
     if (unionOperator) {
-      where = `${unionOperator}Where`
+      where = unionOperator === 'or' ? 'orWhere' : 'where'
     }
     switch (operator) {
     case '_eq':

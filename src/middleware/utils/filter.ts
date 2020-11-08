@@ -1,7 +1,6 @@
 import { isNull, getPKs } from './index'
 import { ITableInfo, IRelationMN, IRelation } from '../../generator/configurationTypes'
 import { globalGraph } from '../routes'
-import Knex from 'knex'
 
 const oneToManyRelation = (table: ITableInfo, parentTable: ITableInfo): IRelation | undefined => {
   return parentTable.relations?.find(
@@ -154,103 +153,4 @@ export interface IFilter extends Record<string, Record<Partial<OperatorsType>, F
   _exists?: {
     [key: string]: boolean
   }
-}
-
-function operatorMatcher(
-  operator: OperatorsType,
-  column: string,
-  value: FilterValues,
-  query: Knex.QueryBuilder,
-  unionOperator?: string
-) {
-  let where = 'where'
-  if (unionOperator) {
-    where = `${unionOperator}Where`
-  }
-  switch (operator) {
-  case '_eq':
-    return query[where](column, value)
-  case '_neq':
-    return query[`${where}Not`](column, value)
-  case '_lt':
-    return query[where](column, '<', value)
-  case '_lte':
-    return query[where](column, '<=', value) 
-  case '_gt':
-    return query[where](column, '>', value)
-  case '_gte':
-    return query[where](column, '>=', value)
-  case '_in':
-    return query[`${where}In`](column, value as FilterValues[]) 
-  case '_nin':
-    return query[`${where}NotIn`](column, value as FilterValues[])
-  case '_like':
-    return query[where](column, 'like', value)
-  case '_nlike':
-    return query[where](column, 'not like', value) 
-  case '_is_null':
-    return query[`${where}Null`](column) 
-  }
-  
-}
-
-export function applyQueryFilters(
-  QUERY: Knex.QueryBuilder,
-  filters: IFilter,
-  unionOperator?: string,
-  prevIndex?: number
-): Knex.QueryBuilder<Record<string, unknown>, unknown> {
-  Object.keys(filters).forEach(
-    (key, index) => {
-      let newIndex = index
-      if (prevIndex) {
-        newIndex += prevIndex
-      }
-      if (key === '_and' || key === '_or') {
-        
-        const value = (filters[key] as IFilter['_and'] | IFilter['_or']) || []
-      
-        let where = 'where'
-        if (key === '_or'){
-          where = 'orWhere'
-        } else if (key === '_and') {
-          where = 'andWhere'
-        } else if (unionOperator) {
-          where = `${unionOperator}Where`
-        }
-
-        value.forEach(
-          (entry) => {
-            const newFilters = {} 
-            const entryKey = Object.keys(entry)[0]
-            newFilters[entryKey] = entry[entryKey]
-            QUERY[where](
-              (innerQuery) => {
-                applyQueryFilters(
-                  innerQuery,
-                  newFilters,
-                  key === '_and' ? 'and' : 'or',
-                  0
-                )
-              }
-            )
-          }
-        )
-      } else if (key === '_exists') {
-        console.log('exists')
-      } else {
-        const OPERATOR: OperatorsType = Object.keys(filters[key] as Record<OperatorsType, FilterValues>)[0] as OperatorsType
-        let finalUnionOperator = ''
-        
-        if (newIndex > 0) {
-          finalUnionOperator = 'and'
-        }
-        if (unionOperator) {
-          finalUnionOperator = unionOperator
-        }
-        operatorMatcher(OPERATOR, key, (filters[key] as Record<string, FilterValues>)[OPERATOR], QUERY, finalUnionOperator)
-      }
-    }
-  )
-  return QUERY
 }

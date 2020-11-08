@@ -7,7 +7,13 @@ import { isPromise } from '../utils/index'
 let schema: Schema
 
 export const globalGraph = (document: string): Promise<ExecutionResult> => {
-  const result = execute(schema, parse(document))
+  const result = execute({
+    schema,
+    document: parse(document),
+    contextValue: {
+      superUser: true
+    }
+  })
   if (isPromise<ExecutionResult>(result)) {
     return result
   }

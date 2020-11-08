@@ -19,7 +19,8 @@ export function hasAuthorization(
         name: 'unauthenticated',
       },
     ],
-  }
+  },
+  superUser?: boolean
 ): boolean {
   let isAuthorized = true
   if (roles && roles.length) {
@@ -30,7 +31,7 @@ export function hasAuthorization(
         }
         return !!(user.roles?.find(
           (userRole) => {
-            return (userRole.name === role)
+            return superUser || (userRole.name === role)
           }
         ))
       }
@@ -52,19 +53,10 @@ export function requirementsCheck(
   tableConfig: ITableInfo,
   accessType: 'read' | 'create' | 'update' | 'delete',
   user: IUser | undefined,
+  superUser?: boolean
 ): Promise<boolean> {
-  if (!hasAuthorization(tableConfig.roles[accessType], user)) {
+  if (!hasAuthorization(tableConfig.roles[accessType], user, superUser)) {
     return Promise.reject(new HttpException(401, 'Not authorized'))
   }
   return Promise.resolve(true)
-}
-
-/**
- * Uppercase the first letter of a string
- * @param {string} str - string to capitalize
- *
- * @returns {string} capitalized string
- */
-export function capitalize(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1)
 }

@@ -4,16 +4,16 @@ export default {
   'visible': true,
   'roles': {
     'create': [
-      'unauthenticated'
+      'all'
     ],
     'read': [
-      'unauthenticated'
+      'all'
     ],
     'update': [
-      'unauthenticated'
+      'all'
     ],
     'delete': [
-      'unauthenticated'
+      'all'
     ]
   },
   'columns': [

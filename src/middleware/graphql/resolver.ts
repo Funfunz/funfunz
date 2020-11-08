@@ -11,7 +11,7 @@ export function resolver<TSource, TContext extends TUserContext>(
   parentTable?: ITableInfo
 ): GraphQLFieldResolver<TSource, TContext> {
   return (parent, args, context, info) => {
-    return requirementsCheck(table, 'read', context.user).then(
+    return requirementsCheck(table, 'read', context.user, context.superUser).then(
       async () => {
         const fields = getFields(table, info)
         let filter = args.filter || undefined
@@ -49,7 +49,7 @@ export function resolverCount<TSource, TContext extends TUserContext>(
   table: ITableInfo
 ): GraphQLFieldResolver<TSource, TContext> {
   return (parent, args, context) => {
-    return requirementsCheck(table, 'read', context.user).then(
+    return requirementsCheck(table, 'read', context.user, context.superUser).then(
       async () => {
         return query(
           table.connector,
