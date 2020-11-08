@@ -1,5 +1,6 @@
 export default {
   'name': 'images',
+  'connector': 'mainDatabase',
   'visible': true,
   'roles': {
     'create': [

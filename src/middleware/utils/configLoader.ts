@@ -12,6 +12,7 @@ type FunfunzConfig = {
 const config: FunfunzConfig = {
   settings: [],
   config: {
+    connectors: {},
     server: {
       port: 3004
     }

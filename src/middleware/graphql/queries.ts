@@ -33,7 +33,7 @@ function buildQuery(table: ITableInfo): GraphQLFieldConfig<unknown, TUserContext
     type: new GraphQLList(buildType(table)),
     description: `This will return all the ${pluralize(table.name)}.`,
     resolve: resolver(table),
-    args: buildArgs(table, { pagination: true }) as GraphQLFieldConfigArgumentMap,
+    args: buildArgs(table, { pagination: true, filter: true }),
   }
   debug(`Created ${table.name} query`)
   return query
@@ -45,7 +45,7 @@ function buildCount(table: ITableInfo) {
     type: GraphQLInt,
     description: `This will return the ${pluralize(table.name)} count.`,
     resolve: resolverCount(table),
-    args: buildArgs(table, { pagination: false }) as GraphQLFieldConfigArgumentMap,
+    args: buildArgs(table, { pagination: false,  filter: true }) as GraphQLFieldConfigArgumentMap,
   }
   debug(`Created ${table.name} count`)
   return query

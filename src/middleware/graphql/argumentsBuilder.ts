@@ -1,6 +1,8 @@
+import { operators } from '../utils/filter'
 import { ITableInfo } from '../../generator/configurationTypes'
 import Debug from 'debug'
 import {
+  GraphQLArgumentConfig,
   GraphQLFieldConfigArgumentMap,
   GraphQLID,
   GraphQLInputFieldConfigMap,
@@ -12,7 +14,6 @@ import {
 } from 'graphql'
 import { getPKs } from '../utils/index'
 import { MATCHER } from './helpers'
-import { operators } from '../utils/filter'
 
 const debug = Debug('funfunz:graphql-args-builder')
 
@@ -20,102 +21,172 @@ interface IBuildArgsOptions {
   required?: ['pk' | string],
   include?: ['pk' | string],
   exclude?: ['pk' | string],
+  data?: boolean,
+  filter?: boolean,
   pagination?: boolean,
 }
 
 const args: Record<string, GraphQLFieldConfigArgumentMap> = {} 
+const dataInputs: Record<string, GraphQLArgumentConfig> = {}
+const filters: Record<string, GraphQLArgumentConfig> = {}
 
 export function buildArgs(
   table: ITableInfo,
-  options: IBuildArgsOptions = {
-    pagination: true
-  }
+  options: IBuildArgsOptions
 ): GraphQLFieldConfigArgumentMap {
-  if (args[table.name]) {
-    return args[table.name]
+  const tableId = `${table.name}-${JSON.stringify(options)}`
+  if (args[tableId]) {
+    return args[tableId]
   }
+  args[tableId] = {}
   debug(`Creating args for table ${table.name}`)
-  const {required, include, pagination } = options
-  args[table.name] = {}
+  const {required, include, pagination, filter, data } = options
   if (pagination) {
-    args[table.name].take = {
+    args[tableId].take = {
       type: GraphQLInt,
       description: 'Take N items',
     }
-    args[table.name].skip = {
+    args[tableId].skip = {
       type: GraphQLInt,
       description: 'Skip N items',
     }
   }
 
-  args[table.name].filter = {
-    type: new GraphQLInputObjectType({
-      name: `Filter${table.name}Data`,
-      description: `Filter for the ${table.name} data`,
-      fields: () => {
-        const inputFields: GraphQLInputFieldConfigMap = {}
-        const tablePKs = getPKs(table)
-  
-        table.columns.forEach(
-          (column) => {
-            const isPk = tablePKs.indexOf(column.name) >= 0
-            /*
-            *  if include option is passed check if the column is present there
-            */
-            if (include && !include.includes(column.name) && !(isPk && include.includes('pk'))) {
-              return
-            }
-
-            /*
-            *  Checks if the column name is present or if it's a primary key checks for the 'pk' key
-            */
-            const isRequired = required && (
-              required.includes(column.name) || (
-                isPk && required.includes('pk')
-              )
-            )
-            
-            const matchedType = MATCHER[column.model.type]
-
-            if (isPk || matchedType) {
-              const type = new GraphQLInputObjectType({
-                name: `table${table.name}Field${column.name}`,
-                description: `Filter for the field ${column.name}`,
-                fields: () => argFilterBuilder(table, options, isPk, matchedType)
-              })
-              inputFields[column.name] = {
-                type: isRequired ? new GraphQLNonNull(type) : type,
-                description: column.layout.label,
+  if (filter) {
+    const filterId = `filter${table.name}Data`
+    if (filters[filterId]) {
+      args[tableId].filter = filters[filterId]
+    } else {
+      args[tableId].filter = filters[filterId] = {
+        type: new GraphQLInputObjectType({
+          name: filterId,
+          description: `Filter for the ${table.name} data`,
+          fields: () => {
+            const inputFields: GraphQLInputFieldConfigMap = {}
+            const tablePKs = getPKs(table)
+      
+            table.columns.forEach(
+              (column) => {
+                const isPk = tablePKs.indexOf(column.name) >= 0
+                /*
+                *  if include option is passed check if the column is present there
+                */
+                if (include && !include.includes(column.name) && !(isPk && include.includes('pk'))) {
+                  return
+                }
+    
+                /*
+                *  Checks if the column name is present or if it's a primary key checks for the 'pk' key
+                */
+                const isRequired = required && (
+                  required.includes(column.name) || (
+                    isPk && required.includes('pk')
+                  )
+                )
+                
+                const matchedType = MATCHER[column.model.type]
+    
+                if (isPk || matchedType) {
+                  const type = new GraphQLInputObjectType({
+                    name: `table${table.name}Field${column.name}`,
+                    description: `Filter for the field ${column.name}`,
+                    fields: () => argFieldBuilder(isPk, matchedType)
+                  })
+                  inputFields[column.name] = {
+                    type: isRequired ? new GraphQLNonNull(type) : type,
+                    description: column.layout.label,
+                  }
+                }
               }
+            )
+            inputFields._and = {
+              type: new GraphQLList(
+                buildArgs(table, options).filter.type
+              )
             }
-          }
-        )
-        inputFields._and = {
-          type: new GraphQLList(
-            buildArgs(table, options).filter.type
-          )
-        }
-        inputFields._or = {
-          type: new GraphQLList(
-            buildArgs(table, options).filter.type
-          )
-        }
-        return inputFields
-      },
-    }),
-    description: 'Query filter'
+            inputFields._or = {
+              type: new GraphQLList(
+                buildArgs(table, options).filter.type
+              )
+            }
+            return inputFields
+          },
+        }),
+        description: 'Query filter'
+      }
+    }
   }
+
+  if (data) {
+    const dataInputId = `input${table.name}Data`
+    if (dataInputs[dataInputId]) {
+      args[tableId].data = dataInputs[dataInputId]
+    } else {
+      args[tableId].data = dataInputs[dataInputId] = {
+        type: new GraphQLInputObjectType({
+          name: `input${table.name}Data`,
+          description: `Data to update ${table.name}`,
+          fields: () => {
+            const inputFields: GraphQLInputFieldConfigMap = {}
+            const tablePKs = getPKs(table)
+      
+            table.columns.forEach(
+              (column) => {
+                const isPk = tablePKs.indexOf(column.name) >= 0
+                /*
+                *  if include option is passed check if the column is present there
+                */
+                if (include && !include.includes(column.name) && !(isPk && include.includes('pk'))) {
+                  return
+                }
+    
+                /*
+                *  Checks if the column name is present or if it's a primary key checks for the 'pk' key
+                */
+                const isRequired = required && (
+                  required.includes(column.name) || (
+                    isPk && required.includes('pk')
+                  )
+                )
+                
+                const matchedType = MATCHER[column.model.type]
+    
+                if (isPk || matchedType) {
+                  const type = isPk ? GraphQLID : matchedType
+                  inputFields[column.name] = {
+                    type: isRequired ? new GraphQLNonNull(type) : type,
+                    description: column.layout.label,
+                  }
+                }
+              }
+            )
+            return inputFields
+          },
+        }),
+        description: 'Query filter'
+      }
+    }
+  }
+  
   debug(`Created args for table ${table.name}`)
-  return args[table.name]
+  return args[tableId]
 }
 
-function argFilterBuilder(table: ITableInfo, options: IBuildArgsOptions, isPk: boolean, matchedType: GraphQLScalarType) {
+
+export function argFieldBuilder(isPk: boolean, matchedType: GraphQLScalarType): GraphQLInputFieldConfigMap {
   const argFilter = {}
   operators.forEach(
     operator => {
-      argFilter[operator] = {
-        type: isPk ? GraphQLID : matchedType
+      if (operator === '_in' || operator === '_nin') {
+        argFilter[operator] = {
+          type: isPk ? GraphQLList(GraphQLID) : GraphQLList(matchedType)
+        }
+      } else {
+        argFilter[operator] = {
+          type: isPk ? GraphQLID : matchedType
+        }
       }
+      
     }
   )
   return argFilter

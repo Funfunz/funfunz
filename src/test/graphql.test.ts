@@ -25,7 +25,6 @@ describe('graphql', () => {
       })
       .set('Accept', 'application/json').end(
         (err, response) => {
-          console.log(response)
           if (err) {
             return done(err)
           }
@@ -131,7 +130,6 @@ describe('graphql', () => {
           if (err) {
             return done(err)
           }
-          console.log(response.body)
           expect(response.status).toBe(200)
           expect(response.body).toBeTruthy()
           const data = response.body.data
@@ -230,162 +228,7 @@ describe('graphql', () => {
         }
       )
   })
-  it('graphql endpoint with mutation to add users', (done) => {
-    return request(authApplication)
-      .post('/api')
-      .send({
-        query: `mutation {
-          addUsers (name: "Francisco", email: "francisco@mail.com", id: 50) {
-            id
-            name
-            email
-            createdAt
-            updatedAt
-          }
-        }`,
-      })
-      .set('Accept', 'application/json').end(
-        (err, response) => {
-          if (err) {
-            return done(err)
-          }
-          expect(response.status).toBe(200)
-          expect(response.body).toBeTruthy()
-          const data = response.body.data
-          expect(data.addUsers).toBeTruthy()
-          expect(data.addUsers.id).toBeTruthy()
-          expect(data.addUsers.name).toBeTruthy()
-          expect(data.addUsers.email).toBeTruthy()
-          expect(data.addUsers.createdAt).toBeTruthy()
-          expect(data.addUsers.updatedAt).toBeTruthy()
-          return done()
-        }
-      )
-  })
-  it('graphql endpoint with mutation to add roles', (done) => {
-    return request(authApplication)
-      .post('/api')
-      .send({
-        query: `mutation {
-          addRoles(name:"test", id:30) {
-            id
-          }
-        }`,
-      })
-      .set('Accept', 'application/json').end(
-        (err, response) => {
-          if (err) {
-            return done(err)
-          }
-          expect(response.status).toBe(200)
-          expect(response.body).toBeTruthy()
-          const data = response.body.data
-          expect(data.addRoles).toBeTruthy()
-          expect(data.addRoles.id).toBeTruthy()
-          return done()
-        }
-      )
-  })
-  it('graphql endpoint with mutation to add many to many relations', (done) => {
-    return request(authApplication)
-      .post('/api')
-      .send({
-        query: `mutation {
-          addUsersroles(userId: 50, roleId: 30) {
-            userId
-            roleId
-          }
-        }`,
-      })
-      .set('Accept', 'application/json').end(
-        (err, response) => {
-          if (err) {
-            return done(err)
-          }
-          expect(response.status).toBe(200)
-          expect(response.body).toBeTruthy()
-          const data = response.body.data
-          expect(data.addUsersroles).toBeTruthy()
-          expect(data.addUsersroles.userId).toBeTruthy()
-          expect(data.addUsersroles.roleId).toBeTruthy()
-          return done()
-        }
-      )
-  })
-  it('graphql endpoint with mutation to update a row', (done) => {
-    return request(authApplication)
-      .post('/api')
-      .send({
-        query: `mutation {
-          updateUsers(id: 2, name: "Name from test") {
-            id
-            name
-          }
-        }`,
-      })
-      .set('Accept', 'application/json').end(
-        (err, response) => {
-          if (err) {
-            return done(err)
-          }
-          expect(response.status).toBe(200)
-          expect(response.body).toBeTruthy()
-          const data = response.body.data
-          expect(data.updateUsers).toBeTruthy()
-          expect(data.updateUsers.id).toBeTruthy()
-          expect(data.updateUsers.name).toEqual('Name from test')
-          return done()
-        }
-      )
-  })
-  it('graphql endpoint with mutation to delete a row', (done) => {
-    return request(authApplication)
-      .post('/api')
-      .send({
-        query: `mutation {
-          deleteRoles(id: 30) {
-            success
-          }
-          deleteUsers(id: 50) {
-            success
-          }
-        }`,
-      })
-      .set('Accept', 'application/json').end(
-        (err, response) => {
-          if (err) {
-            return done(err)
-          }
-          expect(response.status).toBe(200)
-          expect(response.body).toBeTruthy()
-          const data = response.body.data
-          expect(data.deleteRoles).toBeTruthy()
-          expect(data.deleteRoles.success).toBeTruthy()
-          return done()
-        }
-      )
-  })
-  it('graphql count query', (done) => {
-    return request(authApplication)
-      .post('/api')
-      .send({
-        query: `{
-         usersCount
-        }`,
-      })
-      .set('Accept', 'application/json').end(
-        (err, response) => {
-          if (err) {
-            return done(err)
-          }
-          expect(response.status).toBe(200)
-          expect(response.body).toBeTruthy()
-          const data = response.body.data
-          expect(data.usersCount).toBeTruthy()
-          return done()
-        }
-      )
-  })
+  
   it('graphql pagination', (done) => {
     return request(authApplication)
       .post('/api')

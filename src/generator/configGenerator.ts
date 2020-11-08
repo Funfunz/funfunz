@@ -20,6 +20,7 @@ const INPUT_TYPES: {
 function buildTableInfo(): ITableInfo {
   return {
     name: '',
+    connector: 'mysql',
     visible: true,
     roles: {
       create: ['all'],
@@ -154,12 +155,17 @@ export function generateSettings(
 
 export function generateConfig(answers: Record<string, string>, selectedPath: string): void {
   const finalConfig: IConfig = {
-    [answers.DBType]: {
-      host: answers.DBHost,
-      database: answers.DBName,
-      user: answers.DBUser || '',
-      password: answers.DBPassword || '',
-      port: answers.DBPort || '',
+    connectors: {
+      [answers.DBType]: {
+        type: answers.DBType as 'mysql',
+        config: {
+          host: answers.DBHost,
+          database: answers.DBName,
+          user: answers.DBUser || '',
+          password: answers.DBPassword || '',
+          port: answers.DBPort || '',
+        }
+      }
     },
     server: {
       port: 3004,

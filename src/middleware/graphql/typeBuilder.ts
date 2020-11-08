@@ -3,9 +3,9 @@ import config from '../utils/configLoader'
 import { IRelation, ITableInfo } from '../../generator/configurationTypes'
 import Debug from 'debug'
 import {
-  GraphQLBoolean,
   GraphQLFieldConfigMap,
   GraphQLID,
+  GraphQLInt,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
@@ -77,7 +77,7 @@ export function buildFields<TSource>(
           type: buildType(relatedTable),
           description: column.layout.label as string,
           resolve: resolver(relatedTable, table),
-          args: buildArgs(relatedTable, { pagination: false }),
+          args: buildArgs(relatedTable, { pagination: false, filter: true }),
         }
         result[column.name] = {
           type: GraphQLID,
@@ -108,7 +108,7 @@ export function buildFields<TSource>(
           type: new GraphQLList(buildType(relatedTable)),
           description: relatedTable.name,
           resolve: resolver(relatedTable, table),
-          args: buildArgs(relatedTable, { pagination: true }),
+          args: buildArgs(relatedTable, { pagination: true, filter: true }),
         }
       })
     }
@@ -126,7 +126,7 @@ export function buildFields<TSource>(
           type: new GraphQLList(buildType(remoteTable)),
           description: remoteTable.name,
           resolve: resolver(remoteTable, table),
-          args: buildArgs(remoteTable, { pagination: true }),
+          args: buildArgs(remoteTable, { pagination: true, filter: true }),
         }
       })
     }
@@ -155,8 +155,8 @@ export function buildDeleteMutationType(table: ITableInfo): GraphQLObjectType<un
     entitiesType[name] = new GraphQLObjectType({
       name,
       fields: () => ({
-        success: {
-          type: GraphQLBoolean,
+        deleted: {
+          type: GraphQLInt,
         },
       }),
     })

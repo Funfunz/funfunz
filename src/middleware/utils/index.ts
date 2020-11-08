@@ -1,5 +1,7 @@
 import config from '../utils/configLoader'
 import { IColumnInfo, ITableInfo } from '../../generator/configurationTypes'
+import { GraphQLResolveInfo } from 'graphql'
+import { parseResolveInfo, simplifyParsedResolveInfoFragmentWithType, ResolveTree } from 'graphql-parse-resolve-info'
 
 /**
  * returns the table configuration based on the table name
@@ -68,6 +70,18 @@ export function isNull(val: unknown): boolean {
   return val === '' || val === undefined || val === null
 }
 
+/**
+ * helper function to check value is a promise
+ * @param {any} val - a variable
+ *
+ * @returns {boolean} true or false if val is a nullable value
+ */
+
+export function isPromise<T>(value: unknown): value is Promise<T> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return typeof (value as any)?.then === 'function'
+}
+
 
 /**
  * Uppercase the first letter of a string
@@ -77,4 +91,32 @@ export function isNull(val: unknown): boolean {
  */
 export function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+export function getFields(
+  table: ITableInfo,
+  info: GraphQLResolveInfo
+): string[] {
+  const fields = [...(getPKs(table))]
+  const parsedResolveInfoFragment = parseResolveInfo(info)
+  if (parsedResolveInfoFragment) {
+    const {fields: columns} = simplifyParsedResolveInfoFragmentWithType(
+      parsedResolveInfoFragment as ResolveTree,
+      info.returnType
+    )
+    Object.keys(columns).forEach(
+      (columnName) => {
+        if (table.columns.find((c) => c.name === columnName)) {
+          fields.push(columnName)
+        }
+        const relation = table.relations && table.relations.find((r) => {
+          return r.remoteTable === columnName && r.type === 'n:1'
+        })
+        if (relation) {
+          fields.push(relation.foreignKey)
+        }
+      }
+    )
+  }
+  return [...new Set(fields)]
 }

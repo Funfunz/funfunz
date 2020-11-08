@@ -6,8 +6,8 @@ type IHookFunction = (
   res: express.Response,
   DB: knex,
   tableName: string,
-  data?: Record<string, unknown> | number
-) => Promise<Record<string, unknown>>
+  data?: unknown
+) => Promise<unknown>
 
 export interface IDatabaseData {
   schema: schemaInfo,
@@ -52,6 +52,7 @@ export type Hooks = 'getTableData'
 
 export interface ITableInfo {
   name: string,
+  connector: string,
   visible: boolean,
   relations?: IRelation[],
   roles: {
@@ -115,19 +116,24 @@ export interface IColumnInfo {
   },
 }
 
+export interface IConnector {
+    type: 'mysql' | 'pg' | 'redshift',
+    config: {
+      host: string,
+      database: string,
+      user: string,
+      password: string,
+      port: string,
+      dialect?: string,
+      log?: boolean
+    }
+}
+
 export interface IConfig {
   server: {
     port: string | number | false
   },
-  mysql?: {
-    host: string,
-    database: string,
-    user: string,
-    password: string,
-    port: string,
-    dialect?: string,
-    log?: boolean
-  }
+  connectors: Record<string, IConnector>
 }
 
 export type ISettings = ITableInfo[]
