@@ -6,6 +6,8 @@ import type { SQLDataConnector } from './SQLDataConnector'
 
 const debug = Debug('funfunz:dataConnector')
 
+export type DataConnector = SQLDataConnector
+
 export interface IQueryArgs {
   entityName: string,
   count?: boolean,
@@ -40,7 +42,7 @@ export interface IRemoveArgs {
   filter: IFilter
 }
 
-const connectors: Record<string, SQLDataConnector> = {} 
+const connectors: Record<string, DataConnector> = {} 
 
 export const initDatabases = (): void => {
   const configuration = config().config.connectors
