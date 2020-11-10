@@ -1,5 +1,13 @@
 # Funfunz Documentation
 
+[![Discord](https://img.shields.io/discord/774439225520554004?logo=discord)](https://discord.gg/HwZ7zMJKwg)
+[![Build Status][travis-badge]][travis]
+[![codecov][codecov-badge]][codecov]
+![node][node]
+[![npm version][npm-badge]][npm]
+[![PRs Welcome][prs-badge]][prs]
+[![GitHub][license-badge]][license]
+
 For the source code you can visit Github [funfunz](https://github.com/JWebCoder/funfunz).
 
 ## Overview
@@ -18,19 +26,23 @@ The goal is to generate a complete CMS/back-office/data manager application
 - Configurable Hooks on all the requests to change any data on the backend side
 - GraphQL generator
 
-## Installation
-
-**Global installation**
-
-```
-npm install -g funfunz
-```
-
-**Project installation**
-```
-npm install funfunz
-```
-
 ## CLI
 
 * `funfunz` - Runs the Wizard to setup the settings and configuration files needed to connect with a database.
+
+[travis-badge]: https://travis-ci.com/JWebCoder/funfunz.svg?branch=master
+[travis]: https://travis-ci.com/JWebCoder/funfunz
+
+[codecov-badge]: https://codecov.io/gh/JWebCoder/funfunz/branch/master/graph/badge.svg
+[codecov]: https://codecov.io/gh/JWebCoder/funfunz
+
+[node]: https://img.shields.io/node/v/funfunz.svg
+
+[npm-badge]: https://badge.fury.io/js/funfunz.svg
+[npm]: https://badge.fury.io/js/funfunz
+
+[prs-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg
+[prs]: http://makeapullrequest.com
+
+[license-badge]: https://img.shields.io/github/license/JWebCoder/funfunz.svg
+[license]: https://github.com/JWebCoder/funfunz/blob/master/LICENSE
