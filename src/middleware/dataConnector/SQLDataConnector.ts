@@ -1,15 +1,25 @@
-import { IConnector } from '../../generator/configurationTypes'
 import Knex from 'knex'
 import Debug from 'debug'
-import type { ICreateArgs, IQueryArgs, IRemoveArgs, IUpdateArgs } from './index'
 import { FilterValues, IFilter, OperatorsType } from '../utils/filter'
 import { getPKs, getTableConfig } from '../utils'
+import { DataConnector, IDataConnector, ICreateArgs, IQueryArgs, IRemoveArgs, IUpdateArgs } from '../../types/connector'
 
 const debug = Debug('funfunz:SQLDataConnector')
 
-export class SQLDataConnector {
+interface ISQLDataConnectorConfig {
+  host: string
+  database: string
+  user: string
+  password: string
+  port: string
+  dialect?: string
+  log?: boolean
+}
+
+export class SQLDataConnector extends DataConnector {
   public db: Knex
-  constructor(connector: IConnector) {
+  constructor(connector: IDataConnector<ISQLDataConnectorConfig>) {
+    super(connector)
     this.db = Knex({
       client: 'mysql2',
       connection: {

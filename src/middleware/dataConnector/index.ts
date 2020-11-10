@@ -1,46 +1,9 @@
 import config from '../utils/configLoader'
 import Debug from 'debug'
 import Knex from 'knex'
-import { IFilter } from '../utils/filter'
-import type { SQLDataConnector } from './SQLDataConnector'
+import { DataConnector, ICreateArgs, IQueryArgs, IRemoveArgs, IUpdateArgs } from '../../types/connector'
 
 const debug = Debug('funfunz:dataConnector')
-
-export type DataConnector = SQLDataConnector
-
-export interface IQueryArgs {
-  entityName: string,
-  count?: boolean,
-  fields?: string[],
-  filter?: IFilter,
-  skip?: number,
-  take?: number,
-  relation?: string,
-}
-
-export interface IUpdateArgs {
-  entityName: string,
-  count?: boolean,
-  fields?: string[],
-  filter: IFilter,
-  skip?: number,
-  take?: number,
-  data: Record<string, unknown>
-}
-
-export interface ICreateArgs {
-  entityName: string,
-  count?: boolean,
-  fields?: string[],
-  skip?: number,
-  take?: number,
-  data: Record<string, unknown>
-}
-
-export interface IRemoveArgs {
-  entityName: string,
-  filter: IFilter
-}
 
 const connectors: Record<string, DataConnector> = {} 
 
@@ -89,8 +52,14 @@ export const remove = (connectorName: string, args: IRemoveArgs): Promise<number
   return connectors[connectorName].remove(args)
 }
 
+export const connector = (connectorName: string): DataConnector => {
+  return connectors[connectorName]
+}
+
+// DEPRECATED!!!
 export const database = (connectorName: string): Knex=> {
-  return connectors[connectorName].db as Knex
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (connectors[connectorName] as any).db as Knex
 }
 
 
