@@ -15,67 +15,77 @@ export function resolver<TSource, TContext extends TUserContext>(
   return async (parent, rawargs, ctx, info) => {
     const { user, superUser } = ctx
     const { args, context } = await executeHook(table, 'query', 'beforeResolver', { args: rawargs, user })
-    return await requirementsCheck(table, 'read', user, superUser).then(
-      async () => {
-        const fields = getFields(table, info)
-        let filter = args.filter || undefined
-        let parentFilter: ParentFilterResult | undefined
-        if (parentTable) {
-          parentFilter = await getParentEntryFilter(table, parentTable, parent as unknown as Record<string, FilterValues>)
-          if (filter) {
-            filter = {
-              _and: [
-                filter,
-                parentFilter?.filter
-              ]
-            }
-          } else {
-            filter = parentFilter?.filter
-          }
+    await requirementsCheck(table, 'read', user, superUser)
+    const fields = getFields(table, info)
+    let filter = args.filter || undefined
+    let parentFilter: ParentFilterResult | undefined
+    if (parentTable) {
+      parentFilter = await getParentEntryFilter(table, parentTable, parent as unknown as Record<string, FilterValues>)
+      if (filter) {
+        filter = {
+          _and: [
+            filter,
+            parentFilter?.filter
+          ]
         }
-        const rawquery = {
-          entityName: table.name,
-          fields,
-          filter: filter as IFilter,
-          relation: parentFilter?.relation,
-          skip: args.skip as number,
-          take: args.take as number
-        }
-        const { query, context: newContext } = await executeHook(table, 'query', 'beforeSendQuery', { user, args, query: rawquery, context })
-        
-        const results = await sendQuery(table.connector, query as IQueryArgs)
-        
-        await executeHook(table, 'query', 'beforeSendQuery', {
-          user,
-          args,
-          query,
-          results,
-          context: newContext
-        })
-
-        return results
+      } else {
+        filter = parentFilter?.filter
       }
-    )
+    }
+    const rawquery = {
+      entityName: table.name,
+      fields,
+      filter: filter as IFilter,
+      relation: parentFilter?.relation,
+      skip: args.skip as number,
+      take: args.take as number
+    }
+    const { query, context: newContext } = await executeHook(table, 'query', 'beforeSendQuery', { user, args, query: rawquery, context })
+    
+    const results = await sendQuery(table.connector, query as IQueryArgs)
+    
+    const { results: modifiedResults } = await executeHook(table, 'query', 'afterQueryResult', {
+      user,
+      args,
+      query,
+      results,
+      context: newContext
+    })
+
+    return modifiedResults
   }
 }
 
 export function resolverCount<TSource, TContext extends TUserContext>(
   table: ITableInfo
 ): GraphQLFieldResolver<TSource, TContext> {
-  return (parent, args, context) => {
-    return requirementsCheck(table, 'read', context.user, context.superUser).then(
-      async () => {
-        return query(
-          table.connector,
-          {
-            entityName: table.name,
-            count: true,
-            filter: args.filter,
-            skip: args.skip,
-            take: args.take
-          }
-        )
-      }
-    )
+  return async (parent, rawargs, ctx) => {
+    const { user, superUser } = ctx
+
+    const { args, context } = await executeHook(table, 'count', 'beforeResolver', { args: rawargs, user })
+
+    await requirementsCheck(table, 'read', user, superUser)
+
+    const rawquery: IQueryArgs = {
+      entityName: table.name,
+      count: true,
+      filter: args.filter as IFilter,
+      skip: args.skip as number,
+      take: args.take as number
+    }
+
+    const { query, context: newContext } = await executeHook(table, 'count', 'beforeSendQuery', { user, args, query: rawquery, context })
+    
+    const results = await sendQuery(table.connector, query as IQueryArgs)
+    
+    const { results: modifiedResults } = await executeHook(table, 'count', 'afterQueryResult', {
+      user,
+      args,
+      query,
+      results,
+      context: newContext
+    })
+
+    return modifiedResults
   }
 }

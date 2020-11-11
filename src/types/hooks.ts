@@ -1,4 +1,4 @@
-import { IQueryArgs, DataConnector } from './connector'
+import { IQueryArgs, DataConnector, ICreateArgs, IRemoveArgs, IUpdateArgs } from './connector'
 import { ExecuteGraphQL } from './graphql'
 
 export type OperationTypes = 'all' | 'config' | 'count' | 'add' | 'query' | 'update' | 'delete'
@@ -13,7 +13,7 @@ export interface IHookProps<U, C> {
   connector: DataConnector
   user: U
   args: IArgs
-  query?: IQueryArgs
+  query?: IQueryArgs | IUpdateArgs | ICreateArgs | IRemoveArgs
   results?: unknown
   context?: C
 }
