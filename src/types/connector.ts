@@ -34,19 +34,12 @@ export interface IRemoveArgs {
   filter: IFilter
 }
 
-export interface IDataConnector<C> {
+export interface IDataConnector<C = unknown> {
     type: string,
     config: C
 }
 
 export abstract class DataConnector {
-  
-  private config: IDataConnector<unknown>['config']
-  
-  constructor(connector: IDataConnector<unknown>) {
-    this.config = connector.config
-  }
-
   public abstract query(args: IQueryArgs): Promise<unknown[] | unknown>
 
   public abstract update(args: IUpdateArgs): Promise<unknown[] | unknown>
@@ -54,4 +47,6 @@ export abstract class DataConnector {
   public abstract create(args: ICreateArgs): Promise<unknown[] | unknown>
 
   public abstract remove(args: IRemoveArgs): Promise<number>
+
+  public abstract connection: unknown
 }

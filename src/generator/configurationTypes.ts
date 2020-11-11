@@ -1,4 +1,5 @@
 import express from 'express'
+import { IDataConnector } from '../types/connector'
 
 type IHookFunction = (
   req: express.Request,
@@ -115,16 +116,11 @@ export interface IColumnInfo {
   },
 }
 
-export interface IConnector {
-    type: 'sql',
-    config: unknown
-}
-
 export interface IConfig {
   server: {
     port: string | number | false
   },
-  connectors: Record<string, IConnector>
+  connectors: Record<string, IDataConnector>
 }
 
 export type ISettings = ITableInfo[]

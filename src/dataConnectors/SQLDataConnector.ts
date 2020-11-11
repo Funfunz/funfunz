@@ -1,15 +1,14 @@
-import { IConnector } from '../generator/configurationTypes'
 import Knex from 'knex'
 import Debug from 'debug'
-import type { ICreateArgs, IQueryArgs, IRemoveArgs, IUpdateArgs, DataConnector } from '../types/connector'
+import type { ICreateArgs, IQueryArgs, IRemoveArgs, IUpdateArgs, DataConnector, IDataConnector } from '../types/connector'
 import { FilterValues, IFilter, OperatorsType } from '../middleware/utils/filter'
 import { getPKs, getTableConfig } from '../middleware/utils'
 
 const debug = Debug('funfunz:SQLDataConnector')
 
 export class SQLDataConnector implements DataConnector{
-  public db: Knex
-  constructor(connector: IConnector) {
+  public connection: Knex
+  constructor(connector: IDataConnector) {
     const client = (connector.config as Record<string, string>).client
     const connection = {
       ...connector.config as Record<string, unknown>
@@ -17,7 +16,7 @@ export class SQLDataConnector implements DataConnector{
     if (connection.client) {
       delete connection.client
     }
-    this.db = Knex({
+    this.connection = Knex({
       client: client,
       connection,
     })
@@ -31,7 +30,7 @@ export class SQLDataConnector implements DataConnector{
   }
 
   public query(args: IQueryArgs): Promise<Record<string, unknown>[] | Record<string, unknown> | number> {
-    const query = this.db(args.entityName)
+    const query = this.connection(args.entityName)
     if (args.fields) {
       query.select(args.fields)
     }
@@ -55,7 +54,7 @@ export class SQLDataConnector implements DataConnector{
   }
 
   public update(args: IUpdateArgs): Promise<Record<string, unknown>[] | Record<string, unknown> | number> {
-    const updateQuery = this.db(args.entityName)
+    const updateQuery = this.connection(args.entityName)
 
     if (args.filter) {
       this.applyQueryFilters(updateQuery, args.filter)
@@ -79,7 +78,7 @@ export class SQLDataConnector implements DataConnector{
   }
 
   public create(args: ICreateArgs): Promise<Record<string, unknown>[] | Record<string, unknown>> {
-    const createQuery = this.db(args.entityName)
+    const createQuery = this.connection(args.entityName)
     
     return createQuery.insert(args.data).then(
       (ids) => {
@@ -121,7 +120,7 @@ export class SQLDataConnector implements DataConnector{
   }
 
   public remove(args: IRemoveArgs): Promise<number> {
-    const removeQuery = this.db(args.entityName)
+    const removeQuery = this.connection(args.entityName)
 
     this.applyQueryFilters(removeQuery, args.filter)
 

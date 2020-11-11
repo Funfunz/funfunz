@@ -10,7 +10,7 @@ import { runHook } from '../utils/lifeCycle'
 import { normalize } from '../utils/data'
 import { update, create, remove } from '../dataConnector/index'
 import { buildArgs } from './argumentsBuilder'
-import { database } from '../dataConnector/index'
+import { connection } from '../dataConnector/index'
 
 const debug = Debug('funfunz:graphql-mutation-builder')
 
@@ -35,7 +35,7 @@ function buildUpdateByIdMutation(table: ITableInfo): GraphQLFieldConfig<unknown,
       return requirementsCheck(table, 'update', context.user).then(
         () => {
           const newData = normalize(args.data, table)
-          return runHook(table, 'updateRow', 'before', context.req, context.res, database(table.connector), newData)
+          return runHook(table, 'updateRow', 'before', context.req, context.res, connection(table.connector), newData)
         }
       ).then(
         (data) => {
@@ -55,7 +55,7 @@ function buildUpdateByIdMutation(table: ITableInfo): GraphQLFieldConfig<unknown,
         }
       ).then(
         (results) => {
-          return runHook(table, 'updateRow', 'after', context.req, context.res, database(table.connector), results)
+          return runHook(table, 'updateRow', 'after', context.req, context.res, connection(table.connector), results)
         }
       )
     },
@@ -73,7 +73,7 @@ function buildAddMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUserC
       return requirementsCheck(table, 'create', context.user).then(
         () => {
           const data = normalize(args.data, table, true)
-          return runHook(table, 'insertRow', 'before', context.req, context.res, database(table.connector), data)
+          return runHook(table, 'insertRow', 'before', context.req, context.res, connection(table.connector), data)
         }
       ).then(
         (data) => {
@@ -91,7 +91,7 @@ function buildAddMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUserC
         }
       ).then(
         (results) => {
-          return runHook(table, 'insertRow', 'after', context.req, context.res, database(table.connector), results)
+          return runHook(table, 'insertRow', 'after', context.req, context.res, connection(table.connector), results)
         }
       )
     },
@@ -108,7 +108,7 @@ function buildDeleteMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUs
     resolve: (parent, args, context) => {
       return requirementsCheck(table, 'create', context.user).then(
         () => {
-          return runHook(table, 'deleteRow', 'before', context.req, context.res, database(table.connector))
+          return runHook(table, 'deleteRow', 'before', context.req, context.res, connection(table.connector))
         }
       ).then(
         () => {
@@ -122,7 +122,7 @@ function buildDeleteMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUs
         }
       ).then(
         (results) => {
-          return runHook(table, 'deleteRow', 'after', context.req, context.res, database(table.connector), { deleted: results})
+          return runHook(table, 'deleteRow', 'after', context.req, context.res, connection(table.connector), { deleted: results})
         }
       ).then(
         (result) => {
