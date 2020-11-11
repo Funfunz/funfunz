@@ -1,8 +1,6 @@
 import config from '../utils/configLoader'
 import Debug from 'debug'
-import Knex from 'knex'
 import { IFilter } from '../utils/filter'
-import type { SQLDataConnector } from './SQLDataConnector'
 
 const debug = Debug('funfunz:dataConnector')
 
@@ -40,7 +38,17 @@ export interface IRemoveArgs {
   filter: IFilter
 }
 
-const connectors: Record<string, SQLDataConnector> = {} 
+type globaEntry = Record<string, unknown>
+
+export interface DataConnector {
+  query (args: IQueryArgs): Promise<globaEntry[] | globaEntry | number>
+  update: (args: IUpdateArgs) => Promise<globaEntry[] | globaEntry | number>
+  create: (args: ICreateArgs) => Promise<globaEntry[] | globaEntry>
+  remove: (args: IRemoveArgs) => Promise<number>
+  db: unknown
+}
+
+const connectors: Record<string, DataConnector> = {} 
 
 export const initDatabases = (): void => {
   const configuration = config().config.connectors
@@ -48,8 +56,8 @@ export const initDatabases = (): void => {
     ([key, value]) => {
       if (!connectors[key]) {
         switch (configuration[key].type) {
-        case 'mysql':
-          import('./SQLDataConnector').then(
+        case 'sql':
+          import('../../dataConnectors/SQLDataConnector').then(
             (module) => {
               connectors[key] = new module.SQLDataConnector(value)
             }
@@ -87,8 +95,8 @@ export const remove = (connectorName: string, args: IRemoveArgs): Promise<number
   return connectors[connectorName].remove(args)
 }
 
-export const database = (connectorName: string): Knex=> {
-  return connectors[connectorName].db as Knex
+export const database = (connectorName: string): unknown=> {
+  return connectors[connectorName].db
 }
 
 

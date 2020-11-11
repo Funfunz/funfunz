@@ -1,4 +1,3 @@
-import Knex from 'knex'
 import { IFunfunzRequest, IFunfunzResponse } from '../types'
 import { ITableInfo, Hooks } from '../../generator/configurationTypes'
 
@@ -8,7 +7,7 @@ export function runHook(
   instance: 'after' | 'before',
   req: IFunfunzRequest,
   res: IFunfunzResponse,
-  databaseInstance: Knex | null,
+  databaseInstance: unknown | null,
   results?: unknown
 ): Promise<unknown | undefined> {
   if (TABLE.hooks && TABLE.hooks[hook]) {
