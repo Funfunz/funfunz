@@ -1,31 +1,25 @@
+import { IConnector } from '../generator/configurationTypes'
 import Knex from 'knex'
 import Debug from 'debug'
-import { FilterValues, IFilter, OperatorsType } from '../utils/filter'
-import { getPKs, getTableConfig } from '../utils'
-import { DataConnector, IDataConnector, ICreateArgs, IQueryArgs, IRemoveArgs, IUpdateArgs } from '../../types/connector'
+import type { ICreateArgs, IQueryArgs, IRemoveArgs, IUpdateArgs, DataConnector } from '../types/connector'
+import { FilterValues, IFilter, OperatorsType } from '../middleware/utils/filter'
+import { getPKs, getTableConfig } from '../middleware/utils'
 
 const debug = Debug('funfunz:SQLDataConnector')
 
-interface ISQLDataConnectorConfig {
-  host: string
-  database: string
-  user: string
-  password: string
-  port: string
-  dialect?: string
-  log?: boolean
-}
-
-export class SQLDataConnector implements DataConnector {
+export class SQLDataConnector implements DataConnector{
   public db: Knex
-  constructor(connector: IDataConnector<ISQLDataConnectorConfig>) {
-    super(connector)
+  constructor(connector: IConnector) {
+    const client = (connector.config as Record<string, string>).client
+    const connection = {
+      ...connector.config as Record<string, unknown>
+    }
+    if (connection.client) {
+      delete connection.client
+    }
     this.db = Knex({
-      client: 'mysql2',
-      connection: {
-        dateStrings: true,
-        ...connector.config,
-      },
+      client: client,
+      connection,
     })
     debug('Start')
     Object.keys(connector).forEach(
@@ -36,7 +30,7 @@ export class SQLDataConnector implements DataConnector {
     debug('End')
   }
 
-  public query(args: IQueryArgs): Promise<unknown[] | unknown> {
+  public query(args: IQueryArgs): Promise<Record<string, unknown>[] | Record<string, unknown> | number> {
     const query = this.db(args.entityName)
     if (args.fields) {
       query.select(args.fields)
@@ -51,16 +45,16 @@ export class SQLDataConnector implements DataConnector {
       query.count('*', {as: 'count'})
     }
     return query.then(
-      (results: Record<string, unknown>[]) => {
+      (results) => {
         if (args.count) {
-          return results[0].count || 0
+          return (results[0].count as number) || 0
         }
         return args.relation === 'N1' ? results[0] : results
       }
     )
   }
 
-  public update(args: IUpdateArgs): Promise<unknown[] | unknown> {
+  public update(args: IUpdateArgs): Promise<Record<string, unknown>[] | Record<string, unknown> | number> {
     const updateQuery = this.db(args.entityName)
 
     if (args.filter) {
@@ -77,14 +71,14 @@ export class SQLDataConnector implements DataConnector {
             if (Array.isArray(results) && results.length) {
               return results[0]
             }
-            return undefined
+            return []
           }
         )
       }
     )
   }
 
-  public create(args: ICreateArgs): Promise<unknown[] | unknown> {
+  public create(args: ICreateArgs): Promise<Record<string, unknown>[] | Record<string, unknown>> {
     const createQuery = this.db(args.entityName)
     
     return createQuery.insert(args.data).then(
@@ -119,7 +113,7 @@ export class SQLDataConnector implements DataConnector {
             if (Array.isArray(results) && results.length) {
               return results[0]
             }
-            return undefined
+            return []
           }
         )
       }

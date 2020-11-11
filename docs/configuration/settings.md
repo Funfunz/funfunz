@@ -5,6 +5,7 @@
 ```typescript
 {
   name: string, // sql table name
+  connector: string, // name of the connector defined on the config file
   visible: boolean, // if this table is visible in the API
   relations: [
     {

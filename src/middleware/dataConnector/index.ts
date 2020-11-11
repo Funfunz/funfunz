@@ -1,9 +1,52 @@
 import config from '../utils/configLoader'
 import Debug from 'debug'
-import Knex from 'knex'
-import { DataConnector, ICreateArgs, IQueryArgs, IRemoveArgs, IUpdateArgs } from '../../types/connector'
+import { IFilter } from '../utils/filter'
 
 const debug = Debug('funfunz:dataConnector')
+
+export interface IQueryArgs {
+  entityName: string,
+  count?: boolean,
+  fields?: string[],
+  filter?: IFilter,
+  skip?: number,
+  take?: number,
+  relation?: string,
+}
+
+export interface IUpdateArgs {
+  entityName: string,
+  count?: boolean,
+  fields?: string[],
+  filter: IFilter,
+  skip?: number,
+  take?: number,
+  data: Record<string, unknown>
+}
+
+export interface ICreateArgs {
+  entityName: string,
+  count?: boolean,
+  fields?: string[],
+  skip?: number,
+  take?: number,
+  data: Record<string, unknown>
+}
+
+export interface IRemoveArgs {
+  entityName: string,
+  filter: IFilter
+}
+
+type globaEntry = Record<string, unknown>
+
+export interface DataConnector {
+  query (args: IQueryArgs): Promise<globaEntry[] | globaEntry | number>
+  update: (args: IUpdateArgs) => Promise<globaEntry[] | globaEntry | number>
+  create: (args: ICreateArgs) => Promise<globaEntry[] | globaEntry>
+  remove: (args: IRemoveArgs) => Promise<number>
+  db: unknown
+}
 
 const connectors: Record<string, DataConnector> = {} 
 
@@ -13,8 +56,8 @@ export const initDatabases = (): void => {
     ([key, value]) => {
       if (!connectors[key]) {
         switch (configuration[key].type) {
-        case 'mysql':
-          import('./SQLDataConnector').then(
+        case 'sql':
+          import('../../dataConnectors/SQLDataConnector').then(
             (module) => {
               connectors[key] = new module.SQLDataConnector(value)
             }
@@ -57,15 +100,6 @@ export const connector = (connectorName: string): DataConnector => {
 }
 
 // DEPRECATED!!!
-export const database = (connectorName: string): Knex=> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (connectors[connectorName] as any).db as Knex
+export const database = (connectorName: string): unknown=> {
+  return connectors[connectorName].db
 }
-
-
-/*
-type IQuery = any; type IResults = any; type IResult = any;
-type InitFunction = (config: any) => Promise<void>
-type QueryFunction = (args: IQuery) => Promise<IResults>
-type UpdateFunction = (args: IQuery) => Promise<IResult>
-type DeleteFunction = (args: IQuery) => Promise<void>*/

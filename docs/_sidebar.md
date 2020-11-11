@@ -2,7 +2,8 @@
 - Usage
   - [Quickstart](usage/quickstart.md)
   - [Plugin](usage/middleware.md)
-  - [Standalone](usage/standalone.md)
+  - [Template](usage/template.md)
+  - [Data connectors](usage/dataConnectors.md)
   - [Filters](usage/filters.md)
 - Configuration
   - [Config](configuration/config.md)

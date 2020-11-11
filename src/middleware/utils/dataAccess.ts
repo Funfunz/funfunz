@@ -47,7 +47,7 @@ export function hasAuthorization(
  * @param {IUser | undefined} user - the express session user of none for unauthenticated users
  * @param {Database} dbInstance - the database instance
  *
- * @returns {Promise<Knex>} the database connector
+ * @returns {Promise<boolean>} the database connector
  */
 export function requirementsCheck(
   tableConfig: ITableInfo,
