@@ -16,7 +16,7 @@ interface ISQLDataConnectorConfig {
   log?: boolean
 }
 
-export class SQLDataConnector extends DataConnector {
+export class SQLDataConnector implements DataConnector {
   public db: Knex
   constructor(connector: IDataConnector<ISQLDataConnectorConfig>) {
     super(connector)

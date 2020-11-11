@@ -40,10 +40,9 @@ export interface IDataConnector<C> {
 }
 
 export abstract class DataConnector {
-  private type: string
   
-  constructor(connector: IDataConnector<unknown>) {
-    this.type = connector.type
+  abstract constructor(connector: IDataConnector<unknown>) {
+    
   }
 
   public abstract query(args: IQueryArgs): Promise<unknown[] | unknown>
