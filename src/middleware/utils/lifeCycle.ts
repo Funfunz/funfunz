@@ -1,5 +1,30 @@
 import { IFunfunzRequest, IFunfunzResponse } from '../types'
 import { ITableInfo, Hooks } from '../../generator/configurationTypes'
+import { HookTypes, IHookProps, ITableHooks, OperationTypes } from '../../types/hooks'
+import { globalGraph } from '../routes'
+import { connector } from '../dataConnector'
+
+export async function executeHook(
+  table: ITableInfo,
+  operationType: OperationTypes,
+  hookType: HookTypes,
+  props: Partial<IHookProps<unknown, unknown>>,
+): Promise<IHookProps<unknown, unknown>> {
+  const fullprops: IHookProps<unknown, unknown> = {
+    ...props as IHookProps<unknown, unknown>,
+    graph: globalGraph,
+    connector: connector(table.connector)
+  }
+  const operationHooks = (table.hooks as ITableHooks<unknown, unknown>)[operationType]
+  if (!operationHooks) {
+    return fullprops
+  }
+  const func = operationHooks[hookType]
+  if (!func) {
+    return fullprops
+  }
+  return await func(fullprops)
+}
 
 export function runHook(
   TABLE: ITableInfo,

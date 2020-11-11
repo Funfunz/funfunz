@@ -1,17 +1,21 @@
-import { query } from '../dataConnector/index'
+import { query as sendQuery } from '../dataConnector/index'
 import { getFields } from '../utils/index'
 import { ITableInfo } from '../../generator/configurationTypes'
 import { GraphQLFieldResolver } from 'graphql'
 import { TUserContext } from './schema'
 import { requirementsCheck } from '../utils/dataAccess'
-import { getParentEntryFilter, FilterValues, ParentFilterResult } from '../utils/filter'
+import { getParentEntryFilter, FilterValues, ParentFilterResult, IFilter } from '../utils/filter'
+import { executeHook } from '../utils/lifeCycle'
+import { IQueryArgs } from '../../types/connector'
 
 export function resolver<TSource, TContext extends TUserContext>(
   table: ITableInfo,
   parentTable?: ITableInfo
 ): GraphQLFieldResolver<TSource, TContext> {
-  return (parent, args, context, info) => {
-    return requirementsCheck(table, 'read', context.user, context.superUser).then(
+  return async (parent, rawargs, ctx, info) => {
+    const { user, superUser } = ctx
+    const { args, context } = await executeHook(table, 'query', 'beforeResolver', { args: rawargs, user })
+    return await requirementsCheck(table, 'read', user, superUser).then(
       async () => {
         const fields = getFields(table, info)
         let filter = args.filter || undefined
@@ -29,17 +33,27 @@ export function resolver<TSource, TContext extends TUserContext>(
             filter = parentFilter?.filter
           }
         }
-        return query(
-          table.connector,
-          {
-            entityName: table.name,
-            fields,
-            filter,
-            relation: parentFilter?.relation,
-            skip: args.skip,
-            take: args.take
-          }
-        )
+        const rawquery = {
+          entityName: table.name,
+          fields,
+          filter: filter as IFilter,
+          relation: parentFilter?.relation,
+          skip: args.skip as number,
+          take: args.take as number
+        }
+        const { query, context: newContext } = await executeHook(table, 'query', 'beforeSendQuery', { user, args, query: rawquery, context })
+        
+        const results = await sendQuery(table.connector, query as IQueryArgs)
+        
+        await executeHook(table, 'query', 'beforeSendQuery', {
+          user,
+          args,
+          query,
+          results,
+          context: newContext
+        })
+
+        return results
       }
     )
   }

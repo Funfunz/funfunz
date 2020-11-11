@@ -1,8 +1,8 @@
-import { ExecutionResult } from 'graphql'
 import { IQueryArgs, DataConnector } from './connector'
 import { ExecuteGraphQL } from './graphql'
 
-export type HookTypes = 'all' | 'config' | 'count' | 'add' | 'query' | 'update' | 'delete'
+export type OperationTypes = 'all' | 'config' | 'count' | 'add' | 'query' | 'update' | 'delete'
+export type HookTypes = 'beforeResolver' | 'beforeSendQuery' | 'afterQueryResult' | 'afterResultSent'
 
 export interface IArgs {
   [key: string]: unknown
@@ -14,17 +14,14 @@ export interface IHookProps<U, C> {
   user: U
   args: IArgs
   query?: IQueryArgs
-  results?: ExecutionResult
+  results?: unknown
   context?: C
 }
 
 export type HookFunction<U, C> = (props: IHookProps<U, C>) => Promise<IHookProps<U, C>>
 
 export type ITableHooks<U, C> = {
-  [key in HookTypes]?: {
-    beforeResolver?: HookFunction<U, C>
-    beforeSendQuery?: HookFunction<U, C>
-    afterQueryResult?: HookFunction<U, C>
-    afterResultSent?: HookFunction<U, C>
+  [key in OperationTypes]?: {
+    [key in HookTypes]?: HookFunction<U, C>
   }
 }
