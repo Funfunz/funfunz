@@ -1,10 +1,9 @@
 import express from 'express'
-import knex from 'knex'
 
 type IHookFunction = (
   req: express.Request,
   res: express.Response,
-  DB: knex,
+  DB: unknown,
   tableName: string,
   data?: unknown
 ) => Promise<unknown>
@@ -117,16 +116,8 @@ export interface IColumnInfo {
 }
 
 export interface IConnector {
-    type: 'mysql' | 'pg' | 'redshift',
-    config: {
-      host: string,
-      database: string,
-      user: string,
-      password: string,
-      port: string,
-      dialect?: string,
-      log?: boolean
-    }
+    type: 'sql',
+    config: unknown
 }
 
 export interface IConfig {

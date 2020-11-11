@@ -3,8 +3,9 @@ import { IConfig } from "../../generator/configurationTypes"
 const config: IConfig = {
   connectors: {
     mainDatabase: {
-      type: "mysql",
+      type: "sql",
       config: {
+        client: 'mysql2',
         host: "127.0.0.1",
         database: "test_db",
         user: "root",
