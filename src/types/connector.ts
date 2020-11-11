@@ -41,8 +41,10 @@ export interface IDataConnector<C> {
 
 export abstract class DataConnector {
   
-  abstract constructor(connector: IDataConnector<unknown>) {
-    
+  private config: IDataConnector<unknown>['config']
+  
+  constructor(connector: IDataConnector<unknown>) {
+    this.config = connector.config
   }
 
   public abstract query(args: IQueryArgs): Promise<unknown[] | unknown>
