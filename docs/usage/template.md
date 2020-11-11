@@ -1,4 +1,4 @@
-# Standalone
+# Template application
 
 ## Usage
 

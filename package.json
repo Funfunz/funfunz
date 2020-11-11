@@ -16,7 +16,6 @@
     "clean": "rm -rf lib && mkdir lib",
     "build": "npm run lint && npm run clean && npm run build:js",
     "build:js": "tsc --project tsconfig.build.json",
-    "start": "NODE_ENV=production node ./lib/index.js",
     "prepublishOnly": "npm run build",
     "docker-compose:up": "docker-compose up -d",
     "docker-compose:down": "docker-compose down --remove-orphans",
@@ -65,6 +64,7 @@
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "enquirer": "^2.3.6",
     "express": "^4.17.1",
     "express-graphql": "^0.11.0",
     "graphql": "^15.3.0",
