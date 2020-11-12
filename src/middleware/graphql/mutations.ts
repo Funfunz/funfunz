@@ -118,7 +118,9 @@ function buildDeleteMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUs
         filter: args.filter as IFilter
       }
       const { query, context: newContext } = await executeHook(table, 'delete', 'beforeSendQuery', { user, args, query: rawquery, context })
-      const results = await remove(table.connector, query as IRemoveArgs)
+
+      const deleted = await remove(table.connector, query as IRemoveArgs)
+      const results = { deleted }
 
       const { results: modifiedResults } = await executeHook(table, 'delete', 'afterQueryResult', {
         user,

@@ -15,11 +15,7 @@ export async function executeHook(
     graph: globalGraph,
     connector: connector(table.connector)
   }
-  const operationHooks = (table.hooks as ITableHooks<unknown, unknown>)[operationType]
-  if (!operationHooks) {
-    return fullprops
-  }
-  const func = operationHooks[hookType]
+  const func = table.hooks?.[operationType]?.[hookType]
   if (!func) {
     return fullprops
   }
