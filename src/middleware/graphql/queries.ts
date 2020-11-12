@@ -5,7 +5,7 @@ import config from '../utils/configLoader'
 import { ITableInfo } from '../../generator/configurationTypes'
 import Debug from 'debug'
 import GraphQLJSON from 'graphql-type-json'
-import { GraphQLFieldConfig, GraphQLFieldConfigArgumentMap, GraphQLFieldConfigMap, GraphQLInt, GraphQLList, GraphQLObjectType, GraphQLString, Thunk } from 'graphql'
+import { GraphQLFieldConfig, GraphQLFieldConfigMap, GraphQLInt, GraphQLList, GraphQLObjectType, Thunk } from 'graphql'
 import pluralize from 'pluralize'
 import { TUserContext } from './schema'
 import { buildArgs } from './argumentsBuilder'
@@ -45,7 +45,7 @@ function buildCount(table: ITableInfo) {
     type: GraphQLInt,
     description: `This will return the ${pluralize(table.name)} count.`,
     resolve: resolverCount(table),
-    args: buildArgs(table, { pagination: false,  filter: true }) as GraphQLFieldConfigArgumentMap,
+    args: buildArgs(table, { pagination: false,  filter: true }),
   }
   debug(`Created ${table.name} count`)
   return query
@@ -84,19 +84,26 @@ function buildConfig(tables: ITableInfo[]) {
 }
 
 function buildEntities(tables: ITableInfo[]) {
-  debug('Creating entities query')
-
-  const entityNames = tables.filter(
-    (table) => table.visible
-  ).map(
-    (table) => {
-      return table.name
-    }
-  )
-
+  
   const query: GraphQLFieldConfig<unknown, TUserContext> = {
-    type: new GraphQLList(GraphQLString),
-    resolve: () => {
+    type: new GraphQLList(GraphQLJSON),
+    resolve: (parent, args, context) => {
+      let userRoles = [{
+        name: 'unauthenticated'
+      }]
+      if (context.user?.roles) {
+        userRoles = context.user.roles
+      }
+      const entityNames = tables.filter(
+        (table) => {
+          const hasAccess = table.roles.read.includes('all') || userRoles.find(
+            (role) => {
+              table.roles.read.includes(role.name)
+            }
+          )
+          return table.visible && hasAccess
+        }
+      )
       return entityNames
     },
     description: 'This will return list of entities.',
