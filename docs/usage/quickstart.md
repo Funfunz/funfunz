@@ -11,6 +11,12 @@ npm i funfunz
 
 ## Generate configurations
 
+**npx**
+```
+npx funfunz
+```
+
+**local instalation**
 ```
 node_modules/.bin/funfunz
 ```
