@@ -1,6 +1,5 @@
-import { IFunfunzRequest, IFunfunzResponse } from '../types'
-import { ITableInfo, Hooks } from '../../generator/configurationTypes'
-import { HookTypes, IHookProps, ITableHooks, OperationTypes } from '../../types/hooks'
+import { ITableInfo } from '../../generator/configurationTypes'
+import { HookTypes, IHookProps, OperationTypes } from '../../types/hooks'
 import { globalGraph } from '../routes'
 import { connector } from '../dataConnector'
 
@@ -20,25 +19,4 @@ export async function executeHook(
     return fullprops
   }
   return await func(fullprops)
-}
-
-export function runHook(
-  TABLE: ITableInfo,
-  hook: Hooks,
-  instance: 'after' | 'before',
-  req: IFunfunzRequest,
-  res: IFunfunzResponse,
-  databaseInstance: unknown | null,
-  results?: unknown
-): Promise<unknown | undefined> {
-  if (TABLE.hooks && TABLE.hooks[hook]) {
-    const HOOK = TABLE.hooks[hook]
-    if (databaseInstance && HOOK && HOOK[instance]) {
-      const CALLER  = HOOK[instance]
-      return CALLER
-        ? CALLER(req, res, databaseInstance, TABLE.name, results)
-        : Promise.resolve(results)
-    }
-  }
-  return Promise.resolve(results)
 }

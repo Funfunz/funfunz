@@ -20,8 +20,8 @@ export interface IHookProps<U, C> {
 
 export type HookFunction<U, C> = (props: IHookProps<U, C>) => Promise<IHookProps<U, C>>
 
-export type ITableHooks<U, C> = {
+export type ITableHooks = {
   [key in OperationTypes]?: {
-    [key in HookTypes]?: HookFunction<U, C>
+    [key in HookTypes]?: HookFunction<unknown, unknown>
   }
 }
