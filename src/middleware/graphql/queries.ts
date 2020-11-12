@@ -4,8 +4,8 @@ import { buildType } from './typeBuilder'
 import config from '../utils/configLoader'
 import { ITableInfo } from '../../generator/configurationTypes'
 import Debug from 'debug'
-import GraphQLJSON from 'graphql-type-json'
-import { GraphQLFieldConfig, GraphQLFieldConfigMap, GraphQLInt, GraphQLList, GraphQLObjectType, Thunk } from 'graphql'
+import GraphQLJSON, { GraphQLJSONObject } from 'graphql-type-json'
+import { GraphQLBoolean, GraphQLFieldConfig, GraphQLFieldConfigMap, GraphQLInt, GraphQLList, GraphQLObjectType, GraphQLString, Thunk } from 'graphql'
 import pluralize from 'pluralize'
 import { TUserContext } from './schema'
 import { buildArgs } from './argumentsBuilder'
@@ -86,7 +86,86 @@ function buildConfig(tables: ITableInfo[]) {
 function buildEntities(tables: ITableInfo[]) {
   
   const query: GraphQLFieldConfig<unknown, TUserContext> = {
-    type: new GraphQLList(GraphQLJSON),
+    type: new GraphQLList(new GraphQLObjectType({
+      name: 'tableConfig',
+      fields: {
+        name: {
+          type: GraphQLString,
+          description: 'Name of the entity'
+        },
+        connector: {
+          type: GraphQLString,
+          description: 'Type of connector'
+        },
+        relations: {
+          description: 'Relation list',
+          type: new GraphQLList(
+            new GraphQLObjectType({
+              name: 'tableConfigRelations',
+              fields: {
+                type: {
+                  type: GraphQLString,
+                  description: 'Type of relation'
+                },
+                foreignKey: {
+                  type: GraphQLString,
+                  description: 'Name of the foreignKey'
+                },
+                remoteTable: {
+                  type: GraphQLString,
+                  description: 'Name of target entity'
+                },
+              }
+            })
+          ),
+        },
+        columns: {
+          description: 'Property list',
+          type: new GraphQLList(
+            new GraphQLObjectType({
+              name: 'propertyConfig',
+              fields: {
+                name: {
+                  type: GraphQLString,
+                  description: 'Name of the property'
+                },
+                model: {
+                  description: 'Property model',
+                  type: new GraphQLObjectType({
+                    name: 'columnModel',
+                    fields: {
+                      type: {
+                        type: GraphQLString,
+                        description: 'Type of property'
+                      },
+                      allowNull: {
+                        type: GraphQLBoolean,
+                        description: 'Allows null values'
+                      },
+                      isPk: {
+                        type: GraphQLBoolean,
+                        description: 'Is a primary key'
+                      }
+                    }
+                  }),
+                },
+                layout: {
+                  type: GraphQLJSONObject
+                }
+              }
+            })
+          ),
+        },
+        layout: {
+          type: GraphQLJSONObject
+        }
+      }
+    })),
+    args: {
+      name: {
+        type: GraphQLString
+      }
+    },
     resolve: (parent, args, context) => {
       let userRoles = [{
         name: 'unauthenticated'
@@ -94,8 +173,12 @@ function buildEntities(tables: ITableInfo[]) {
       if (context.user?.roles) {
         userRoles = context.user.roles
       }
+      const requestedEntity = args.name
       const entityNames = tables.filter(
         (table) => {
+          if (requestedEntity && requestedEntity !== table.name) {
+            return false
+          }
           const hasAccess = table.roles.read.includes('all') || userRoles.find(
             (role) => {
               table.roles.read.includes(role.name)
