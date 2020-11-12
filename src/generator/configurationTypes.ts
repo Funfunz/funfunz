@@ -1,12 +1,5 @@
-import express from 'express'
-
-type IHookFunction = (
-  req: express.Request,
-  res: express.Response,
-  DB: unknown,
-  tableName: string,
-  data?: unknown
-) => Promise<unknown>
+import { IDataConnector } from '../types/connector'
+import { ITableHooks } from '../types/hooks'
 
 export interface IDatabaseData {
   schema: schemaInfo,
@@ -61,12 +54,7 @@ export interface ITableInfo {
     delete: string[],
   },
   columns: IColumnInfo[],
-  hooks?: {
-    [key in Hooks]?: {
-      before?: IHookFunction,
-      after?: IHookFunction,
-    }
-  },
+  hooks?: ITableHooks,
   layout: Record<string, unknown>,
 }
 
@@ -115,16 +103,11 @@ export interface IColumnInfo {
   },
 }
 
-export interface IConnector {
-    type: 'sql',
-    config: unknown
-}
-
 export interface IConfig {
   server: {
     port: string | number | false
   },
-  connectors: Record<string, IConnector>
+  connectors: Record<string, IDataConnector>
 }
 
 export type ISettings = ITableInfo[]

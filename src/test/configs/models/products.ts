@@ -1,3 +1,5 @@
+import { IHookProps } from "../../../types/hooks"
+
 export default {
   'name': 'products',
   'connector': 'mainDatabase',
@@ -186,6 +188,14 @@ export default {
     'deleteButton': {},
     'editPage': {
       'sections': []
+    }
+  },
+  'hooks': {
+    count: {
+      async beforeResolver(props: IHookProps<unknown, unknown>) {
+        props.args.filter =  { id: { _eq: 1 }}
+        return props
+      }
     }
   },
   'relations': [

@@ -6,11 +6,13 @@ import { GraphQLFieldConfig, GraphQLFieldConfigMap, Thunk } from 'graphql'
 import { capitalize, getFields } from '../utils/index'
 import { TUserContext } from './schema'
 import { requirementsCheck } from '../utils/dataAccess'
-import { runHook } from '../utils/lifeCycle'
+import { executeHook, runHook } from '../utils/lifeCycle'
 import { normalize } from '../utils/data'
 import { update, create, remove } from '../dataConnector/index'
 import { buildArgs } from './argumentsBuilder'
-import { database } from '../dataConnector/index'
+import { connection } from '../dataConnector/index'
+import { ICreateArgs, IQueryArgs, IRemoveArgs, IUpdateArgs } from '../../types/connector'
+import { IFilter } from '../utils/filter'
 
 const debug = Debug('funfunz:graphql-mutation-builder')
 
@@ -31,34 +33,34 @@ function buildUpdateByIdMutation(table: ITableInfo): GraphQLFieldConfig<unknown,
   const mutation: GraphQLFieldConfig<unknown, TUserContext>  = {
     type: buildType(table, { relations: true }),
     args: buildArgs(table, { pagination: true, data: true, filter: true }),
-    resolve: (parent, args, context, info) => {
-      return requirementsCheck(table, 'update', context.user).then(
-        () => {
-          const newData = normalize(args.data, table)
-          return runHook(table, 'updateRow', 'before', context.req, context.res, database(table.connector), newData)
-        }
-      ).then(
-        (data) => {
-          const fields = getFields(table, info)
-          const filter = args.filter || undefined
-          return update(
-            table.connector,
-            {
-              entityName: table.name,
-              fields,
-              filter,
-              data: data as Record<string, unknown>,
-              skip: args.skip,
-              take: args.take
-            }
-          )
-        }
-      ).then(
-        (results) => {
-          return runHook(table, 'updateRow', 'after', context.req, context.res, database(table.connector), results)
-        }
-      )
-    },
+    resolve: async (parent, rawargs, ctx, info) => {
+      const { user } = ctx
+      const { args, context } = await executeHook(table, 'update', 'beforeResolver', { args: rawargs, user })
+      await requirementsCheck(table, 'update', user)
+      const data = normalize(args.data as Record<string, unknown>, table)
+      const fields = getFields(table, info)
+      const filter = args.filter || undefined
+      const rawquery = {
+        entityName: table.name,
+        fields,
+        filter: filter as IFilter,
+        data: data as Record<string, unknown>,
+        skip: args.skip,
+        take: args.take
+      }
+      const { query, context: newContext } = await executeHook(table, 'update', 'beforeSendQuery', { user, args, query: rawquery, context })
+      
+      const results = await update(table.connector, query as IUpdateArgs)
+      
+      const { results: modifiedResults } = await executeHook(table, 'update', 'afterQueryResult', {
+        user,
+        args,
+        query,
+        results,
+        context: newContext
+      })
+      return modifiedResults
+    }
   }
   debug(`Created ${table.name} add mutation`)
   return mutation
@@ -69,32 +71,34 @@ function buildAddMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUserC
   const mutation: GraphQLFieldConfig<unknown, TUserContext>  = {
     type: buildType(table),
     args: buildArgs(table, { data: true }),
-    resolve: (parent, args, context, info) => {
-      return requirementsCheck(table, 'create', context.user).then(
-        () => {
-          const data = normalize(args.data, table, true)
-          return runHook(table, 'insertRow', 'before', context.req, context.res, database(table.connector), data)
-        }
-      ).then(
-        (data) => {
-          const fields = getFields(table, info)
-          return create(
-            table.connector,
-            {
-              entityName: table.name,
-              fields,
-              data: data as Record<string, unknown>,
-              skip: args.skip,
-              take: args.take
-            }
-          )
-        }
-      ).then(
-        (results) => {
-          return runHook(table, 'insertRow', 'after', context.req, context.res, database(table.connector), results)
-        }
-      )
-    },
+    resolve: async (parent, rawargs, ctx, info) => {
+      const { user } = ctx
+      const { args, context } = await executeHook(table, 'add', 'beforeResolver', { args: rawargs, user })
+      await requirementsCheck(table, 'create', user)
+      const data = normalize(args.data as Record<string, unknown>, table, true)
+      const fields = getFields(table, info)
+
+      const rawquery = {
+        entityName: table.name,
+        fields,
+        data: data as Record<string, unknown>,
+        skip: args.skip as number,
+        take: args.take as number
+      }
+
+      const { query, context: newContext } = await executeHook(table, 'add', 'beforeSendQuery', { user, args, query: rawquery, context })
+    
+      const results = await create(table.connector, query as ICreateArgs)
+      
+      const { results: modifiedResults } = await executeHook(table, 'add', 'afterQueryResult', {
+        user,
+        args,
+        query,
+        results,
+        context: newContext
+      })
+      return modifiedResults
+    }
   }
   debug(`Created ${table.name} add mutation`)
   return mutation
@@ -105,30 +109,27 @@ function buildDeleteMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUs
   const mutation: GraphQLFieldConfig<unknown, TUserContext>  = {
     type: buildDeleteMutationType(table),
     args: buildArgs(table, { filter: true }),
-    resolve: (parent, args, context) => {
-      return requirementsCheck(table, 'create', context.user).then(
-        () => {
-          return runHook(table, 'deleteRow', 'before', context.req, context.res, database(table.connector))
-        }
-      ).then(
-        () => {
-          return remove(
-            table.connector,
-            {
-              entityName: table.name,
-              filter: args.filter
-            }
-          )
-        }
-      ).then(
-        (results) => {
-          return runHook(table, 'deleteRow', 'after', context.req, context.res, database(table.connector), { deleted: results})
-        }
-      ).then(
-        (result) => {
-          return result
-        }
-      )
+    resolve: async (parent, rawargs, ctx) => {
+      const { user } = ctx
+      const { args, context } = await executeHook(table, 'delete', 'beforeResolver', { args: rawargs, user })
+      await requirementsCheck(table, 'create', user)
+      const rawquery: IRemoveArgs = {
+        entityName: table.name,
+        filter: args.filter as IFilter
+      }
+      const { query, context: newContext } = await executeHook(table, 'delete', 'beforeSendQuery', { user, args, query: rawquery, context })
+
+      const deleted = await remove(table.connector, query as IRemoveArgs)
+      const results = { deleted }
+
+      const { results: modifiedResults } = await executeHook(table, 'delete', 'afterQueryResult', {
+        user,
+        args,
+        query,
+        results,
+        context: newContext
+      })
+      return modifiedResults
     },
   }
   debug(`Created ${table.name} delete mutation`)

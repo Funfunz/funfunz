@@ -1,23 +1,22 @@
-import { IFunfunzRequest, IFunfunzResponse } from '../types'
-import { ITableInfo, Hooks } from '../../generator/configurationTypes'
+import { ITableInfo } from '../../generator/configurationTypes'
+import { HookTypes, IHookProps, OperationTypes } from '../../types/hooks'
+import { globalGraph } from '../routes'
+import { connector } from '../dataConnector'
 
-export function runHook(
-  TABLE: ITableInfo,
-  hook: Hooks,
-  instance: 'after' | 'before',
-  req: IFunfunzRequest,
-  res: IFunfunzResponse,
-  databaseInstance: unknown | null,
-  results?: unknown
-): Promise<unknown | undefined> {
-  if (TABLE.hooks && TABLE.hooks[hook]) {
-    const HOOK = TABLE.hooks[hook]
-    if (databaseInstance && HOOK && HOOK[instance]) {
-      const CALLER  = HOOK[instance]
-      return CALLER
-        ? CALLER(req, res, databaseInstance, TABLE.name, results)
-        : Promise.resolve(results)
-    }
+export async function executeHook(
+  table: ITableInfo,
+  operationType: OperationTypes,
+  hookType: HookTypes,
+  props: Partial<IHookProps<unknown, unknown>>,
+): Promise<IHookProps<unknown, unknown>> {
+  const fullprops: IHookProps<unknown, unknown> = {
+    ...props as IHookProps<unknown, unknown>,
+    graph: globalGraph,
+    connector: connector(table.connector)
   }
-  return Promise.resolve(results)
+  const func = table.hooks?.[operationType]?.[hookType]
+  if (!func) {
+    return fullprops
+  }
+  return await func(fullprops)
 }

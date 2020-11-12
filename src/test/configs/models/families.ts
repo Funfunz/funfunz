@@ -1,3 +1,6 @@
+import { ITableInfo } from '../../../generator/configurationTypes'
+import { IHookProps } from '../../../types/hooks'
+
 export default {
   'name': 'families',
   'connector': 'mainDatabase',
@@ -166,6 +169,14 @@ export default {
       }
     }
   ],
+  'hooks': {
+    count: {
+      async afterQueryResult(props: IHookProps<unknown, unknown>) {
+        props.results = 69
+        return props
+      }
+    }
+  },
   'layout': {
     'label': 'Families',
     'listPage': {},

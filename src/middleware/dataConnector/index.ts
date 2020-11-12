@@ -1,52 +1,8 @@
 import config from '../utils/configLoader'
 import Debug from 'debug'
-import { IFilter } from '../utils/filter'
+import { IQueryArgs, IUpdateArgs, ICreateArgs, IRemoveArgs, DataConnector } from '../../types/connector'
 
 const debug = Debug('funfunz:dataConnector')
-
-export interface IQueryArgs {
-  entityName: string,
-  count?: boolean,
-  fields?: string[],
-  filter?: IFilter,
-  skip?: number,
-  take?: number,
-  relation?: string,
-}
-
-export interface IUpdateArgs {
-  entityName: string,
-  count?: boolean,
-  fields?: string[],
-  filter: IFilter,
-  skip?: number,
-  take?: number,
-  data: Record<string, unknown>
-}
-
-export interface ICreateArgs {
-  entityName: string,
-  count?: boolean,
-  fields?: string[],
-  skip?: number,
-  take?: number,
-  data: Record<string, unknown>
-}
-
-export interface IRemoveArgs {
-  entityName: string,
-  filter: IFilter
-}
-
-type globaEntry = Record<string, unknown>
-
-export interface DataConnector {
-  query (args: IQueryArgs): Promise<globaEntry[] | globaEntry | number>
-  update: (args: IUpdateArgs) => Promise<globaEntry[] | globaEntry | number>
-  create: (args: ICreateArgs) => Promise<globaEntry[] | globaEntry>
-  remove: (args: IRemoveArgs) => Promise<number>
-  db: unknown
-}
 
 const connectors: Record<string, DataConnector> = {} 
 
@@ -95,14 +51,11 @@ export const remove = (connectorName: string, args: IRemoveArgs): Promise<number
   return connectors[connectorName].remove(args)
 }
 
-export const database = (connectorName: string): unknown=> {
-  return connectors[connectorName].db
+export const connector = (connectorName: string): DataConnector => {
+  return connectors[connectorName]
 }
 
-
-/*
-type IQuery = any; type IResults = any; type IResult = any;
-type InitFunction = (config: any) => Promise<void>
-type QueryFunction = (args: IQuery) => Promise<IResults>
-type UpdateFunction = (args: IQuery) => Promise<IResult>
-type DeleteFunction = (args: IQuery) => Promise<void>*/
+// DEPRECATED!!!
+export const connection = (connectorName: string): unknown=> {
+  return connectors[connectorName].connection
+}
