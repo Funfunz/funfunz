@@ -3,7 +3,13 @@ name: Deploy
 on:
   push:
     branches:
-      - master
+      - feature/FUNFUNZ-45-heroku-deploy
+
+env:
+  DB_HOST: ryfqldzbliwmq6g5.chr7pe7iynqr.eu-west-1.rds.amazonaws.com
+  DB_USER: vz4nt766z0tffpi8
+  DB_PASS: ${{secrets.DB_PASS}}
+  DB_NAME: zucf1on9sjbl139n
 
 jobs:
   build:
@@ -16,3 +22,12 @@ jobs:
           heroku_app_name: funfunz
           heroku_email: "joaogsleite+funfunz@gmail.com"
           delay: 10
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+
+  mysql:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: mysql -h $DB_HOST -u $DB_USER -p$DB_PASS $DB_NAME < src/test/test.sql
