@@ -16,6 +16,7 @@ if (process.env.JAWSDB_URL) {
     password,
     port: '3306',
   }
+  config.server.port = process.env.PORT || config.server.port
 }
 
 const funfunz = new Funfunz({
