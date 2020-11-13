@@ -3,8 +3,6 @@ import config from '../test/configs/MCconfig'
 import settings from '../test/configs/MCsettings'
 import httpServer from './httpServer'
 
-console.log('JAWSDB_URL', process.env.JAWSDB_URL)
-
 if (process.env.JAWSDB_URL) {
   console.log('JAWSDB_URL', process.env.JAWSDB_URL)
   const DB_URL = process.env.JAWSDB_URL
