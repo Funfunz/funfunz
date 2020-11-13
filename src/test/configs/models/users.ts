@@ -152,7 +152,7 @@ export default {
   ],
   'hooks': {
     count: {
-      async beforeResolver(props: IHookProps<unknown, unknown>) {
+      async beforeResolver(props: IHookProps<unknown>) {
         throw new Error('Not authorized')
       }
     }

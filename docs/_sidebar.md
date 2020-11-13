@@ -1,10 +1,12 @@
 - [Home](/)
-- Usage
-  - [Quickstart](usage/quickstart.md)
-  - [Plugin](usage/middleware.md)
+- [Usage](usage/quickstart.md)
+  - [Middleware](usage/middleware.md)
   - [Template](usage/template.md)
-  - [Data connectors](usage/dataConnectors.md)
+  - [Data connectors](usage/dataConnectors/main.md)
+    - [SQL](usage/dataConnectors/sql.md)
   - [Filters](usage/filters.md)
+  - [Hooks](usage/hooks.md)
+  - [User data](usage/user.md)
 - Configuration
   - [Config](configuration/config.md)
   - [Settings](configuration/settings.md)
