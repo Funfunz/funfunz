@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - feature/heroku-deploy
-  workflow_dispatch:
 
 jobs:
   build:
