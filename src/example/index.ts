@@ -4,6 +4,7 @@ import settings from '../test/configs/MCsettings'
 import httpServer from './httpServer'
 
 if (process.env.JAWSDB_URL) {
+  console.log('JAWSDB_URL', process.env.JAWSDB_URL)
   const DB_URL = process.env.JAWSDB_URL
   const userAndPass = DB_URL.split('@')[0].split('mysql://')[1]
   const [user, password] = userAndPass.split(':')
@@ -17,6 +18,8 @@ if (process.env.JAWSDB_URL) {
     port: '3306',
   }
   config.server.port = process.env.PORT || config.server.port
+  console.log('mysql config', config.connectors.mainDatabase.config)
+  console.log('server port', config.server.port)
 }
 
 const funfunz = new Funfunz({
