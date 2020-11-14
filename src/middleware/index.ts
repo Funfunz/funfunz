@@ -27,7 +27,7 @@ class Funfunz {
     const CONFIG = config()
     
     debug('---------------------------------------------')
-    debug('INIT PARAMETERS:\n', CONFIG.config.server)
+    debug('INIT PARAMETERS:\n', CONFIG.config)
     debug('NODE_ENV', process.env.NODE_ENV)
     debug('---------------------------------------------')
 

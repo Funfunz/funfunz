@@ -171,7 +171,7 @@ export default {
   ],
   'hooks': {
     count: {
-      async afterQueryResult(props: IHookProps<unknown, unknown>) {
+      async afterQueryResult(props: IHookProps<unknown>) {
         props.results = 69
         return props
       }

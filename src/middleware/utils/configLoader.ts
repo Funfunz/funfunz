@@ -13,40 +13,11 @@ const config: FunfunzConfig = {
   settings: [],
   config: {
     connectors: {},
-    server: {
-      port: 3004
-    }
   },
-}
-
-/**
- * Normalize a port into a number, string, or false.
- */
-function normalizePort(val: string | number | false) {
-  let port = val
-  if (typeof val === 'string') {
-    port = parseInt(val, 10)
-  }
-  
-
-  if (isNaN(port as number)) {
-    // named pipe
-    return val
-  }
-
-  if (port >= 0) {
-    // port number
-    return port
-  }
-
-  return false
 }
 
 export function setConfig(configs: IConfig | ITableInfo[], target: string): void {
   if (configCheck(configs, target)) {
-    if ((configs as IConfig).server && (configs as IConfig).server.port) {
-      (configs as IConfig).server.port = normalizePort((configs as IConfig).server.port)
-    }
     if (target === 'settings') {
       (configs as ITableInfo[]).forEach(
         (table) => {

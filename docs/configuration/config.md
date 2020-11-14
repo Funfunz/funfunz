@@ -2,24 +2,13 @@
 
 ## File structure
 
-```typescript
+```js
 {
   connectors: {
     [key: string]: { // user defined name for the connector
-      type: string, // for example: 'sql-connector'
-      config: {
-        host: string, // database host
-        database: string, // database name
-        user: string, // database user
-        password: string, // database password
-        ssl: boolean | SSLobject, // if ssl is needed
-      }
+      type: string, // the connector to use, for example: 'sql-connector'
+      config: any, // the configuration required for the specific connector
     }
-  },
-  server: {
-    port: number, // port where the application runs
-  },
+  }
 }
 ```
-
-## SSL Object

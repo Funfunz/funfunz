@@ -104,9 +104,6 @@ export interface IColumnInfo {
 }
 
 export interface IConfig {
-  server: {
-    port: string | number | false
-  },
   connectors: Record<string, IDataConnector>
 }
 

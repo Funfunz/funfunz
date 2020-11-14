@@ -7,10 +7,10 @@ export async function executeHook(
   table: ITableInfo,
   operationType: OperationTypes,
   hookType: HookTypes,
-  props: Partial<IHookProps<unknown, unknown>>,
-): Promise<IHookProps<unknown, unknown>> {
-  const fullprops: IHookProps<unknown, unknown> = {
-    ...props as IHookProps<unknown, unknown>,
+  props: Partial<IHookProps<unknown>>,
+): Promise<IHookProps<unknown>> {
+  const fullprops: IHookProps<unknown> = {
+    ...props as IHookProps<unknown>,
     graph: globalGraph,
     connector: connector(table.connector)
   }

@@ -1,4 +1,3 @@
-import config from '../middleware/utils/configLoader'
 import Debug from 'debug'
 import express from 'express'
 import http from 'http'
@@ -6,7 +5,7 @@ import http from 'http'
 const debug = Debug('funfunz:http-server')
 
 export default function startServer(app: express.Application): void {
-  const PORT = config().config.server.port
+  const PORT = 3004
   /**
    * Create HTTP server.
    */
