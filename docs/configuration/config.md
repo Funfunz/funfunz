@@ -2,19 +2,13 @@
 
 ## File structure
 
-```javascript
+```js
 {
-  mysql: {
-    host: string, // database host
-    database: string, // database name
-    user: string, // database user
-    password: string, // database password
-    ssl: boolean | SSLobject, // if ssl is needed
-  },
-  server: {
-    port: number, // port where the application runs
-  },
+  connectors: {
+    [key: string]: { // user defined name for the connector
+      type: string, // the connector to use, for example: 'sql-connector'
+      config: any, // the configuration required for the specific connector
+    }
+  }
 }
 ```
-
-## SSL Object

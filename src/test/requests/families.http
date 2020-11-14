@@ -1,0 +1,99 @@
+POST http://localhost:3004
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+query {
+  families (
+    filter: {
+      id: {
+        _eq: 1
+      }
+    }
+  ){
+    id
+    products (
+      filter: {
+        _and: [
+          {
+            id: {
+              _in: [1,2,3,4]
+            }
+          }
+          {
+            _or: [
+              {
+                name: {
+                  _like: "name1"
+                }
+              }
+              {
+                name: {
+                  _like: "name2"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ){
+      id
+      name
+      FamilyId
+      families {
+        id
+      }
+    }
+  }
+}
+
+###
+POST http://localhost:3004
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+query {
+  families (
+    filter: {
+      id: {
+        _eq: "NonExistingId"
+      }
+    }
+  ){
+    id
+    name
+  }
+}
+
+###
+POST http://localhost:3004
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+query {
+  families (
+    filter: {
+      id: {
+        _in: [1,2]
+      }
+    }
+  ){
+    id
+    name
+  }
+}
+
+###
+POST http://localhost:3004
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+mutation {
+  addFamilies (
+    data: {
+      name: "TestFamily"
+    }
+  ){
+    id
+    name
+  }
+}

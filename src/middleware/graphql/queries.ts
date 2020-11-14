@@ -1,13 +1,14 @@
 'use strict'
 import { resolver, resolverCount } from './resolver'
-import { buildFields, buildType } from './typeBuilder'
+import { buildType } from './typeBuilder'
 import config from '../utils/configLoader'
 import { ITableInfo } from '../../generator/configurationTypes'
 import Debug from 'debug'
-import GraphQLJSON from 'graphql-type-json'
-import { GraphQLFieldConfig, GraphQLFieldConfigArgumentMap, GraphQLFieldConfigMap, GraphQLInt, GraphQLList, GraphQLObjectType, GraphQLString, Thunk } from 'graphql'
+import GraphQLJSON, { GraphQLJSONObject } from 'graphql-type-json'
+import { GraphQLBoolean, GraphQLFieldConfig, GraphQLFieldConfigMap, GraphQLInt, GraphQLList, GraphQLObjectType, GraphQLString, Thunk } from 'graphql'
 import pluralize from 'pluralize'
 import { TUserContext } from './schema'
+import { buildArgs } from './argumentsBuilder'
 
 const debug = Debug('funfunz:graphql-query-builder')
 
@@ -32,7 +33,7 @@ function buildQuery(table: ITableInfo): GraphQLFieldConfig<unknown, TUserContext
     type: new GraphQLList(buildType(table)),
     description: `This will return all the ${pluralize(table.name)}.`,
     resolve: resolver(table),
-    args: buildFields(table, { relations: false, pagination: true }) as GraphQLFieldConfigArgumentMap,
+    args: buildArgs(table, { pagination: true, filter: true }),
   }
   debug(`Created ${table.name} query`)
   return query
@@ -44,7 +45,7 @@ function buildCount(table: ITableInfo) {
     type: GraphQLInt,
     description: `This will return the ${pluralize(table.name)} count.`,
     resolve: resolverCount(table),
-    args: buildFields(table, { relations: false, pagination: false }) as GraphQLFieldConfigArgumentMap,
+    args: buildArgs(table, { pagination: false,  filter: true }),
   }
   debug(`Created ${table.name} count`)
   return query
@@ -83,19 +84,107 @@ function buildConfig(tables: ITableInfo[]) {
 }
 
 function buildEntities(tables: ITableInfo[]) {
-  debug('Creating entities query')
-
-  const entityNames = tables.filter(
-    (table) => table.visible
-  ).map(
-    (table) => {
-      return table.name
-    }
-  )
-
+  
   const query: GraphQLFieldConfig<unknown, TUserContext> = {
-    type: new GraphQLList(GraphQLString),
-    resolve: () => {
+    type: new GraphQLList(new GraphQLObjectType({
+      name: 'tableConfig',
+      fields: {
+        name: {
+          type: GraphQLString,
+          description: 'Name of the entity'
+        },
+        connector: {
+          type: GraphQLString,
+          description: 'Type of connector'
+        },
+        relations: {
+          description: 'Relation list',
+          type: new GraphQLList(
+            new GraphQLObjectType({
+              name: 'tableConfigRelations',
+              fields: {
+                type: {
+                  type: GraphQLString,
+                  description: 'Type of relation'
+                },
+                foreignKey: {
+                  type: GraphQLString,
+                  description: 'Name of the foreignKey'
+                },
+                remoteTable: {
+                  type: GraphQLString,
+                  description: 'Name of target entity'
+                },
+              }
+            })
+          ),
+        },
+        columns: {
+          description: 'Property list',
+          type: new GraphQLList(
+            new GraphQLObjectType({
+              name: 'propertyConfig',
+              fields: {
+                name: {
+                  type: GraphQLString,
+                  description: 'Name of the property'
+                },
+                model: {
+                  description: 'Property model',
+                  type: new GraphQLObjectType({
+                    name: 'columnModel',
+                    fields: {
+                      type: {
+                        type: GraphQLString,
+                        description: 'Type of property'
+                      },
+                      allowNull: {
+                        type: GraphQLBoolean,
+                        description: 'Allows null values'
+                      },
+                      isPk: {
+                        type: GraphQLBoolean,
+                        description: 'Is a primary key'
+                      }
+                    }
+                  }),
+                },
+                layout: {
+                  type: GraphQLJSONObject
+                }
+              }
+            })
+          ),
+        },
+        layout: {
+          type: GraphQLJSONObject
+        }
+      }
+    })),
+    args: {
+      name: {
+        type: GraphQLString
+      }
+    },
+    resolve: (parent, args, context) => {
+      let userRoles = [{
+        name: 'unauthenticated'
+      }]
+      if (context.user?.roles) {
+        userRoles = context.user.roles
+      }
+      const requestedEntity = args.name
+      const entityNames = tables.filter(
+        (table) => {
+          if (requestedEntity && requestedEntity !== table.name) {
+            return false
+          }
+          const hasAccess = table.roles.read.includes('all') || userRoles.find(
+            (role) => table.roles.read.includes(role.name)
+          )
+          return table.visible && hasAccess
+        }
+      )
       return entityNames
     },
     description: 'This will return list of entities.',

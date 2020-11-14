@@ -1,18 +1,21 @@
+import { IHookProps } from "../../../types/hooks"
+
 export default {
   'name': 'products',
+  'connector': 'mainDatabase',
   'visible': true,
   'roles': {
     'create': [
-      'unauthenticated'
+      'all'
     ],
     'read': [
-      'unauthenticated'
+      'all'
     ],
     'update': [
-      'unauthenticated'
+      'all'
     ],
     'delete': [
-      'unauthenticated'
+      'all'
     ]
   },
   'columns': [
@@ -185,6 +188,14 @@ export default {
     'deleteButton': {},
     'editPage': {
       'sections': []
+    }
+  },
+  'hooks': {
+    count: {
+      async beforeResolver(props: IHookProps<unknown>) {
+        props.args.filter =  { id: { _eq: 1 }}
+        return props
+      }
     }
   },
   'relations': [

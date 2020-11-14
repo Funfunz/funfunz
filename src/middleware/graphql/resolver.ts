@@ -1,85 +1,91 @@
-import database from '../db'
-import { applyParentTableFilters, applyQueryFilters, getPKs, requirementsCheck } from '../utils'
+import { query as sendQuery } from '../dataConnector/index'
+import { getFields } from '../utils/index'
 import { ITableInfo } from '../../generator/configurationTypes'
-import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
-import Knex from 'knex'
-import {
-  parseResolveInfo,
-  ResolveTree,
-  simplifyParsedResolveInfoFragmentWithType 
-} from 'graphql-parse-resolve-info'
+import { GraphQLFieldResolver } from 'graphql'
 import { TUserContext } from './schema'
-
-function getFields(
-  table: ITableInfo,
-  info: GraphQLResolveInfo
-): string[] {
-  const fields = [...(getPKs(table))]
-  const parsedResolveInfoFragment = parseResolveInfo(info)
-  if (parsedResolveInfoFragment) {
-    const {fields: columns} = simplifyParsedResolveInfoFragmentWithType(
-      parsedResolveInfoFragment as ResolveTree,
-      info.returnType
-    )
-    Object.keys(columns).forEach(
-      (columnName) => {
-        if (table.columns.find((c) => c.name === columnName)) {
-          fields.push(columnName)
-        }
-        const relation = table.relations && table.relations.find((r) => {
-          return r.remoteTable === columnName && r.type === 'n:1'
-        })
-        if (relation) {
-          fields.push(relation.foreignKey)
-        }
-      }
-    )
-  }
-  return [...new Set(fields)]
-}
+import { requirementsCheck } from '../utils/dataAccess'
+import { getParentEntryFilter, FilterValues, ParentFilterResult, IFilter } from '../utils/filter'
+import { executeHook } from '../utils/lifeCycle'
+import { IQueryArgs } from '../../types/connector'
 
 export function resolver<TSource, TContext extends TUserContext>(
   table: ITableInfo,
   parentTable?: ITableInfo
 ): GraphQLFieldResolver<TSource, TContext> {
-  return (parent, args, context, info) => {
-    return requirementsCheck(table, 'read', context.user, database).then((DB) => {
-      const fields = getFields(table, info)
-      let QUERY = DB(table.name).select(fields)
-      const queryFilters = {}
-      for (const key in args) {
-        if (key !== 'limit' && key !== 'offset') {
-          queryFilters[key] = args[key]
+  return async (parent, rawargs, ctx, info) => {
+    const { user, superUser } = ctx
+    const { args, context } = await executeHook(table, 'query', 'beforeResolver', { args: rawargs, user })
+    await requirementsCheck(table, 'read', user, superUser)
+    const fields = getFields(table, info)
+    let filter = args.filter || undefined
+    let parentFilter: ParentFilterResult | undefined
+    if (parentTable) {
+      parentFilter = await getParentEntryFilter(table, parentTable, parent as unknown as Record<string, FilterValues>)
+      if (filter) {
+        filter = {
+          _and: [
+            filter,
+            parentFilter?.filter
+          ]
         }
-      }
-      QUERY = applyQueryFilters(QUERY, queryFilters, table)
-      paginate(QUERY, args.offset, args.limit)
-      if (parentTable) {
-        return applyParentTableFilters(QUERY, table, parentTable, parent)
       } else {
-        return QUERY
+        filter = parentFilter?.filter
       }
+    }
+    const rawquery = {
+      entityName: table.name,
+      fields,
+      filter: filter as IFilter,
+      relation: parentFilter?.relation,
+      skip: args.skip as number,
+      take: args.take as number
+    }
+    const { query, context: newContext } = await executeHook(table, 'query', 'beforeSendQuery', { user, args, query: rawquery, context })
+    
+    const results = await sendQuery(table.connector, query as IQueryArgs)
+    
+    const { results: modifiedResults } = await executeHook(table, 'query', 'afterQueryResult', {
+      user,
+      args,
+      query,
+      results,
+      context: newContext
     })
+
+    return modifiedResults
   }
 }
 
 export function resolverCount<TSource, TContext extends TUserContext>(
   table: ITableInfo
 ): GraphQLFieldResolver<TSource, TContext> {
-  return (parent, args, context) => {
-    return requirementsCheck(table, 'read', context.user, database).then((DB) => {
-      let QUERY = DB(table.name).select([])
-      QUERY = applyQueryFilters(QUERY, args, table)
-      return QUERY.count('*', {as: 'count'}).first().then((res) => res.count)
-    })
-  }
-}
+  return async (parent, rawargs, ctx) => {
+    const { user, superUser } = ctx
 
-function paginate(query: Knex.QueryBuilder, offset = 0, limit = 0) {
-  offset = typeof offset === 'string' ? parseInt(offset, 10) : offset
-  limit = typeof limit === 'string' ? parseInt(limit, 10) : limit
-  if (limit > 0) {
-    query.offset((offset) * limit).limit(limit)
+    const { args, context } = await executeHook(table, 'count', 'beforeResolver', { args: rawargs, user })
+
+    await requirementsCheck(table, 'read', user, superUser)
+
+    const rawquery: IQueryArgs = {
+      entityName: table.name,
+      count: true,
+      filter: args.filter as IFilter,
+      skip: args.skip as number,
+      take: args.take as number
+    }
+
+    const { query, context: newContext } = await executeHook(table, 'count', 'beforeSendQuery', { user, args, query: rawquery, context })
+    
+    const results = await sendQuery(table.connector, query as IQueryArgs)
+    
+    const { results: modifiedResults } = await executeHook(table, 'count', 'afterQueryResult', {
+      user,
+      args,
+      query,
+      results,
+      context: newContext
+    })
+
+    return modifiedResults
   }
-  return query
 }

@@ -1,13 +1,5 @@
-import express from 'express'
-import knex from 'knex'
-
-type IHookFunction = (
-  req: express.Request,
-  res: express.Response,
-  DB: knex,
-  tableName: string,
-  data?: Record<string, unknown>
-) => Promise <Record<string, unknown>>
+import { IDataConnector } from '../types/connector'
+import { ITableHooks } from '../types/hooks'
 
 export interface IDatabaseData {
   schema: schemaInfo,
@@ -52,6 +44,7 @@ export type Hooks = 'getTableData'
 
 export interface ITableInfo {
   name: string,
+  connector: string,
   visible: boolean,
   relations?: IRelation[],
   roles: {
@@ -61,12 +54,7 @@ export interface ITableInfo {
     delete: string[],
   },
   columns: IColumnInfo[],
-  hooks?: {
-    [key in Hooks]?: {
-      before?: IHookFunction,
-      after?: IHookFunction,
-    }
-  },
+  hooks?: ITableHooks,
   layout: Record<string, unknown>,
 }
 
@@ -109,20 +97,14 @@ export interface IColumnInfo {
     allowNull: boolean,
   },
   relation?: IColumnRelation,
-  layout: Record<string, unknown>,
+  layout: {
+    label: string,
+    [key: string]: unknown
+  },
 }
 
 export interface IConfig {
-  server: {
-    port: number
-  },
-  mysql?: {
-    host: string,
-    database: string,
-    user: string,
-    password: string,
-    port: string
-  }
+  connectors: Record<string, IDataConnector>
 }
 
 export type ISettings = ITableInfo[]

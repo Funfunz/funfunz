@@ -3,19 +3,17 @@ import config from '../utils/configLoader'
 import { IRelation, ITableInfo } from '../../generator/configurationTypes'
 import Debug from 'debug'
 import {
-  GraphQLBoolean,
-  GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
   GraphQLID,
   GraphQLInt,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLScalarType,
-  GraphQLString,
 } from 'graphql'
-import { getPKs } from '../utils'
+import { capitalize, getPKs } from '../utils/index'
 import { TUserContext } from './schema'
+import { buildArgs } from './argumentsBuilder'
+import { MATCHER } from './helpers'
 
 const debug = Debug('funfunz:graphql-type-builder')
 
@@ -24,42 +22,19 @@ interface IBuildTypeOptions {
   include?: ['pk' | string],
   exclude?: ['pk' | string],
   relations?: boolean,
-  pagination?: boolean,
 }
 
-const MATCHER: {
-  [key: string]: GraphQLScalarType
-} = {
-  'varchar(255)': GraphQLString,
-  'int(11)': GraphQLInt,
-  'int': GraphQLInt,
-  'tinyint(1)': GraphQLBoolean,
-  'datetime': GraphQLString,
-}
-
-const types: {
-  [key: string]: GraphQLObjectType,
-} = {}
+const entitiesType: Record<string, GraphQLObjectType> = {}
 
 export function buildFields<TSource>(
   table: ITableInfo,
   options: IBuildTypeOptions = {
-    relations: true,
-    pagination: true
+    relations: true
   }
 ): GraphQLFieldConfigMap<TSource, TUserContext> {
-  const { relations, required, include, pagination } = options
+  const { relations, required, include } = options
   const result: GraphQLFieldConfigMap<TSource, TUserContext> = {}
-  if (pagination) {
-    result.limit = {
-      type: GraphQLInt,
-      description: 'Limit',
-    }
-    result.offset = {
-      type: GraphQLInt,
-      description: 'Offset',
-    }
-  }
+  
   const tablePKs = getPKs(table)
   const tableRelations = table.relations || []
   const relationalColumns = tableRelations.map((relation) => relation.foreignKey)
@@ -102,7 +77,7 @@ export function buildFields<TSource>(
           type: buildType(relatedTable),
           description: column.layout.label as string,
           resolve: resolver(relatedTable, table),
-          args: buildFields(relatedTable, { relations: false, pagination: false }) as GraphQLFieldConfigArgumentMap,
+          args: buildArgs(relatedTable, { pagination: false, filter: true }),
         }
         result[column.name] = {
           type: GraphQLID,
@@ -133,7 +108,7 @@ export function buildFields<TSource>(
           type: new GraphQLList(buildType(relatedTable)),
           description: relatedTable.name,
           resolve: resolver(relatedTable, table),
-          args: buildFields(relatedTable, { relations: false, pagination: true }) as GraphQLFieldConfigArgumentMap,
+          args: buildArgs(relatedTable, { pagination: true, filter: true }),
         }
       })
     }
@@ -151,7 +126,7 @@ export function buildFields<TSource>(
           type: new GraphQLList(buildType(remoteTable)),
           description: remoteTable.name,
           resolve: resolver(remoteTable, table),
-          args: buildFields(remoteTable, { relations: false, pagination: true }) as GraphQLFieldConfigArgumentMap,
+          args: buildArgs(remoteTable, { pagination: true, filter: true }),
         }
       })
     }
@@ -159,15 +134,11 @@ export function buildFields<TSource>(
   return result
 }
 
-export function capitalize(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1)
-}
-
 export function buildType(table: ITableInfo, options: IBuildTypeOptions = { relations: true }): GraphQLObjectType {
   const name = table.name
   debug(`Creating type for table ${name}`)
-  if (!types[name]) {
-    types[name] = new GraphQLObjectType({
+  if (!entitiesType[name]) {
+    entitiesType[name] = new GraphQLObjectType({
       name,
       fields: () => {
         return buildFields(table, options)
@@ -175,21 +146,21 @@ export function buildType(table: ITableInfo, options: IBuildTypeOptions = { rela
     })
     debug(`Created type for table ${name}`)
   }
-  return types[name]
+  return entitiesType[name]
 }
 export function buildDeleteMutationType(table: ITableInfo): GraphQLObjectType<unknown, unknown> {
   const name = `delete${capitalize(table.name)}`
   debug(`Creating ${name}`)
-  if (!types[name]) {
-    types[name] = new GraphQLObjectType({
+  if (!entitiesType[name]) {
+    entitiesType[name] = new GraphQLObjectType({
       name,
       fields: () => ({
-        success: {
-          type: GraphQLBoolean,
+        deleted: {
+          type: GraphQLInt,
         },
       }),
     })
     debug(`Created ${name}`)
   }
-  return types[name]
+  return entitiesType[name]
 }

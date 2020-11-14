@@ -13,6 +13,7 @@ export type TUserContext = {
   user: IUser,
   req: Request,
   res: Response
+  superUser?: boolean
 }
 
 const debug = Debug('funfunz:graphql-schema')
