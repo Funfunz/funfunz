@@ -26,13 +26,20 @@ When defining the model configuration, the developer can add custom functions to
 
 The hooks have been devided into operation types and hook type:
 
-```js
-OperationTypes = 'all' | 'config' | 'count' | 'add' | 'query' | 'update' | 'delete'
-```
+**OperationTypes**
+- **all:** applies to all operations
+- **config:** runs when the user requests the table configuration
+- **count:** runs when the user requests an item count
+- **add:** runs when the user requests to add an item
+- **query:** runs when the user requests entity data
+- **update** runs when the user requests to update an item
+- **delete:** runs when the user requests to delete an item
 
-```js
-HookTypes = 'beforeResolver' | 'beforeSendQuery' | 'afterQueryResult' | 'afterResultSent'
-```
+**HookTypes**
+- **beforeResolver:** runs before anything else, raw data from the user
+- **beforeSendQuery:** runs before the Data Connector is called
+- **afterQueryResult:** runs after the Data Connector resolves the request
+- **afterResultSent:** runs after the response has been sent to the user
 
 ## Usage example
 
@@ -72,10 +79,10 @@ export interface IHookProps<RequestContext, U extends User = User> {
 }
 ```
 
-- graph: a global instance of GraphQL that has super user access, this is good to check for user permissions for example.
-- connector: the Data Connector instance for the requested entity.
-- user: the current user information. Will be an empty unauthenticated user if no user is set in the GraphQL context.
-- args: arguments passed during the query request.
-- query: arguments parsed that will/was used by the connector. Also on the `beforeResolver` hook, this parse hasn't occured yet, so the value is `undefined.
-- results: will contain the results from the Data Connector, only available on `afterQueryResult` and `afterResultSent`.
-- context: this is an object created for each request that will contain context that can be used across multiple hooks on the same request.  
+- **graph:** a global instance of GraphQL that has super user access, this is good to check for user permissions for example.
+- **connector:** the Data Connector instance for the requested entity.
+- **user:** the current user information. Will be an empty unauthenticated user if no user is set in the GraphQL context.
+- **args:** arguments passed during the query request.
+- **query:** arguments parsed that will/was used by the connector. Also on the `beforeResolver` hook, this parse hasn't occured yet, so the value is `undefined.
+- **results:** will contain the results from the Data Connector, only available on `afterQueryResult` and `afterResultSent`.
+- **context:** this is an object created for each request that will contain context that can be used across multiple hooks on the same request.  
