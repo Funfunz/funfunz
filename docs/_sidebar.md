@@ -7,7 +7,7 @@
   - [Filters](usage/filters.md)
   - [Hooks](usage/hooks.md)
   - [User data](usage/user.md)
-- Configuration
+- [Configuration](configuration/main.md)
   - [Config](configuration/config.md)
   - [Settings](configuration/settings.md)
 - [End Goals](endgoals.md)

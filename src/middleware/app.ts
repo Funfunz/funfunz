@@ -1,4 +1,4 @@
-import { initDatabases } from './dataConnector/index'
+import { initDataConnectors } from './dataConnector/index'
 import IndexRouter from './routes/index'
 import cors from 'cors'
 import Debug from 'debug'
@@ -17,7 +17,7 @@ class App {
   public server: express.Express
   constructor() {
     debug('starting funfunz')
-    initDatabases()
+    initDataConnectors()
     this.server = express()
     this.server.disable('x-powered-by')
 

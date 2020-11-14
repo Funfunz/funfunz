@@ -1,6 +1,23 @@
 # Settings file
 
-## Model structure
+## Array of entities
+
+```js
+return [
+  {
+    ...
+    entity1
+    ...
+  }
+  {
+    ...
+    entity2
+    ...
+  }
+]
+```
+
+## Entity structure
 
 ```js
 {
@@ -84,33 +101,8 @@
     },
   },
   ...
-  hooks: {
-    [key in Hooks]?: {
-      before?: IHookFunction,
-      after?: IHookFunction,
-    }
-  },
+  hooks: HooksObject
 }
 ```
 
-## Hooks Object
-
-```js
-  type Hooks = 'getTableData'
-    | 'getDistinctTableData'
-    | 'getTableCount'
-    | 'getRow'
-    | 'insertRow'
-    | 'updateRow'
-    | 'deleteRow'
-  
-
-  IHookFunction = (
-    req: express.Request,
-    res: express.Response,
-    DB: knex,
-    tableName: string,
-    data?: any
-  ) => Promise <any>
-
-```
+**HooksObject**: check the [Hooks page](usage/hooks.md) for more info
