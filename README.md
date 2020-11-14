@@ -1,6 +1,6 @@
 # Funfunz
 
-[![Discord][discord-badge]]([discord])
+[![Discord][discord-badge]][discord]
 [![Build Status][travis-badge]][travis]
 [![codecov][codecov-badge]][codecov]
 ![node][node]

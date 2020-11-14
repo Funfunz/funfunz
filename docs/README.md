@@ -1,6 +1,6 @@
 # Funfunz Documentation
 
-[![Discord](https://img.shields.io/discord/774439225520554004?logo=discord)](https://discord.gg/HwZ7zMJKwg)
+[![Discord][discord-badge]][discord]
 [![Build Status][travis-badge]][travis]
 [![codecov][codecov-badge]][codecov]
 ![node][node]
@@ -29,6 +29,9 @@ The goal is to generate a complete CMS/back-office/data manager application
 ## CLI
 
 * `funfunz` - Runs the Wizard to setup the settings and configuration files needed to connect with a database.
+
+[discord-badge]: https://img.shields.io/discord/774439225520554004?logo=discord
+[discord]: https://discord.gg/HwZ7zMJKwg
 
 [travis-badge]: https://travis-ci.com/JWebCoder/funfunz.svg?branch=master
 [travis]: https://travis-ci.com/JWebCoder/funfunz
