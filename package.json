@@ -2,7 +2,7 @@
   "name": "funfunz",
   "version": "0.5.4",
   "description": "backoffice generator",
-  "main": "lib/api/index.js",
+  "main": "lib/middleware/index.js",
   "engines": {
     "node": ">=9.11.1"
   },
