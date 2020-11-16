@@ -6,10 +6,10 @@ const config: IConfig = {
       type: "sql",
       config: {
         client: 'mysql2',
-        host: "127.0.0.1",
-        database: "test_db",
-        user: "root",
-        password: process.env.DB_PASSWORD || '',
+        host: process.env.DB_HOST || "127.0.0.1",
+        database: process.env.DB_NAME || "test_db",
+        user: process.env.DB_USER || "root",
+        password: process.env.DB_PASS || '',
         port: "3306"
       },
     },
