@@ -180,9 +180,7 @@ function buildEntities(tables: ITableInfo[]) {
             return false
           }
           const hasAccess = table.roles.read.includes('all') || userRoles.find(
-            (role) => {
-              table.roles.read.includes(role.name)
-            }
+            (role) => table.roles.read.includes(role.name)
           )
           return table.visible && hasAccess
         }

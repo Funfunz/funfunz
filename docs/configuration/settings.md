@@ -1,12 +1,29 @@
 # Settings file
 
-## Model structure
+## Array of entities
 
-```typescript
+```js
+return [
+  {
+    ...
+    entity1
+    ...
+  }
+  {
+    ...
+    entity2
+    ...
+  }
+]
+```
+
+## Entity structure
+
+```js
 {
-  name: string, // sql table name
-  connector: string, // name of the connector defined on the config file
-  visible: boolean, // if this table is visible in the API
+  name: string, // entity name
+  connector: string, // user defined name of the connector set on the config file
+  visible: boolean, // if this entity is visible on the API
   relations: [
     {
       type: '1:n' | 'n:1' | 'm:n',
@@ -84,33 +101,8 @@
     },
   },
   ...
-  hooks: {
-    [key in Hooks]?: {
-      before?: IHookFunction,
-      after?: IHookFunction,
-    }
-  },
+  hooks: HooksObject
 }
 ```
 
-## Hooks Object
-
-```typescript
-  type Hooks = 'getTableData'
-    | 'getDistinctTableData'
-    | 'getTableCount'
-    | 'getRow'
-    | 'insertRow'
-    | 'updateRow'
-    | 'deleteRow'
-  
-
-  IHookFunction = (
-    req: express.Request,
-    res: express.Response,
-    DB: knex,
-    tableName: string,
-    data?: any
-  ) => Promise <any>
-
-```
+**HooksObject**: check the [Hooks page](usage/hooks.md) for more info

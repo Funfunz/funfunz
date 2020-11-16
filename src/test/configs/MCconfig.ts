@@ -13,9 +13,6 @@ const config: IConfig = {
         port: "3306"
       },
     },
-  },
-  server: {
-    port: 3004
   }
 }
 export default config

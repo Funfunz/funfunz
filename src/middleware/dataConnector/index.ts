@@ -6,7 +6,7 @@ const debug = Debug('funfunz:dataConnector')
 
 const connectors: Record<string, DataConnector> = {} 
 
-export const initDatabases = (): void => {
+export const initDataConnectors = (): void => {
   const configuration = config().config.connectors
   Object.entries(configuration).forEach(
     ([key, value]) => {

@@ -1,4 +1,5 @@
-import { IQueryArgs, DataConnector, ICreateArgs, IRemoveArgs, IUpdateArgs } from './connector'
+import type { IUser } from '../middleware/types'
+import type { IQueryArgs, DataConnector, ICreateArgs, IRemoveArgs, IUpdateArgs } from './connector'
 import { ExecuteGraphQL } from './graphql'
 
 export type OperationTypes = 'all' | 'config' | 'count' | 'add' | 'query' | 'update' | 'delete'
@@ -8,7 +9,7 @@ export interface IArgs {
   [key: string]: unknown
 }
 
-export interface IHookProps<U, C> {
+export interface IHookProps<C, U extends IUser = IUser> {
   graph: ExecuteGraphQL
   connector: DataConnector
   user: U
@@ -18,10 +19,10 @@ export interface IHookProps<U, C> {
   context?: C
 }
 
-export type HookFunction<U, C> = (props: IHookProps<U, C>) => Promise<IHookProps<U, C>>
+export type HookFunction<C, U extends IUser = IUser> = (props: IHookProps<C, U>) => Promise<IHookProps<C, U>>
 
 export type ITableHooks = {
   [key in OperationTypes]?: {
-    [key in HookTypes]?: HookFunction<unknown, unknown>
+    [key in HookTypes]?: HookFunction<unknown>
   }
 }

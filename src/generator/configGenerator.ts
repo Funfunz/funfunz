@@ -166,10 +166,7 @@ export function generateConfig(answers: Record<string, string>, selectedPath: st
           port: answers.DBPort || '',
         }
       }
-    },
-    server: {
-      port: 3004,
-    },
+    }
   }
 
   if (answers.DBAuthSorce) {

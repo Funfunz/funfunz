@@ -1,14 +1,4 @@
-# Data connectors
-
-Funfunz uses **data connectors** to connect the models with the source of data.
-
-## Usage
-
-The data connectors are linked to a settings model and the specific connector configuration should be set on the config file.
-
-Check [config](../configuration/config.md) and [settings](../configuration/settings.md) for an example.
-
-## SQL connector
+# SQL connector
 
 This connector uses [KnexJS](http://knexjs.org/#Installation-client) under the hood and is able to connect to the following of SQL databases:
 - Postgres
@@ -28,3 +18,15 @@ Also, when using this connector, you will need to install the required driver to
 - [mysql](https://github.com/felixge/node-mysql) for MySQL or MariaDB
 - [sqlite3](https://github.com/mapbox/node-sqlite3) for SQLite3
 - [mssql](https://github.com/patriksimek/node-mssql) for MSSQL.
+
+**MySQL config**
+
+```js  
+{
+  host: string, // database host
+  database: string, // database name
+  user: string, // database user
+  password: string, // database password
+  ssl: boolean | SSLobject, // if ssl is needed
+}
+```

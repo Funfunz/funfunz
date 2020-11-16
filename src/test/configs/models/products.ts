@@ -192,7 +192,7 @@ export default {
   },
   'hooks': {
     count: {
-      async beforeResolver(props: IHookProps<unknown, unknown>) {
+      async beforeResolver(props: IHookProps<unknown>) {
         props.args.filter =  { id: { _eq: 1 }}
         return props
       }
