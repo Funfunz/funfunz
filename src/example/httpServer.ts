@@ -5,7 +5,7 @@ import http from 'http'
 const debug = Debug('funfunz:http-server')
 
 export default function startServer(app: express.Application): void {
-  const PORT = 3004
+  const PORT = process.env.PORT || '3004'
   /**
    * Create HTTP server.
    */
@@ -14,7 +14,7 @@ export default function startServer(app: express.Application): void {
   /**
    * Listen on provided port, on all network interfaces.
    */
-  server.listen(PORT)
+  server.listen(parseInt(PORT))
   server.on('error', onError)
   server.on('listening', onListening)
 

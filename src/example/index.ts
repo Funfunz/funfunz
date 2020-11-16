@@ -18,7 +18,6 @@ if (process.env.JAWSDB_URL) {
     password,
     port
   }
-  config.server.port = process.env.PORT || config.server.port
   console.log('mysql config', config.connectors.mainDatabase.config)
   console.log('server port', config.server.port)
 }
