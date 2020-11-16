@@ -19,7 +19,6 @@ if (process.env.JAWSDB_URL) {
     port
   }
   console.log('mysql config', config.connectors.mainDatabase.config)
-  console.log('server port', config.server.port)
 }
 
 const funfunz = new Funfunz({

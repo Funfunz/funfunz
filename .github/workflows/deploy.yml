@@ -22,9 +22,6 @@ jobs:
           heroku_app_name: funfunz
           heroku_email: "joaogsleite+funfunz@gmail.com"
           delay: 10
-      - uses: actions/setup-node@v1
-        with:
-          node-version: '12.x'
 
   mysql:
     runs-on: ubuntu-latest
