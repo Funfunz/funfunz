@@ -1,10 +1,10 @@
-import { ITableInfo } from '../../generator/configurationTypes'
+import { IEntityInfo } from '../../generator/configurationTypes'
 import { HookTypes, IHookProps, OperationTypes } from '../../types/hooks'
 import { globalGraph } from '../routes'
 import { connector } from '../dataConnector'
 
 export async function executeHook(
-  table: ITableInfo,
+  table: IEntityInfo,
   operationType: OperationTypes,
   hookType: HookTypes,
   props: Partial<IHookProps<unknown>>,

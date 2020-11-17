@@ -1,6 +1,6 @@
 import { resolver } from './resolver'
 import config from '../utils/configLoader'
-import { IRelation, ITableInfo } from '../../generator/configurationTypes'
+import { IRelation, IEntityInfo } from '../../generator/configurationTypes'
 import Debug from 'debug'
 import {
   GraphQLFieldConfigMap,
@@ -27,7 +27,7 @@ interface IBuildTypeOptions {
 const entitiesType: Record<string, GraphQLObjectType> = {}
 
 export function buildFields<TSource>(
-  table: ITableInfo,
+  table: IEntityInfo,
   options: IBuildTypeOptions = {
     relations: true
   }
@@ -38,7 +38,7 @@ export function buildFields<TSource>(
   const tablePKs = getPKs(table)
   const tableRelations = table.relations || []
   const relationalColumns = tableRelations.map((relation) => relation.foreignKey)
-  table.columns.forEach((column) => {
+  table.properties.forEach((column) => {
     const isPk = tablePKs.indexOf(column.name) >= 0
     /*
      *  if include option is passed check if the column is present there
@@ -56,7 +56,7 @@ export function buildFields<TSource>(
       const type = isPk ? GraphQLID : MATCHER[column.model.type]
       result[column.name] = {
         type: isRequired ? new GraphQLNonNull(type) : type,
-        description: column.layout.label as string,
+        description: column.layout?.label as string || column.name,
       }
     }
 
@@ -68,25 +68,25 @@ export function buildFields<TSource>(
         }
         const remoteTable = relation.remoteTable
         const relatedTable = config().settings.find(
-          (settingsTable) => settingsTable.name === remoteTable
+          (settingsEntity) => settingsEntity.name === remoteTable
         )
         if (!relatedTable) {
           throw new Error('Invalid relation configuration: relatedTable not found')
         }
         result[remoteTable] = {
           type: buildType(relatedTable),
-          description: column.layout.label as string,
-          resolve: resolver(relatedTable, table),
+          description: column.layout?.label as string || column.name,
+          resolve: resolver(relatedTable, table, relation.type),
           args: buildArgs(relatedTable, { pagination: false, filter: true }),
         }
         result[column.name] = {
           type: GraphQLID,
-          description: column.layout.label as string,
+          description: column.layout?.label as string || column.name,
         }
       } else {
         result[column.name] = {
           type: isRequired ? new GraphQLNonNull(GraphQLID) : GraphQLID,
-          description: column.layout.label as string,
+          description: column.layout?.label as string || column.name,
         }
       }
     }
@@ -134,7 +134,7 @@ export function buildFields<TSource>(
   return result
 }
 
-export function buildType(table: ITableInfo, options: IBuildTypeOptions = { relations: true }): GraphQLObjectType {
+export function buildType(table: IEntityInfo, options: IBuildTypeOptions = { relations: true }): GraphQLObjectType {
   const name = table.name
   debug(`Creating type for table ${name}`)
   if (!entitiesType[name]) {
@@ -148,7 +148,7 @@ export function buildType(table: ITableInfo, options: IBuildTypeOptions = { rela
   }
   return entitiesType[name]
 }
-export function buildDeleteMutationType(table: ITableInfo): GraphQLObjectType<unknown, unknown> {
+export function buildDeleteMutationType(table: IEntityInfo): GraphQLObjectType<unknown, unknown> {
   const name = `delete${capitalize(table.name)}`
   debug(`Creating ${name}`)
   if (!entitiesType[name]) {

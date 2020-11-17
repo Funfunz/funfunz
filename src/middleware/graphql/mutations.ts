@@ -1,8 +1,8 @@
 import { buildDeleteMutationType, buildType } from './typeBuilder'
 import config from '../utils/configLoader'
-import { ITableInfo } from '../..//generator/configurationTypes'
+import type { IEntityInfo } from '../..//generator/configurationTypes'
 import Debug from 'debug'
-import { GraphQLFieldConfig, GraphQLFieldConfigMap, Thunk } from 'graphql'
+import { GraphQLFieldConfig, GraphQLFieldConfigMap, GraphQLList, Thunk } from 'graphql'
 import { capitalize, getFields } from '../utils/index'
 import { TUserContext } from './schema'
 import { requirementsCheck } from '../utils/dataAccess'
@@ -20,17 +20,17 @@ export default function buildMutations(): Thunk<GraphQLFieldConfigMap<unknown, T
   const mutations: Thunk<GraphQLFieldConfigMap<unknown, TUserContext>> = {}
   configs.settings.forEach((table) => {
     mutations[`add${capitalize(table.name)}`] = buildAddMutation(table)
-    mutations[`update${capitalize(table.name)}`] = buildUpdateByIdMutation(table)
+    mutations[`update${capitalize(table.name)}`] = buildUpdateMutation(table)
     mutations[`delete${capitalize(table.name)}`] = buildDeleteMutation(table)
   })
   debug('Mutations built')
   return mutations
 }
 
-function buildUpdateByIdMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUserContext> {
+function buildUpdateMutation(table: IEntityInfo): GraphQLFieldConfig<unknown, TUserContext> {
   debug(`Creating ${table.name} update mutation`)
   const mutation: GraphQLFieldConfig<unknown, TUserContext>  = {
-    type: buildType(table, { relations: true }),
+    type: new GraphQLList(buildType(table, { relations: true })),
     args: buildArgs(table, { pagination: true, data: true, filter: true }),
     resolve: async (parent, rawargs, ctx, info) => {
       const { user } = ctx
@@ -65,7 +65,7 @@ function buildUpdateByIdMutation(table: ITableInfo): GraphQLFieldConfig<unknown,
   return mutation
 }
 
-function buildAddMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUserContext> {
+function buildAddMutation(table: IEntityInfo): GraphQLFieldConfig<unknown, TUserContext> {
   debug(`Creating ${table.name} add mutation`)
   const mutation: GraphQLFieldConfig<unknown, TUserContext>  = {
     type: buildType(table),
@@ -103,7 +103,7 @@ function buildAddMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUserC
   return mutation
 }
 
-function buildDeleteMutation(table: ITableInfo): GraphQLFieldConfig<unknown, TUserContext> {
+function buildDeleteMutation(table: IEntityInfo): GraphQLFieldConfig<unknown, TUserContext> {
   debug(`Creating ${table.name} delete mutation`)
   const mutation: GraphQLFieldConfig<unknown, TUserContext>  = {
     type: buildDeleteMutationType(table),

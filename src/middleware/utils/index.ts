@@ -1,5 +1,5 @@
 import config from '../utils/configLoader'
-import { IColumnInfo, ITableInfo } from '../../generator/configurationTypes'
+import { IPropertyInfo, IEntityInfo } from '../../generator/configurationTypes'
 import { GraphQLResolveInfo } from 'graphql'
 import { parseResolveInfo, simplifyParsedResolveInfoFragmentWithType, ResolveTree } from 'graphql-parse-resolve-info'
 
@@ -9,7 +9,7 @@ import { parseResolveInfo, simplifyParsedResolveInfoFragmentWithType, ResolveTre
  *
  * @returns {ITableInfo} table configuration
  */
-export function getTableConfig(TABLE_NAME: string): ITableInfo {
+export function getTableConfig(TABLE_NAME: string): IEntityInfo {
   return config().settings.filter(
     (tableItem) => tableItem.name === TABLE_NAME
   )[0]
@@ -22,10 +22,10 @@ export function getTableConfig(TABLE_NAME: string): ITableInfo {
  *
  * @returns {{ [key: string]: IColumnInfo }} {[columnName]:[columnConfig]} object
  */
-export function getColumnsByName(TABLE_CONFIG: ITableInfo): Record<string, IColumnInfo> {
-  const columnsByName: Record<string, IColumnInfo> = {}
+export function getColumnsByName(TABLE_CONFIG: IEntityInfo): Record<string, IPropertyInfo> {
+  const columnsByName: Record<string, IPropertyInfo> = {}
 
-  TABLE_CONFIG.columns.forEach(
+  TABLE_CONFIG.properties.forEach(
     (column) => {
       columnsByName[column.name] = column
     }
@@ -40,9 +40,9 @@ export function getColumnsByName(TABLE_CONFIG: ITableInfo): Record<string, IColu
  *
  * @returns {IColumnInfo[]} array of relation columns
  */
-export function getColumnsWithRelations(TABLE_CONFIG: ITableInfo): IColumnInfo[] {
-  return TABLE_CONFIG.columns.filter(
-    (column) => column.relation
+export function getColumnsWithRelations(TABLE_CONFIG: IEntityInfo): IPropertyInfo[] {
+  return TABLE_CONFIG.properties.filter(
+    (property) => property.relation
   )
 }
 
@@ -52,12 +52,16 @@ export function getColumnsWithRelations(TABLE_CONFIG: ITableInfo): IColumnInfo[]
  *
  * @returns {string[]} array of primary keys
  */
-export function getPKs(TABLE_CONFIG: ITableInfo): string[] {
-  return TABLE_CONFIG.columns.filter((column) => {
-    return column.model.isPk
-  }).map((column) => {
-    return column.name
-  })
+export function getPKs(TABLE_CONFIG: IEntityInfo): string[] {
+  return TABLE_CONFIG.properties.filter(
+    (entity) => {
+      return entity.model.isPk
+    }
+  ).map(
+    (property) => {
+      return property.name
+    }
+  )
 }
 
 /**
@@ -78,8 +82,7 @@ export function isNull(val: unknown): boolean {
  */
 
 export function isPromise<T>(value: unknown): value is Promise<T> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return typeof (value as any)?.then === 'function'
+  return typeof (value as Promise<unknown>)?.then === 'function'
 }
 
 
@@ -94,23 +97,23 @@ export function capitalize(str: string): string {
 }
 
 export function getFields(
-  table: ITableInfo,
+  table: IEntityInfo,
   info: GraphQLResolveInfo
 ): string[] {
   const fields = [...(getPKs(table))]
   const parsedResolveInfoFragment = parseResolveInfo(info)
   if (parsedResolveInfoFragment) {
-    const {fields: columns} = simplifyParsedResolveInfoFragmentWithType(
+    const {fields: properties} = simplifyParsedResolveInfoFragmentWithType(
       parsedResolveInfoFragment as ResolveTree,
       info.returnType
     )
-    Object.keys(columns).forEach(
-      (columnName) => {
-        if (table.columns.find((c) => c.name === columnName)) {
-          fields.push(columnName)
+    Object.keys(properties).forEach(
+      (propertyName) => {
+        if (table.properties.find((c) => c.name === propertyName)) {
+          fields.push(propertyName)
         }
         const relation = table.relations && table.relations.find((r) => {
-          return r.remoteTable === columnName && r.type === 'n:1'
+          return r.remoteTable === propertyName && r.type === 'n:1'
         })
         if (relation) {
           fields.push(relation.foreignKey)

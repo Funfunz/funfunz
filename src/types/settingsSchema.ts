@@ -5,35 +5,21 @@ export default {
     type: 'object',
     required: [
       'name',
-      'columns',
+      'properties',
       'roles',
     ],
     properties: {
       name: {type: 'string'},
-      columns: {
+      properties: {
         type: 'array',
         items: {
           type: 'object',
           required: [
             'name',
-            'visible',
             'model',
           ],
           properties: {
             name: {type: 'string'},
-            visible: {
-              type: 'object',
-              required: [
-                'list',
-                'detail',
-                'relation',
-              ],
-              properties: {
-                list: {type: 'boolean'},
-                detail: {type: 'boolean'},
-                relation: {type: 'boolean'},
-              },
-            },
             model: {
               type: 'object',
               required: [

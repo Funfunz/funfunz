@@ -2,7 +2,7 @@
 import { resolver, resolverCount } from './resolver'
 import { buildType } from './typeBuilder'
 import config from '../utils/configLoader'
-import { ITableInfo } from '../../generator/configurationTypes'
+import { IEntityInfo } from '../../generator/configurationTypes'
 import Debug from 'debug'
 import GraphQLJSON, { GraphQLJSONObject } from 'graphql-type-json'
 import { GraphQLBoolean, GraphQLFieldConfig, GraphQLFieldConfigMap, GraphQLInt, GraphQLList, GraphQLObjectType, GraphQLString, Thunk } from 'graphql'
@@ -27,7 +27,7 @@ export function buildQueries(): Thunk<GraphQLFieldConfigMap<unknown, TUserContex
   return queries
 }
 
-function buildQuery(table: ITableInfo): GraphQLFieldConfig<unknown, TUserContext> {
+function buildQuery(table: IEntityInfo): GraphQLFieldConfig<unknown, TUserContext> {
   debug(`Creating ${table.name} query`)
   const query: GraphQLFieldConfig<unknown, TUserContext> = {
     type: new GraphQLList(buildType(table)),
@@ -39,7 +39,7 @@ function buildQuery(table: ITableInfo): GraphQLFieldConfig<unknown, TUserContext
   return query
 }
 
-function buildCount(table: ITableInfo) {
+function buildCount(table: IEntityInfo) {
   debug(`Creating ${table.name} query`)
   const query: GraphQLFieldConfig<unknown, TUserContext> = {
     type: GraphQLInt,
@@ -51,7 +51,7 @@ function buildCount(table: ITableInfo) {
   return query
 }
 
-function buildConfig(tables: ITableInfo[]) {
+function buildConfig(tables: IEntityInfo[]) {
   debug('Creating config query')
 
   const resolveData = {}
@@ -83,7 +83,7 @@ function buildConfig(tables: ITableInfo[]) {
   return query
 }
 
-function buildEntities(tables: ITableInfo[]) {
+function buildEntities(tables: IEntityInfo[]) {
   
   const query: GraphQLFieldConfig<unknown, TUserContext> = {
     type: new GraphQLList(new GraphQLObjectType({

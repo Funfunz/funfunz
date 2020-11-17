@@ -27,7 +27,7 @@ export default {
       'remoteForeignKey': 'roleId',
     },
   ],
-  'columns': [
+  'properties': [
     {
       'name': 'id',
       'searchable': true,

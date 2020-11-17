@@ -1,6 +1,6 @@
 import config from '../utils/configLoader'
 import Debug from 'debug'
-import { IQueryArgs, IUpdateArgs, ICreateArgs, IRemoveArgs, DataConnector } from '../../types/connector'
+import type { IQueryArgs, IUpdateArgs, ICreateArgs, IRemoveArgs, DataConnector } from '../../types/connector'
 
 const debug = Debug('funfunz:dataConnector')
 
@@ -13,9 +13,16 @@ export const initDataConnectors = (): void => {
       if (!connectors[key]) {
         switch (configuration[key].type) {
         case 'sql':
-          import('../../dataConnectors/SQLDataConnector').then(
+          import('sql-data-connector').then(
             (module) => {
-              connectors[key] = new module.SQLDataConnector(value)
+              connectors[key] = new module.Connector(value)
+            }
+          )
+          break
+        case 's3':
+          import('../../dataConnectors/S3DataConnector').then(
+            (module) => {
+              connectors[key] = new module.Connector(value as never)
             }
           )
           break
@@ -36,6 +43,7 @@ export const initDataConnectors = (): void => {
 }
 
 export const query = (connectorName: string, args: IQueryArgs): Promise<unknown[] | unknown> => {
+  console.log('query', connectorName)
   return connectors[connectorName].query(args)
 }
 
