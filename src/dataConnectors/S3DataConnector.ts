@@ -1,7 +1,7 @@
 import Debug from 'debug'
 import { S3, config } from 'aws-sdk'
 import type { ICreateArgs, IQueryArgs, IRemoveArgs, IUpdateArgs, DataConnector, IDataConnector } from '../types/connector'
-import { FilterValues, OperatorsType } from '../middleware/utils/filter'
+import type { IFilter } from '../middleware/utils/filter'
 import { createReadStream } from 'fs'
 import path from 'path'
 
@@ -31,47 +31,37 @@ export class Connector implements DataConnector{
   }
 
   public query(args: IQueryArgs): Promise<Record<string, unknown>[]> {
-    let key = ''
-    if (args.filter?.key) {
-      const keyFilter = args.filter?.key as Record<Partial<OperatorsType>, FilterValues>
-      if (!keyFilter?._like) {
-        throw new Error('_like filter is required')
-      }
-      key = keyFilter._like as string
+    let keyFilter: {key: string, filter: string} | undefined = undefined
+    if (args.filter) {
+      keyFilter = this.getKeyFromFilter(args.filter) || undefined
     }
+
+    console.log(keyFilter)
 
     return new Promise<S3.ObjectList>(
       (res, rej) => {
         this.connection.listObjectsV2(
           {
             Bucket: this.config.bucket,
-            Prefix: key
+            Prefix: keyFilter?.key
           },
           (err, data) => {
             if (err) {
               console.log('err', err)
               return rej(err)
             }
-            console.log('data', data)
             res(data.Contents || [])
           }
         )
       }
     ).then(
       (data: S3.ObjectList) => {
-        const fields = args.fields
-        const result: Record<string, unknown>[]  = []
-        data.forEach(
-          (entry) => {
-            const resultEntry = {}
-            fields.forEach(
-              (field) => {
-                resultEntry[field] = entry[field]
-              }
-            )
-            result.push(resultEntry)
-          }
-        )
+        let result: Record<string, unknown>[] = data as unknown as Record<string, unknown>[]
+        if (keyFilter?.filter === '_eq') {
+          result = result.filter(
+            (entry) => entry.Key === keyFilter?.key
+          )
+        }
         return result
       }
     )
@@ -114,11 +104,47 @@ export class Connector implements DataConnector{
         )
       }
     )
-
   }
 
   public remove(args: IRemoveArgs): Promise<number> {
     console.log(args)
     return Promise.resolve(0)
+  }
+
+  private getKeyFromFilter(filter: IFilter): {key: string, filter: string} | undefined {
+    let result: {key: string, filter: string} | undefined = undefined
+    Object.keys(filter).some(
+      (filterKey) => {
+        if (filterKey === 'Key') {
+          const entry = filter[filterKey] as Record<string, string>
+          if (entry._like !== undefined) {
+            result = {
+              key: entry._like,
+              filter: '_like'
+            }
+          }
+          if (entry._eq !== undefined) {
+            result = {
+              key: entry._eq,
+              filter: '_eq'
+            }
+          }
+        }
+        if (filterKey === '_and' || filterKey === '_or') {
+          const value = (filter[filterKey] as IFilter['_and'] | IFilter['_or']) || []
+        
+          value.forEach(
+            (entry) => {
+              const innerResult = this.getKeyFromFilter(entry)
+              if (innerResult) {
+                result = innerResult
+              }
+            }
+          )
+        }
+        return !!result
+      }
+    )
+    return result
   }
 }
