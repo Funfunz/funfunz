@@ -2,8 +2,11 @@ import Debug from 'debug'
 import { S3, config } from 'aws-sdk'
 import type { ICreateArgs, IQueryArgs, IRemoveArgs, IUpdateArgs, DataConnector, IDataConnector } from '../types/connector'
 import type { IFilter } from '../middleware/utils/filter'
-import { createReadStream } from 'fs'
-import path from 'path'
+import { ReadStream } from 'fs'
+import { IEntityInfo } from '../generator/configurationTypes'
+import { buildType } from '../middleware/graphql/typeBuilder'
+import { GraphQLFieldConfig, GraphQLInputObjectType } from 'graphql'
+import { GraphQLUpload } from 'graphql-upload'
 
 const debug = Debug('funfunz:S3DataConnector')
 
@@ -12,6 +15,36 @@ type S3Config = {
   region?: string,
   apiVersion?: string,
 }
+
+export const addMutation = (entity: IEntityInfo):GraphQLFieldConfig<unknown, unknown>  => ({
+  type: buildType(entity),
+  args: {
+    data: {
+      description: 'Mutation data',
+      type: new GraphQLInputObjectType({
+        name: `input${entity.name}File`,
+        description: `Data to update ${entity.name}`,
+        fields: {
+          file: {
+            description: 'File to upload',
+            type: GraphQLUpload,
+          }
+        },
+      }),
+    },
+  },
+  resolve: async (parent, rawargs) => {
+    const { filename, mimetype, encoding, createReadStream } = await rawargs.data.file
+    const stream = createReadStream() as ReadStream
+    
+    return {
+      stream,
+      filename,
+      mimetype,
+      encoding,
+    }
+  }
+})
 
 export class Connector implements DataConnector{
   public connection: S3
@@ -36,8 +69,6 @@ export class Connector implements DataConnector{
       keyFilter = this.getKeyFromFilter(args.filter) || undefined
     }
 
-    console.log(keyFilter)
-
     return new Promise<S3.ObjectList>(
       (res, rej) => {
         this.connection.listObjectsV2(
@@ -47,7 +78,6 @@ export class Connector implements DataConnector{
           },
           (err, data) => {
             if (err) {
-              console.log('err', err)
               return rej(err)
             }
             res(data.Contents || [])
@@ -73,20 +103,18 @@ export class Connector implements DataConnector{
   }
 
   public create(args: ICreateArgs): Promise<Record<string, unknown>[] | Record<string, unknown>> {
-    console.log(args)
-    const file = 'fileName.txt'
+    const extra = args.data.extra as {
+      filename: string
+      stream: ReadStream
+    }
 
     // Configure the file stream and obtain the upload parameters
-    
-    const fileStream = createReadStream(file)
-    fileStream.on('error', function(err) {
-      console.log('File Error', err)
-    })
-    const Body = fileStream
-    
-    const Key = path.basename(file)
 
-    const uploadParams = {Bucket: this.config.bucket, Key, Body}
+    const uploadParams = {
+      Bucket: this.config.bucket,
+      Key: extra.filename,
+      Body: extra.stream
+    }
 
     // call S3 to retrieve upload file to specified bucket
     return new Promise(

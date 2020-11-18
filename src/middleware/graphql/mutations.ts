@@ -2,7 +2,7 @@ import { buildDeleteMutationType, buildType } from './typeBuilder'
 import config from '../utils/configLoader'
 import type { IEntityInfo } from '../..//generator/configurationTypes'
 import Debug from 'debug'
-import { GraphQLFieldConfig, GraphQLFieldConfigMap, GraphQLList, Thunk } from 'graphql'
+import { GraphQLFieldConfig, GraphQLFieldConfigMap, GraphQLList } from 'graphql'
 import { capitalize, getFields } from '../utils/index'
 import { TUserContext } from './schema'
 import { requirementsCheck } from '../utils/dataAccess'
@@ -15,11 +15,15 @@ import { IFilter } from '../utils/filter'
 
 const debug = Debug('funfunz:graphql-mutation-builder')
 
-export default function buildMutations(): Thunk<GraphQLFieldConfigMap<unknown, TUserContext>> {
+export default function buildMutations(): GraphQLFieldConfigMap<unknown, TUserContext> {
   const configs = config()
-  const mutations: Thunk<GraphQLFieldConfigMap<unknown, TUserContext>> = {}
+  const mutations: GraphQLFieldConfigMap<unknown, TUserContext> = {}
   configs.settings.forEach((table) => {
-    mutations[`add${capitalize(table.name)}`] = buildAddMutation(table)
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const dataConnector = configs.config.connectors[table.connector].type !== 's3'
+      ? require(`${configs.config.connectors[table.connector].type}-data-connector`)
+      : require('../../dataConnectors/S3DataConnector')
+    mutations[`add${capitalize(table.name)}`] = buildAddMutation(table, typeof dataConnector.addMutation === 'function' && dataConnector.addMutation(table))
     mutations[`update${capitalize(table.name)}`] = buildUpdateMutation(table)
     mutations[`delete${capitalize(table.name)}`] = buildDeleteMutation(table)
   })
@@ -65,11 +69,11 @@ function buildUpdateMutation(table: IEntityInfo): GraphQLFieldConfig<unknown, TU
   return mutation
 }
 
-function buildAddMutation(table: IEntityInfo): GraphQLFieldConfig<unknown, TUserContext> {
+function buildAddMutation(table: IEntityInfo, dataConnectorMutation?: GraphQLFieldConfig<unknown, TUserContext>): GraphQLFieldConfig<unknown, TUserContext> {
   debug(`Creating ${table.name} add mutation`)
   const mutation: GraphQLFieldConfig<unknown, TUserContext>  = {
-    type: buildType(table),
-    args: buildArgs(table, { data: true }),
+    type: dataConnectorMutation?.type || buildType(table),
+    args: dataConnectorMutation?.args || buildArgs(table, { data: true }),
     resolve: async (parent, rawargs, ctx, info) => {
       const { user } = ctx
       const { args, context } = await executeHook(table, 'add', 'beforeResolver', { args: rawargs, user })
@@ -77,7 +81,7 @@ function buildAddMutation(table: IEntityInfo): GraphQLFieldConfig<unknown, TUser
       const data = normalize(args.data as Record<string, unknown>, table, true)
       const fields = getFields(table, info)
 
-      const rawquery = {
+      const rawquery: ICreateArgs = {
         entityName: table.name,
         fields,
         data: data as Record<string, unknown>,
@@ -87,6 +91,9 @@ function buildAddMutation(table: IEntityInfo): GraphQLFieldConfig<unknown, TUser
 
       const { query, context: newContext } = await executeHook(table, 'add', 'beforeSendQuery', { user, args, query: rawquery, context })
     
+      if (dataConnectorMutation?.resolve) {
+        (query as ICreateArgs).data.extra = await dataConnectorMutation.resolve(parent, rawargs, ctx, info)
+      }
       const results = await create(table.connector, query as ICreateArgs)
       
       const { results: modifiedResults } = await executeHook(table, 'add', 'afterQueryResult', {
