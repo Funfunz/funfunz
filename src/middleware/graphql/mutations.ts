@@ -91,9 +91,6 @@ function buildAddMutation(table: IEntityInfo, dataConnectorMutation?: GraphQLFie
 
       const { query, context: newContext } = await executeHook(table, 'add', 'beforeSendQuery', { user, args, query: rawquery, context })
     
-      if (dataConnectorMutation?.resolve) {
-        (query as ICreateArgs).data.extra = await dataConnectorMutation.resolve(parent, rawargs, ctx, info)
-      }
       const results = await create(table.connector, query as ICreateArgs)
       
       const { results: modifiedResults } = await executeHook(table, 'add', 'afterQueryResult', {
