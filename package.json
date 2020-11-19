@@ -1,5 +1,5 @@
 {
-  "name": "funfunz",
+  "name": "@funfunz/core",
   "version": "0.5.5",
   "description": "backoffice generator",
   "main": "lib/middleware/index.js",
