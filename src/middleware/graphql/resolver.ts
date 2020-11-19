@@ -81,7 +81,7 @@ export function resolverCount<TSource, TContext extends TUserContext>(
     const { query, context: newContext } = await executeHook(table, 'count', 'beforeSendQuery', { user, args, query: rawquery, context })
     
     const results = await sendQuery(table.connector, query as IQueryArgs)
-    
+    console.log('results', results)
     const { results: modifiedResults } = await executeHook(table, 'count', 'afterQueryResult', {
       user,
       args,

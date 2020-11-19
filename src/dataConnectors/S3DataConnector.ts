@@ -55,7 +55,7 @@ export class Connector implements DataConnector{
     debug('End')
   }
 
-  public query(args: IQueryArgs): Promise<Record<string, unknown>[]> {
+  public query(args: IQueryArgs): Promise<Record<string, unknown>[] | number> {
     let keyFilter: {key: string, filter: string} | undefined = undefined
     if (args.filter) {
       keyFilter = this.getKeyFromFilter(args.filter) || undefined
@@ -79,6 +79,9 @@ export class Connector implements DataConnector{
     ).then(
       (data: S3.ObjectList) => {
         let result: Record<string, unknown>[] = data as unknown as Record<string, unknown>[]
+        if (args.count) {
+          return result.length
+        }
         if (keyFilter?.filter === '_eq') {
           result = result.filter(
             (entry) => entry.Key === keyFilter?.key
@@ -95,7 +98,7 @@ export class Connector implements DataConnector{
   }
 
   public async create(args: ICreateArgs): Promise<Record<string, unknown>[] | Record<string, unknown>> {
-    const { filename, createReadStream } = await args.data.file as FileUpload
+    const { filename, createReadStream, mimetype } = await args.data.file as FileUpload
     const stream = createReadStream() as ReadStream
     
 
@@ -104,7 +107,8 @@ export class Connector implements DataConnector{
     const uploadParams = {
       Bucket: this.config.bucket,
       Key: filename,
-      Body: stream
+      Body: stream,
+      ContentType: mimetype,
     }
 
     // call S3 to retrieve upload file to specified bucket

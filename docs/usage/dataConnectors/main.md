@@ -17,10 +17,7 @@ Check [config](../configuration/config.md) and [settings](../configuration/setti
       type: string, // the connector to use, for example: 'sql-connector'
       config: any, // the configuration required for the specific connector
     }
-  },
-  server: {
-    port: number, // port where the application runs
-  },
+  }
 }
 ```
 
@@ -28,9 +25,7 @@ Check [config](../configuration/config.md) and [settings](../configuration/setti
 
 ```js
 {
-  name: string, // entity name
   connector: string, // user defined name of the connector set on the config file
-  visible: boolean, // if this entity is visible on the API
   ...
 }
 ```

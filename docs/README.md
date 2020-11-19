@@ -16,15 +16,22 @@ Funfunz was created due the lack of a functional back-office and API generator i
 
 The goal is to generate a complete CMS/back-office/data manager application
 
-**Current features:**
+Follow the quickstart [here](usage/quickstart.md)
 
+## Current features
 - CRUD operations
-- Table filters
+- GraphQL schema generator
+- [Entity filters](usage/filters.md)
+- [Data connector system](usage/dataConnectors/main.md)
+- [Configurable Hooks](usage/hooks.md)
+- [Request lifecycle](usage/hooks.md)
+
+**Supported data connectors**
+- [SQL databases](usage/dataConnectors/sql.md)
+
+**Configuration generator**
 - MySQL and MongoDB parser and configurations generator
-- Friendly name generator for table names and fields
-- Role support
-- Configurable Hooks on all the requests to change any data on the backend side
-- GraphQL generator
+- Friendly name generator for entity names and fields
 
 ## CLI
 

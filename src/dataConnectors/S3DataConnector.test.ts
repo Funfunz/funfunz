@@ -25,9 +25,9 @@ addS3Entity (
     const formData = new FormData()
     formData.append('operations', JSON.stringify(o))
     formData.append('map', JSON.stringify(map))
-    const stream = fs.createReadStream(`${__dirname}/S3DataConnector.test.ts`, {encoding: 'utf8'})
+    const stream = fs.createReadStream(`${__dirname}/soMilkySoJohn.png`)
 
-    formData.append('0', stream, 'S3DataConnector.test.ts')
+    formData.append('0', stream, 'soMilkySoJohn.png')
     
     fetch('http://localhost:3004', {
       method: 'POST',
