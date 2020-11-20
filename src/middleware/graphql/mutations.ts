@@ -20,22 +20,20 @@ export default function buildMutations(): GraphQLFieldConfigMap<unknown, TUserCo
   const mutations: GraphQLFieldConfigMap<unknown, TUserContext> = {}
   configs.settings.forEach((table) => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const dataConnector = configs.config.connectors[table.connector].type !== 's3'
-      ? require(`${configs.config.connectors[table.connector].type}-data-connector`)
-      : require('../../dataConnectors/S3DataConnector')
+    const dataConnector = require(`${configs.config.connectors[table.connector].type}-data-connector`)
     mutations[`add${capitalize(table.name)}`] = buildAddMutation(table, typeof dataConnector.addMutation === 'function' && dataConnector.addMutation(table))
-    mutations[`update${capitalize(table.name)}`] = buildUpdateMutation(table)
-    mutations[`delete${capitalize(table.name)}`] = buildDeleteMutation(table)
+    mutations[`update${capitalize(table.name)}`] = buildUpdateMutation(table, typeof dataConnector.updateMutation === 'function' && dataConnector.updateMutation(table))
+    mutations[`delete${capitalize(table.name)}`] = buildDeleteMutation(table, typeof dataConnector.deleteMutation === 'function' && dataConnector.deleteMutation(table))
   })
   debug('Mutations built')
   return mutations
 }
 
-function buildUpdateMutation(table: IEntityInfo): GraphQLFieldConfig<unknown, TUserContext> {
+function buildUpdateMutation(table: IEntityInfo, dataConnectorMutation?: GraphQLFieldConfig<unknown, TUserContext>): GraphQLFieldConfig<unknown, TUserContext> {
   debug(`Creating ${table.name} update mutation`)
   const mutation: GraphQLFieldConfig<unknown, TUserContext>  = {
-    type: new GraphQLList(buildType(table, { relations: true })),
-    args: buildArgs(table, { pagination: true, data: true, filter: true }),
+    type: dataConnectorMutation?.type || new GraphQLList(buildType(table, { relations: true })),
+    args: dataConnectorMutation?.args || buildArgs(table, { pagination: true, data: true, filter: true }),
     resolve: async (parent, rawargs, ctx, info) => {
       const { user } = ctx
       const { args, context } = await executeHook(table, 'update', 'beforeResolver', { args: rawargs, user })
@@ -107,11 +105,11 @@ function buildAddMutation(table: IEntityInfo, dataConnectorMutation?: GraphQLFie
   return mutation
 }
 
-function buildDeleteMutation(table: IEntityInfo): GraphQLFieldConfig<unknown, TUserContext> {
+function buildDeleteMutation(table: IEntityInfo, dataConnectorMutation?: GraphQLFieldConfig<unknown, TUserContext>): GraphQLFieldConfig<unknown, TUserContext> {
   debug(`Creating ${table.name} delete mutation`)
   const mutation: GraphQLFieldConfig<unknown, TUserContext>  = {
-    type: buildDeleteMutationType(table),
-    args: buildArgs(table, { filter: true }),
+    type: dataConnectorMutation?.type || buildDeleteMutationType(table),
+    args: dataConnectorMutation?.args || buildArgs(table, { filter: true }),
     resolve: async (parent, rawargs, ctx) => {
       const { user } = ctx
       const { args, context } = await executeHook(table, 'delete', 'beforeResolver', { args: rawargs, user })

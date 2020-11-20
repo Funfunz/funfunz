@@ -1,8 +1,5 @@
 import config from '../utils/configLoader'
-import Debug from 'debug'
 import type { IQueryArgs, IUpdateArgs, ICreateArgs, IRemoveArgs, DataConnector } from '../../types/connector'
-
-const debug = Debug('funfunz:dataConnector')
 
 const connectors: Record<string, DataConnector> = {} 
 
@@ -11,33 +8,16 @@ export const initDataConnectors = (): void => {
   Object.entries(configuration).forEach(
     ([key, value]) => {
       if (!connectors[key]) {
-        switch (configuration[key].type) {
-        case 'sql':
-          import('sql-data-connector').then(
-            (module) => {
-              connectors[key] = new module.Connector(value)
-            }
-          )
-          break
-        case 's3':
-          import('../../dataConnectors/S3DataConnector').then(
-            (module) => {
-              connectors[key] = new module.Connector(value as never)
-            }
-          )
-          break
-        default:
-          throw new Error(`connector type ${configuration[key].type} not supported`)
-        }
-        
+        import(`${configuration[key].type}-data-connector`).then(
+          (module) => {
+            connectors[key] = new module.Connector(value)
+          }
+        ).catch(
+          (error) => {
+            throw Error(`${error.message}\nIssue with connector type ${configuration[key].type}`)
+          }
+        )
       }
-      debug('Start')
-      Object.keys(value).forEach(
-        (key) => {
-          debug(key, (value)[key])
-        }
-      )
-      debug('End')
     }
   )
 }
