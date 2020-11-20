@@ -22,6 +22,9 @@ jobs:
           heroku_app_name: funfunz
           heroku_email: ${{secrets.HEROKU_EMAIL}}
           delay: 10
+        env:
+          HD_NPM_CONFIG_PRODUCTION: false
+          HD_NODE_MODULES_CACHE: false
 
   mysql:
     runs-on: ubuntu-latest

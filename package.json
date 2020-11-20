@@ -7,7 +7,6 @@
     "node": ">=9.11.1"
   },
   "scripts": {
-    "heroku-prebuild": "npm install --only=dev",
     "docs": "docsify serve ./docs",
     "jest": "jest --coverage --forceExit",
     "test": "npm run jest",
