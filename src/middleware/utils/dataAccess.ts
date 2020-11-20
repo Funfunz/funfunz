@@ -1,6 +1,6 @@
 import { IUser } from '../types'
 import { HttpException } from './exception'
-import { ITableInfo } from '../../generator/configurationTypes'
+import { IEntityInfo } from '../../generator/configurationTypes'
 
 /**
  * checks for user authorization against a list of roles
@@ -50,7 +50,7 @@ export function hasAuthorization(
  * @returns {Promise<boolean>} the database connector
  */
 export function requirementsCheck(
-  tableConfig: ITableInfo,
+  tableConfig: IEntityInfo,
   accessType: 'read' | 'create' | 'update' | 'delete',
   user: IUser | undefined,
   superUser?: boolean

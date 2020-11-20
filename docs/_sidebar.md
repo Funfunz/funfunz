@@ -1,7 +1,6 @@
 - [Home](/)
-- [Usage](usage/quickstart.md)
-  - [Middleware](usage/middleware.md)
-  - [Template](usage/template.md)
+- Usage
+  - [Quickstart](usage/quickstart.md)
   - [Data connectors](usage/dataConnectors/main.md)
     - [SQL](usage/dataConnectors/sql.md)
   - [Filters](usage/filters.md)

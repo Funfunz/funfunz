@@ -1,6 +1,6 @@
 import { query as sendQuery } from '../dataConnector/index'
 import { getFields } from '../utils/index'
-import { ITableInfo } from '../../generator/configurationTypes'
+import { IEntityInfo } from '../../generator/configurationTypes'
 import { GraphQLFieldResolver } from 'graphql'
 import { TUserContext } from './schema'
 import { requirementsCheck } from '../utils/dataAccess'
@@ -9,8 +9,9 @@ import { executeHook } from '../utils/lifeCycle'
 import { IQueryArgs } from '../../types/connector'
 
 export function resolver<TSource, TContext extends TUserContext>(
-  table: ITableInfo,
-  parentTable?: ITableInfo
+  table: IEntityInfo,
+  parentTable?: IEntityInfo,
+  relationType?: '1:n' | 'n:1' | 'm:n'
 ): GraphQLFieldResolver<TSource, TContext> {
   return async (parent, rawargs, ctx, info) => {
     const { user, superUser } = ctx
@@ -42,8 +43,10 @@ export function resolver<TSource, TContext extends TUserContext>(
     }
     const { query, context: newContext } = await executeHook(table, 'query', 'beforeSendQuery', { user, args, query: rawquery, context })
     
-    const results = await sendQuery(table.connector, query as IQueryArgs)
-    
+    let results = await sendQuery(table.connector, query as IQueryArgs)
+    if (relationType === 'n:1') {
+      results = (results as unknown[])[0]
+    }
     const { results: modifiedResults } = await executeHook(table, 'query', 'afterQueryResult', {
       user,
       args,
@@ -57,7 +60,7 @@ export function resolver<TSource, TContext extends TUserContext>(
 }
 
 export function resolverCount<TSource, TContext extends TUserContext>(
-  table: ITableInfo
+  table: IEntityInfo
 ): GraphQLFieldResolver<TSource, TContext> {
   return async (parent, rawargs, ctx) => {
     const { user, superUser } = ctx
@@ -69,6 +72,7 @@ export function resolverCount<TSource, TContext extends TUserContext>(
     const rawquery: IQueryArgs = {
       entityName: table.name,
       count: true,
+      fields: [],
       filter: args.filter as IFilter,
       skip: args.skip as number,
       take: args.take as number
@@ -77,7 +81,6 @@ export function resolverCount<TSource, TContext extends TUserContext>(
     const { query, context: newContext } = await executeHook(table, 'count', 'beforeSendQuery', { user, args, query: rawquery, context })
     
     const results = await sendQuery(table.connector, query as IQueryArgs)
-    
     const { results: modifiedResults } = await executeHook(table, 'count', 'afterQueryResult', {
       user,
       args,

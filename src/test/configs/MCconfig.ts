@@ -3,7 +3,7 @@ import { IConfig } from "../../generator/configurationTypes"
 const config: IConfig = {
   connectors: {
     mainDatabase: {
-      type: "sql",
+      type: "@funfunz/sql-data-connector",
       config: {
         client: 'mysql2',
         host: "127.0.0.1",
@@ -12,7 +12,7 @@ const config: IConfig = {
         password: process.env.DB_PASSWORD || '',
         port: "3306"
       },
-    },
+    }
   }
 }
 export default config

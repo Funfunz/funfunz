@@ -1,39 +1,70 @@
 # Quickstart
+
+You can run the application using the template project or through the exported middleware
+
+## Template project
+
+Please see the [template project](https://github.com/Funfunz/funfunz-template) for further details
+
+This is a template Express application that already has everything setup to start a new Funfunz ready backend
+
 ---
 
-## Project setup
+## Funfunz Middleware
+
+Please see the [middleware](usage/middleware.md) for further details
+
+The middleware is an express middleware so that you can use it inside ExpressJS or any other compatible system
+
+### Project setup
 
 ```
 npm init
 npm i funfunz
 ```
----
 
-## Generate configurations
+### Generate configurations
 
 **npx**
 ```
 npx funfunz
 ```
 
-**local instalation**
+**local installation**
 ```
 node_modules/.bin/funfunz
 ```
----
 
-## Running the application
+### Usage
 
-You can run the application using the template project or through the exported middleware
+```js
+const express = require('express')
+const path = require('path')
+const cookieParser = require('cookie-parser')
+const mcConfig = require('./mc/MCconfig.json')
+const mcSettings = require('./mc/MCsettings,json')
+const Funfunz = require('funfunz')
 
-### Template project
+const indexRouter = require('./routes/index')
 
-Please see the [template project](usage/template.md) for further details
+const app = express()
 
-This mode will start the application without the need of any other package, the only requirements are the configuration files
+app.use(express.json())
+app.use(express.urlencoded({ extended: false }))
+app.use(cookieParser())
+app.use(express.static(path.join(__dirname, 'public')))
 
-### Middleware
+app.use('/', indexRouter)
+app.use('/admin/api', new Funfunz({
+  config: mcConfig,
+  settings: mcSettings
+}).middleware)
 
-Please see the [middleware](usage/middleware.md) for further details
+// error handler
+app.use(function(err, req, res) {
+  res.send('error')
+})
 
-The middleware is an express middleware so that you can use it inside ExpressJS or any other compatible system
+module.exports = app
+```
+

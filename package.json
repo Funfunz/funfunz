@@ -1,15 +1,15 @@
 {
-  "name": "funfunz",
+  "name": "@funfunz/core",
   "version": "0.5.5",
   "description": "backoffice generator",
-  "main": "lib/middleware/index.js",
+  "main": "lib/index.js",
   "engines": {
     "node": ">=9.11.1"
   },
   "scripts": {
     "docs": "docsify serve ./docs",
     "jest": "jest --coverage --forceExit",
-    "test": "npm run jest && codecov",
+    "test": "npm run jest",
     "lint": "eslint src",
     "dev": "DEBUG=funfunz:* NODE_ENV=development ts-node ./src/example/index.ts",
     "questions": "DEBUG=funfunz:* NODE_ENV=development ts-node ./src/generator/index.ts",
@@ -42,9 +42,11 @@
     "@babel/core": "^7.12.3",
     "@babel/preset-env": "^7.12.1",
     "@babel/preset-typescript": "^7.12.1",
+    "@funfunz/sql-data-connector": "^0.1.0",
     "@types/cors": "^2.8.7",
     "@types/debug": "^4.1.5",
     "@types/express": "^4.17.8",
+    "@types/graphql-upload": "^8.0.4",
     "@types/jest": "^26.0.15",
     "@types/mongodb": "^3.5.27",
     "@types/morgan": "^1.9.1",
@@ -58,6 +60,7 @@
     "docsify-cli": "^4.4.1",
     "eslint": "^7.10.0",
     "jest": "^26.5.0",
+    "mysql2": "^2.2.5",
     "supertest": "^5.0.0",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.5"
@@ -70,13 +73,10 @@
     "graphql": "^15.3.0",
     "graphql-parse-resolve-info": "^4.9.0",
     "graphql-type-json": "^0.3.2",
+    "graphql-upload": "^11.0.0",
     "jsonschema": "^1.2.8",
+    "minimist": "^1.2.5",
     "morgan": "^1.10.0",
     "pluralize": "^8.0.0"
-  },
-  "optionalDependencies": {
-    "knex": "^0.21.6",
-    "mongodb": "^3.6.2",
-    "mysql2": "^2.2.5"
   }
 }
