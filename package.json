@@ -50,19 +50,16 @@
     "@types/mongodb": "^3.5.27",
     "@types/morgan": "^1.9.1",
     "@types/node": "^14.11.3",
-    "@types/node-fetch": "^2.5.7",
     "@types/pluralize": "0.0.29",
     "@types/supertest": "^2.0.10",
     "@typescript-eslint/eslint-plugin": "^4.4.0",
     "@typescript-eslint/parser": "^4.4.0",
-    "aws-sdk": "^2.792.0",
     "babel-jest": "^26.6.1",
     "codecov": "^3.8.0",
     "docsify-cli": "^4.4.1",
     "eslint": "^7.10.0",
-    "form-data": "^3.0.0",
     "jest": "^26.5.0",
-    "node-fetch": "^2.6.1",
+    "mysql2": "^2.2.5",
     "supertest": "^5.0.0",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.5"
@@ -79,8 +76,6 @@
     "jsonschema": "^1.2.8",
     "minimist": "^1.2.5",
     "morgan": "^1.10.0",
-    "mysql2": "^2.2.5",
-    "pluralize": "^8.0.0",
-    "sql-data-connector": "file:../sql-data-connector"
+    "pluralize": "^8.0.0"
   }
 }
