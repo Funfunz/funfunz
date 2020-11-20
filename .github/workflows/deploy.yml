@@ -3,7 +3,7 @@ name: Deploy
 on:
   push:
     branches:
-      - feature/FUNFUNZ-45-heroku-deploy
+      - master 
 
 env:
   DB_HOST: ryfqldzbliwmq6g5.chr7pe7iynqr.eu-west-1.rds.amazonaws.com
@@ -12,7 +12,7 @@ env:
   DB_NAME: zucf1on9sjbl139n
 
 jobs:
-  build:
+  nodejs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
