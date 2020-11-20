@@ -38,7 +38,6 @@ describe('graphql', () => {
         if (err) {
           return done(err)
         }
-        console.log('response.body add family', response.body)
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
@@ -114,7 +113,6 @@ describe('graphql', () => {
           console.error(err)
           return done(err)
         }
-        console.log(response.body)
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
