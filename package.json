@@ -12,6 +12,7 @@
     "test": "npm run jest",
     "lint": "eslint src",
     "dev": "DEBUG=funfunz:* NODE_ENV=development ts-node ./src/example/index.ts",
+    "start": "DEBUG=funfunz:* node lib/example/index.js",
     "questions": "DEBUG=funfunz:* NODE_ENV=development ts-node ./src/generator/index.ts",
     "clean": "rm -rf lib && mkdir lib",
     "build": "npm run lint && npm run clean && npm run build:js",
