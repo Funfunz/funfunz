@@ -1,30 +1,11 @@
-import GraphQLSchema from '../graphql/schema'
 import { Router } from 'express'
 import { graphqlHTTP } from 'express-graphql'
-import { execute, parse, GraphQLSchema as Schema, ExecutionResult } from 'graphql'
-import { isPromise } from '../utils/index'
 import { graphqlUploadExpress } from 'graphql-upload'
-
-let schema: Schema
-
-export const globalGraph = (document: string): Promise<ExecutionResult> => {
-  const result = execute({
-    schema,
-    document: parse(document),
-    contextValue: {
-      superUser: true
-    }
-  })
-  if (isPromise<ExecutionResult>(result)) {
-    return result
-  }
-  return Promise.resolve<ExecutionResult>(result)
-}
+import { Funfunz } from '../index'
 
 class IndexRouter {
   public router: Router
-  constructor() {
-    schema = GraphQLSchema()
+  constructor(funfunz: Funfunz) {
     const graph = graphqlHTTP(
       (req: unknown, res) => {
         return {
@@ -36,7 +17,7 @@ class IndexRouter {
           graphiql: {
             headerEditorEnabled: true
           },
-          schema
+          schema: funfunz.schema
         }
       }
     )

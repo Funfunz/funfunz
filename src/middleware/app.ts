@@ -5,6 +5,7 @@ import Debug from 'debug'
 import express, { Response, Request } from 'express'
 import logger from 'morgan'
 import { HttpException } from './utils/exception'
+import { Funfunz } from './index'
 
 const debug = Debug('funfunz:init')
 
@@ -15,9 +16,9 @@ class App {
    */
 
   public server: express.Express
-  constructor() {
+  constructor(funfunz: Funfunz) {
     debug('starting funfunz')
-    initDataConnectors()
+    initDataConnectors(funfunz)
     this.server = express()
     this.server.disable('x-powered-by')
 
@@ -26,7 +27,7 @@ class App {
       logger('dev'),
     ])
 
-    const indexRouter = new IndexRouter()
+    const indexRouter = new IndexRouter(funfunz)
     this.server.use('/', indexRouter.getRouter())
 
     this.server.use((err: HttpException, req: Request, res: Response) => {

@@ -7,21 +7,23 @@ import { requirementsCheck } from '../utils/dataAccess'
 import { getParentEntryFilter, FilterValues, ParentFilterResult, IFilter } from '../utils/filter'
 import { executeHook } from '../utils/lifeCycle'
 import { IQueryArgs } from '../../types/connector'
+import { Funfunz } from '..'
 
 export function resolver<TSource, TContext extends TUserContext>(
   table: IEntityInfo,
+  funfunz: Funfunz,
   parentTable?: IEntityInfo,
-  relationType?: '1:n' | 'n:1' | 'm:n'
+  relationType?: '1:n' | 'n:1' | 'm:n',
 ): GraphQLFieldResolver<TSource, TContext> {
   return async (parent, rawargs, ctx, info) => {
     const { user, superUser } = ctx
-    const { args, context } = await executeHook(table, 'query', 'beforeResolver', { args: rawargs, user })
+    const { args, context } = await executeHook(table, 'query', 'beforeResolver', { args: rawargs, user }, funfunz)
     await requirementsCheck(table, 'read', user, superUser)
     const fields = getFields(table, info)
     let filter = args.filter || undefined
     let parentFilter: ParentFilterResult | undefined
     if (parentTable) {
-      parentFilter = await getParentEntryFilter(table, parentTable, parent as unknown as Record<string, FilterValues>)
+      parentFilter = await getParentEntryFilter(table, parentTable, parent as unknown as Record<string, FilterValues>, funfunz)
       if (filter) {
         filter = {
           _and: [
@@ -41,31 +43,38 @@ export function resolver<TSource, TContext extends TUserContext>(
       skip: args.skip as number,
       take: args.take as number
     }
-    const { query, context: newContext } = await executeHook(table, 'query', 'beforeSendQuery', { user, args, query: rawquery, context })
+    const { query, context: newContext } = await executeHook(table, 'query', 'beforeSendQuery', { user, args, query: rawquery, context }, funfunz)
     
     let results = await sendQuery(table.connector, query as IQueryArgs)
     if (relationType === 'n:1') {
       results = (results as unknown[])[0]
     }
-    const { results: modifiedResults } = await executeHook(table, 'query', 'afterQueryResult', {
-      user,
-      args,
-      query,
-      results,
-      context: newContext
-    })
+    const { results: modifiedResults } = await executeHook(
+      table,
+      'query',
+      'afterQueryResult',
+      {
+        user,
+        args,
+        query,
+        results,
+        context: newContext
+      },
+      funfunz
+    )
 
     return modifiedResults
   }
 }
 
 export function resolverCount<TSource, TContext extends TUserContext>(
-  table: IEntityInfo
+  table: IEntityInfo,
+  funfunz: Funfunz
 ): GraphQLFieldResolver<TSource, TContext> {
   return async (parent, rawargs, ctx) => {
     const { user, superUser } = ctx
 
-    const { args, context } = await executeHook(table, 'count', 'beforeResolver', { args: rawargs, user })
+    const { args, context } = await executeHook(table, 'count', 'beforeResolver', { args: rawargs, user }, funfunz)
 
     await requirementsCheck(table, 'read', user, superUser)
 
@@ -78,16 +87,22 @@ export function resolverCount<TSource, TContext extends TUserContext>(
       take: args.take as number
     }
 
-    const { query, context: newContext } = await executeHook(table, 'count', 'beforeSendQuery', { user, args, query: rawquery, context })
+    const { query, context: newContext } = await executeHook(table, 'count', 'beforeSendQuery', { user, args, query: rawquery, context }, funfunz)
     
     const results = await sendQuery(table.connector, query as IQueryArgs)
-    const { results: modifiedResults } = await executeHook(table, 'count', 'afterQueryResult', {
-      user,
-      args,
-      query,
-      results,
-      context: newContext
-    })
+    const { results: modifiedResults } = await executeHook(
+      table,
+      'count',
+      'afterQueryResult',
+      {
+        user,
+        args,
+        query,
+        results,
+        context: newContext
+      },
+      funfunz
+    )
 
     return modifiedResults
   }

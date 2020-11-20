@@ -2,14 +2,9 @@ import configSchema from '../../types/configSchema'
 import settingsSchema from '../../types/settingsSchema'
 import type { IConfig, IEntityInfo } from '../../generator/configurationTypes'
 import { Validator } from 'jsonschema'
+import { IFunfunzConfig } from '../types'
 
-type FunfunzConfig = {
-  settings: IEntityInfo[],
-  config: IConfig,
-  [key: string]: unknown,
-}
-
-const config: FunfunzConfig = {
+const config: IFunfunzConfig = {
   settings: [],
   config: {
     connectors: {},
@@ -50,6 +45,6 @@ function configCheck(configs: unknown, target: string) {
   return true
 }
 
-export default function(): FunfunzConfig {
+export default function(): IFunfunzConfig {
   return config
 }

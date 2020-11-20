@@ -9,16 +9,17 @@ import { GraphQLBoolean, GraphQLFieldConfig, GraphQLFieldConfigMap, GraphQLInt, 
 import pluralize from 'pluralize'
 import { TUserContext } from './schema'
 import { buildArgs } from './argumentsBuilder'
+import type { Funfunz } from '../index'
 
 const debug = Debug('funfunz:graphql-query-builder')
 
-export function buildQueries(): Thunk<GraphQLFieldConfigMap<unknown, TUserContext>> {
+export function buildQueries(funfunz: Funfunz): Thunk<GraphQLFieldConfigMap<unknown, TUserContext>> {
   const configs = config()
   const queries: Thunk<GraphQLFieldConfigMap<unknown, TUserContext>> = {}
   configs.settings.forEach(
     (table) => {
-      queries[table.name] = buildQuery(table)
-      queries[table.name + 'Count'] = buildCount(table)
+      queries[table.name] = buildQuery(table, funfunz)
+      queries[table.name + 'Count'] = buildCount(table, funfunz)
     }
   )
   queries.config = buildConfig(configs.settings)
@@ -27,24 +28,24 @@ export function buildQueries(): Thunk<GraphQLFieldConfigMap<unknown, TUserContex
   return queries
 }
 
-function buildQuery(table: IEntityInfo): GraphQLFieldConfig<unknown, TUserContext> {
+function buildQuery(table: IEntityInfo, funfunz: Funfunz): GraphQLFieldConfig<unknown, TUserContext> {
   debug(`Creating ${table.name} query`)
   const query: GraphQLFieldConfig<unknown, TUserContext> = {
-    type: new GraphQLList(buildType(table)),
+    type: new GraphQLList(buildType(table, funfunz)),
     description: `This will return all the ${pluralize(table.name)}.`,
-    resolve: resolver(table),
+    resolve: resolver(table, funfunz),
     args: buildArgs(table, { pagination: true, filter: true }),
   }
   debug(`Created ${table.name} query`)
   return query
 }
 
-function buildCount(table: IEntityInfo) {
+function buildCount(table: IEntityInfo, funfunz: Funfunz) {
   debug(`Creating ${table.name} query`)
   const query: GraphQLFieldConfig<unknown, TUserContext> = {
     type: GraphQLInt,
     description: `This will return the ${pluralize(table.name)} count.`,
-    resolve: resolverCount(table),
+    resolve: resolverCount(table, funfunz),
     args: buildArgs(table, { pagination: false,  filter: true }),
   }
   debug(`Created ${table.name} count`)

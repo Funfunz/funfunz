@@ -1,7 +1,7 @@
-import config from '../utils/configLoader'
 import { IPropertyInfo, IEntityInfo } from '../../generator/configurationTypes'
 import { GraphQLResolveInfo } from 'graphql'
 import { parseResolveInfo, simplifyParsedResolveInfoFragmentWithType, ResolveTree } from 'graphql-parse-resolve-info'
+import { IFunfunzConfig } from '../types'
 
 /**
  * returns the table configuration based on the table name
@@ -9,8 +9,8 @@ import { parseResolveInfo, simplifyParsedResolveInfoFragmentWithType, ResolveTre
  *
  * @returns {ITableInfo} table configuration
  */
-export function getTableConfig(TABLE_NAME: string): IEntityInfo {
-  return config().settings.filter(
+export function getTableConfig(TABLE_NAME: string, funfunz: IFunfunzConfig): IEntityInfo {
+  return funfunz.settings.filter(
     (tableItem) => tableItem.name === TABLE_NAME
   )[0]
 }
