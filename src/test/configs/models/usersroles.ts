@@ -16,7 +16,7 @@ export default {
       'admin'
     ]
   },
-  'columns': [
+  'properties': [
     {
       'name': 'createdAt',
       'searchable': true,

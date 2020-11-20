@@ -3,7 +3,7 @@ import { IFilter } from '../middleware/utils/filter'
 export interface IQueryArgs {
   entityName: string,
   count?: boolean,
-  fields?: string[],
+  fields: string[],
   filter?: IFilter,
   skip?: number,
   take?: number,

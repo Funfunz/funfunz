@@ -1,8 +1,8 @@
 import { isNull, getPKs } from './index'
-import { ITableInfo, IRelationMN, IRelation } from '../../generator/configurationTypes'
+import { IEntityInfo, IRelationMN, IRelation } from '../../generator/configurationTypes'
 import { globalGraph } from '../routes'
 
-const oneToManyRelation = (table: ITableInfo, parentTable: ITableInfo): IRelation | undefined => {
+const oneToManyRelation = (table: IEntityInfo, parentTable: IEntityInfo): IRelation | undefined => {
   return parentTable.relations?.find(
     (relation) => {
       return relation.type === '1:n' && relation.remoteTable === table.name
@@ -10,7 +10,7 @@ const oneToManyRelation = (table: ITableInfo, parentTable: ITableInfo): IRelatio
   )
 }
 
-const manyToOneRelation = (table: ITableInfo, parentTable: ITableInfo): IRelation | undefined => {
+const manyToOneRelation = (table: IEntityInfo, parentTable: IEntityInfo): IRelation | undefined => {
   return parentTable.relations?.find(
     (relation) => {
       return relation.type === 'n:1' && relation.remoteTable === table.name
@@ -18,7 +18,7 @@ const manyToOneRelation = (table: ITableInfo, parentTable: ITableInfo): IRelatio
   )
 }
 
-const manyToManyRelation = (table: ITableInfo, parentTable: ITableInfo): IRelation | undefined => {
+const manyToManyRelation = (table: IEntityInfo, parentTable: IEntityInfo): IRelation | undefined => {
   return parentTable.relations?.find(
     (relation) => {
       return relation.type === 'm:n' && relation.remoteTable === table.name
@@ -37,8 +37,8 @@ export type ParentFilterResult = {
 }
 
 export async function getParentEntryFilter(
-  table: ITableInfo,
-  parentTable: ITableInfo,
+  table: IEntityInfo,
+  parentTable: IEntityInfo,
   parentObj: Record<string, FilterValues>
 ): Promise<ParentFilterResult | undefined> {
   let relation: IRelation | undefined = oneToManyRelation(table, parentTable)
@@ -119,7 +119,7 @@ export async function getParentEntryFilter(
   }
 }
 
-export const operators = [
+export const operators: OperatorsType[] = [
   '_eq',
   '_neq',
   '_lt',
@@ -133,7 +133,17 @@ export const operators = [
   '_is_null'
 ]
 
-export type OperatorsType = typeof operators[0]
+export type OperatorsType = '_eq'
+  | '_neq'
+  | '_lt'
+  | '_lte'
+  | '_gt'
+  | '_gte'
+  | '_in'
+  | '_nin'
+  | '_like'
+  | '_nlike'
+  | '_is_null'
 
 export type FilterValues =
   | string

@@ -1,10 +1,10 @@
 import configSchema from '../../types/configSchema'
 import settingsSchema from '../../types/settingsSchema'
-import { IConfig, ITableInfo } from '../../generator/configurationTypes'
+import type { IConfig, IEntityInfo } from '../../generator/configurationTypes'
 import { Validator } from 'jsonschema'
 
 type FunfunzConfig = {
-  settings: ITableInfo[],
+  settings: IEntityInfo[],
   config: IConfig,
   [key: string]: unknown,
 }
@@ -16,10 +16,10 @@ const config: FunfunzConfig = {
   },
 }
 
-export function setConfig(configs: IConfig | ITableInfo[], target: string): void {
+export function setConfig(configs: IConfig | IEntityInfo[], target: string): void {
   if (configCheck(configs, target)) {
     if (target === 'settings') {
-      (configs as ITableInfo[]).forEach(
+      (configs as IEntityInfo[]).forEach(
         (table) => {
           table.roles.read = Array.from(new Set<string>([...table.roles.read, ...table.roles.update]))
         }

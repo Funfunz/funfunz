@@ -16,7 +16,7 @@ export default {
       'all'
     ]
   },
-  'columns': [
+  'properties': [
     {
       'name': 'id',
       'searchable': true,

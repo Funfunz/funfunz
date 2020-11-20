@@ -1,3 +1,4 @@
+import { OperatorsType } from '../middleware/utils/filter'
 import { IDataConnector } from '../types/connector'
 import { ITableHooks } from '../types/hooks'
 
@@ -34,15 +35,7 @@ export type schemaInfo = Array<{
   REFERENCED_COLUMN_NAME?: string,
 }>
 
-export type Hooks = 'getTableData'
-  | 'getDistinctTableData'
-  | 'getTableCount'
-  | 'getRow'
-  | 'insertRow'
-  | 'updateRow'
-  | 'deleteRow'
-
-export interface ITableInfo {
+export interface IEntityInfo {
   name: string,
   connector: string,
   visible: boolean,
@@ -53,9 +46,9 @@ export interface ITableInfo {
     update: string[],
     delete: string[],
   },
-  columns: IColumnInfo[],
+  properties: IPropertyInfo[],
   hooks?: ITableHooks,
-  layout: Record<string, unknown>,
+  layout?: Record<string, unknown>,
 }
 
 export interface IRelation1N {
@@ -77,27 +70,24 @@ export interface IRelationMN {
 }
 export type IRelation = IRelation1N | IRelationN1 | IRelationMN
 
-export interface IColumnRelation {
+export interface IPropertyRelation {
   type: 'n:1',
   table: string,
   key: string,
 }
 
-export interface IColumnInfo {
+export interface IPropertyInfo {
   name: string,
-  searchable: boolean,
-  visible: {
-    list: boolean,
-    detail: boolean,
-    relation: boolean,
-  },
+  filterable?: {
+    filters: OperatorsType[]
+  } | boolean,
   model: {
     isPk?: boolean,
     type: 'varchar(255)' | 'tinyint(1)' | 'smallint(5)' | 'int(11)' | 'int' | 'datetime'| 'text',
     allowNull: boolean,
   },
-  relation?: IColumnRelation,
-  layout: {
+  relation?: IPropertyRelation,
+  layout?: {
     label: string,
     [key: string]: unknown
   },
@@ -107,4 +97,4 @@ export interface IConfig {
   connectors: Record<string, IDataConnector>
 }
 
-export type ISettings = ITableInfo[]
+export type ISettings = IEntityInfo[]

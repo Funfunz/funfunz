@@ -1,10 +1,9 @@
-import { ITableInfo } from '../../../generator/configurationTypes'
 import { IHookProps } from '../../../types/hooks'
 
 export default {
-  'name': 'families',
-  'connector': 'mainDatabase',
-  'visible': true,
+  name: 'families',
+  connector: 'mainDatabase',
+  visible: true,
   'roles': {
     'create': [
       'all'
@@ -26,7 +25,7 @@ export default {
       'remoteTable': 'products'
     }
   ],
-  'columns': [
+  'properties': [
     {
       'name': 'id',
       'searchable': true,
@@ -71,11 +70,6 @@ export default {
     {
       'name': 'imageUrl',
       'searchable': true,
-      'visible': {
-        'list': true,
-        'detail': true,
-        'relation': false
-      },
       'model': {
         'type': 'varchar(255)',
         'allowNull': true

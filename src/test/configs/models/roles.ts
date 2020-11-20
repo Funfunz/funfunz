@@ -25,7 +25,7 @@ export default {
       'remoteForeignKey': 'userId',
     },
   ],
-  'columns': [
+  'properties': [
     {
       'name': 'id',
       'searchable': true,

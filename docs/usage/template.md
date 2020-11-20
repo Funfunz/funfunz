@@ -1,14 +1,5 @@
 # Template application
 
-## Usage
+The template application can be found at [Funfunz Template](https://github.com/Funfunz/funfunz-template)
 
-```js
-const mcConfig = require('./mc/MCconfig.json')
-const mcSettings = require('./mc/MCsettings,json')
-const funfunz = require('funfunz')
-
-funfunz({
-  config: mcConfig,
-  settings: mcSettings
-}))
-```
+Use the template repo to quickstart a new Funfunz ready backend

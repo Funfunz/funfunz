@@ -1,5 +1,5 @@
-import { operators } from '../utils/filter'
-import { ITableInfo } from '../../generator/configurationTypes'
+import { operators, OperatorsType } from '../utils/filter'
+import { IEntityInfo } from '../../generator/configurationTypes'
 import Debug from 'debug'
 import {
   GraphQLArgumentConfig,
@@ -31,7 +31,7 @@ const dataInputs: Record<string, GraphQLArgumentConfig> = {}
 const filters: Record<string, GraphQLArgumentConfig> = {}
 
 export function buildArgs(
-  table: ITableInfo,
+  table: IEntityInfo,
   options: IBuildArgsOptions
 ): GraphQLFieldConfigArgumentMap {
   const tableId = `${table.name}-${JSON.stringify(options)}`
@@ -65,13 +65,16 @@ export function buildArgs(
             const inputFields: GraphQLInputFieldConfigMap = {}
             const tablePKs = getPKs(table)
       
-            table.columns.forEach(
-              (column) => {
-                const isPk = tablePKs.indexOf(column.name) >= 0
+            table.properties.forEach(
+              (property) => {
+                if (property.filterable === false) {
+                  return
+                }
+                const isPk = tablePKs.indexOf(property.name) >= 0
                 /*
                 *  if include option is passed check if the column is present there
                 */
-                if (include && !include.includes(column.name) && !(isPk && include.includes('pk'))) {
+                if (include && !include.includes(property.name) && !(isPk && include.includes('pk'))) {
                   return
                 }
     
@@ -79,22 +82,25 @@ export function buildArgs(
                 *  Checks if the column name is present or if it's a primary key checks for the 'pk' key
                 */
                 const isRequired = required && (
-                  required.includes(column.name) || (
+                  required.includes(property.name) || (
                     isPk && required.includes('pk')
                   )
                 )
                 
-                const matchedType = MATCHER[column.model.type]
+                const matchedType = MATCHER[property.model.type]
     
+                const supportedOperators = (property.filterable === true || property.filterable === undefined)
+                  ? operators
+                  : property.filterable.filters
                 if (isPk || matchedType) {
                   const type = new GraphQLInputObjectType({
-                    name: `table${table.name}Field${column.name}`,
-                    description: `Filter for the field ${column.name}`,
-                    fields: () => argFieldBuilder(isPk, matchedType)
+                    name: `table${table.name}Field${property.name}`,
+                    description: `Filter for the field ${property.name}`,
+                    fields: () => argFieldBuilder(isPk, matchedType, supportedOperators)
                   })
-                  inputFields[column.name] = {
+                  inputFields[property.name] = {
                     type: isRequired ? new GraphQLNonNull(type) : type,
-                    description: column.layout.label,
+                    description: property.layout?.label || property.name,
                   }
                 }
               }
@@ -130,13 +136,13 @@ export function buildArgs(
             const inputFields: GraphQLInputFieldConfigMap = {}
             const tablePKs = getPKs(table)
       
-            table.columns.forEach(
-              (column) => {
-                const isPk = tablePKs.indexOf(column.name) >= 0
+            table.properties.forEach(
+              (property) => {
+                const isPk = tablePKs.indexOf(property.name) >= 0
                 /*
                 *  if include option is passed check if the column is present there
                 */
-                if (include && !include.includes(column.name) && !(isPk && include.includes('pk'))) {
+                if (include && !include.includes(property.name) && !(isPk && include.includes('pk'))) {
                   return
                 }
     
@@ -144,18 +150,18 @@ export function buildArgs(
                 *  Checks if the column name is present or if it's a primary key checks for the 'pk' key
                 */
                 const isRequired = required && (
-                  required.includes(column.name) || (
+                  required.includes(property.name) || (
                     isPk && required.includes('pk')
                   )
                 )
                 
-                const matchedType = MATCHER[column.model.type]
+                const matchedType = MATCHER[property.model.type]
     
                 if (isPk || matchedType) {
                   const type = isPk ? GraphQLID : matchedType
-                  inputFields[column.name] = {
+                  inputFields[property.name] = {
                     type: isRequired ? new GraphQLNonNull(type) : type,
-                    description: column.layout.label,
+                    description: property.layout?.label || property.name,
                   }
                 }
               }
@@ -173,9 +179,9 @@ export function buildArgs(
 }
 
 
-export function argFieldBuilder(isPk: boolean, matchedType: GraphQLScalarType): GraphQLInputFieldConfigMap {
+export function argFieldBuilder(isPk: boolean, matchedType: GraphQLScalarType, supportedOperators: OperatorsType[]): GraphQLInputFieldConfigMap {
   const argFilter = {}
-  operators.forEach(
+  supportedOperators.forEach(
     operator => {
       if (operator === '_in' || operator === '_nin') {
         argFilter[operator] = {

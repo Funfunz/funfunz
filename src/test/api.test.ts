@@ -110,6 +110,7 @@ describe('graphql', () => {
     .set('Accept', 'application/json').end(
       (err, response) => {
         if (err) {
+          console.error(err)
           return done(err)
         }
         expect(response.status).toBe(200)
