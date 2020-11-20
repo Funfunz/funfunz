@@ -41,11 +41,11 @@ describe('graphql', () => {
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
-        expect(data.addFamilies).toBeTruthy()
-        expect(data.addFamilies.id).toBeTruthy()
-        expect(data.addFamilies.name).toBeTruthy()
-        expect(data.addFamilies.name).toEqual(familyTestName)
-        familyId = data.addFamilies.id
+        expect(Array.isArray(data.addFamilies)).toBeTruthy()
+        expect(data.addFamilies[0].id).toBeTruthy()
+        expect(data.addFamilies[0].name).toBeTruthy()
+        expect(data.addFamilies[0].name).toEqual(familyTestName)
+        familyId = data.addFamilies[0].id
         return done()
       }
     )
@@ -79,13 +79,14 @@ describe('graphql', () => {
         if (err) {
           return done(err)
         }
+        console.log(response.body.data)
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
-        expect(data.updateFamilies).toBeTruthy()
-        expect(data.updateFamilies.id).toBeTruthy()
-        expect(data.updateFamilies.name).toBeTruthy()
-        expect(data.updateFamilies.name).toEqual(familyTestUpdateName)
+        expect(Array.isArray(data.updateFamilies)).toBeTruthy()
+        expect(data.updateFamilies[0].id).toBeTruthy()
+        expect(data.updateFamilies[0].name).toBeTruthy()
+        expect(data.updateFamilies[0].name).toEqual(familyTestUpdateName)
         return done()
       }
     )
