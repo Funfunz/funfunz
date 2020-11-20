@@ -20,7 +20,7 @@ export default function buildMutations(): GraphQLFieldConfigMap<unknown, TUserCo
   const mutations: GraphQLFieldConfigMap<unknown, TUserContext> = {}
   configs.settings.forEach((table) => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const dataConnector = require(`${configs.config.connectors[table.connector].type}-data-connector`)
+    const dataConnector = require(configs.config.connectors[table.connector].type)
     mutations[`add${capitalize(table.name)}`] = buildAddMutation(table, typeof dataConnector.addMutation === 'function' && dataConnector.addMutation(table))
     mutations[`update${capitalize(table.name)}`] = buildUpdateMutation(table, typeof dataConnector.updateMutation === 'function' && dataConnector.updateMutation(table))
     mutations[`delete${capitalize(table.name)}`] = buildDeleteMutation(table, typeof dataConnector.deleteMutation === 'function' && dataConnector.deleteMutation(table))

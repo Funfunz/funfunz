@@ -8,7 +8,7 @@ export const initDataConnectors = (): void => {
   Object.entries(configuration).forEach(
     ([key, value]) => {
       if (!connectors[key]) {
-        import(`${configuration[key].type}-data-connector`).then(
+        import(configuration[key].type).then(
           (module) => {
             connectors[key] = new module.Connector(value)
           }
