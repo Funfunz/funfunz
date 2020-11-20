@@ -70,13 +70,15 @@ function buildUpdateMutation(table: IEntityInfo, dataConnectorMutation?: GraphQL
 function buildAddMutation(table: IEntityInfo, dataConnectorMutation?: GraphQLFieldConfig<unknown, TUserContext>): GraphQLFieldConfig<unknown, TUserContext> {
   debug(`Creating ${table.name} add mutation`)
   const mutation: GraphQLFieldConfig<unknown, TUserContext>  = {
-    type: dataConnectorMutation?.type || buildType(table),
+    type: dataConnectorMutation?.type || new GraphQLList(buildType(table)),
     args: dataConnectorMutation?.args || buildArgs(table, { data: true }),
     resolve: async (parent, rawargs, ctx, info) => {
       const { user } = ctx
       const { args, context } = await executeHook(table, 'add', 'beforeResolver', { args: rawargs, user })
       await requirementsCheck(table, 'create', user)
+      console.log('After requirements')
       const data = normalize(args.data as Record<string, unknown>, table, true)
+      console.log('After normaliza')
       const fields = getFields(table, info)
 
       const rawquery: ICreateArgs = {
@@ -86,11 +88,11 @@ function buildAddMutation(table: IEntityInfo, dataConnectorMutation?: GraphQLFie
         skip: args.skip as number,
         take: args.take as number
       }
-
+      console.log('After get fields')
       const { query, context: newContext } = await executeHook(table, 'add', 'beforeSendQuery', { user, args, query: rawquery, context })
-    
+      console.log('affer beforeSendQuery hook')
       const results = await create(table.connector, query as ICreateArgs)
-      
+      console.log('after connector')
       const { results: modifiedResults } = await executeHook(table, 'add', 'afterQueryResult', {
         user,
         args,
@@ -98,6 +100,7 @@ function buildAddMutation(table: IEntityInfo, dataConnectorMutation?: GraphQLFie
         results,
         context: newContext
       })
+      console.log('results add mutation', results)
       return modifiedResults
     }
   }

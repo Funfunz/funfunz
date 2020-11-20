@@ -12,12 +12,6 @@ const config: IConfig = {
         password: process.env.DB_PASSWORD || '',
         port: "3306"
       },
-    },
-    S3: {
-      type: '@funfunz/s3-data-connector',
-      config: {
-        bucket: 'funfunz'
-      }
     }
   }
 }

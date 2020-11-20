@@ -20,11 +20,6 @@ export default {
   },
   'relations': [
     {
-      type: 'n:1',
-      foreignKey: 'imageUrl',
-      remoteTable: 's3Entity'
-    },
-    {
       'type': '1:n',
       'foreignKey': 'FamilyId',
       'remoteTable': 'products'

@@ -1,4 +1,4 @@
-import { describeInfo, IColumnInfo, IConfig, ISettings, ITableInfo, schemaInfo } from './configurationTypes'
+import { describeInfo, IPropertyInfo, IConfig, ISettings, IEntityInfo, schemaInfo } from './configurationTypes'
 import Debug from 'debug'
 import fs from 'fs'
 import path from 'path'
@@ -17,7 +17,7 @@ const INPUT_TYPES: {
   'text': 'text',
 }
 
-function buildTableInfo(): ITableInfo {
+function buildTableInfo(): IEntityInfo & { layout: Record<string, unknown> } {
   return {
     name: '',
     connector: 'mysql',
@@ -28,7 +28,7 @@ function buildTableInfo(): ITableInfo {
       update: ['all'],
       delete: ['all'],
     },
-    columns: [],
+    properties: [],
     layout: {
       label: '',
       listPage: true,
@@ -43,15 +43,9 @@ function buildTableInfo(): ITableInfo {
   }
 }
 
-function buildColumnInfo(): IColumnInfo & { layout : {editField : Record<string, unknown>}}{
+function buildColumnInfo(): IPropertyInfo & { layout : {editField : Record<string, unknown>}}{
   return {
     name: '',
-    searchable: true,
-    visible: {
-      list: true,
-      detail: true,
-      relation: false,
-    },
     model: {
       type: 'varchar(255)',
       allowNull: true,
@@ -62,15 +56,6 @@ function buildColumnInfo(): IColumnInfo & { layout : {editField : Record<string,
       editField: {},
     },
   }
-}
-
-function isEditable(fieldName: string) {
-  switch (fieldName) {
-  case 'createdAt':
-  case 'updatedAt':
-    return false
-  }
-  return true
 }
 
 export function generateSettings(
@@ -97,10 +82,8 @@ export function generateSettings(
           columnData.model.type = column.Type
           columnData.layout.editField.type = INPUT_TYPES[column.Type]
           columnData.model.allowNull = column.Null === 'NO' ? false : true
-          columnData.visible.detail = isEditable(column.Field)
           if (column.Key === 'PRI') {
             columnData.model.isPk = true
-            columnData.visible.relation = true
           }
           tableData.schema.forEach(
             (schemaData) => {
@@ -116,7 +99,7 @@ export function generateSettings(
               }
             }
           )
-          table.columns.push(columnData)
+          table.properties.push(columnData)
         }
       )
 

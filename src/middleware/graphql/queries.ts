@@ -119,7 +119,7 @@ function buildEntities(tables: IEntityInfo[]) {
             })
           ),
         },
-        columns: {
+        properties: {
           description: 'Property list',
           type: new GraphQLList(
             new GraphQLObjectType({

@@ -23,7 +23,6 @@ export const initDataConnectors = (): void => {
 }
 
 export const query = (connectorName: string, args: IQueryArgs): Promise<unknown[] | unknown> => {
-  console.log('query', connectorName)
   return connectors[connectorName].query(args)
 }
 
