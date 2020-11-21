@@ -1,7 +1,7 @@
 # Funfunz Documentation
 
 [![Discord][discord-badge]][discord]
-[![Build Status][travis-badge]][travis]
+[![Build Status][actions-badge]][actions]
 [![codecov][codecov-badge]][codecov]
 ![node][node]
 [![npm version][npm-badge]][npm]
@@ -40,8 +40,8 @@ Follow the quickstart [here](usage/quickstart.md)
 [discord-badge]: https://img.shields.io/discord/774439225520554004?logo=discord
 [discord]: https://discord.gg/HwZ7zMJKwg
 
-[travis-badge]: https://travis-ci.com/JWebCoder/funfunz.svg?branch=master
-[travis]: https://travis-ci.com/JWebCoder/funfunz
+[actions-badge]: https://github.com/funfunz/funfunz/workflows/Node.js%20CI/badge.svg
+[actions]: https://github.com/Funfunz/funfunz/actions
 
 [codecov-badge]: https://codecov.io/gh/Funfunz/funfunz/branch/master/graph/badge.svg
 [codecov]: https://codecov.io/gh/Funfunz/funfunz
