@@ -1,0 +1,40 @@
+name: Node.js CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - master
+
+env:
+  DB_HOST: 127.0.0.1
+  DB_NAME: test_db
+  DB_USER: root
+  DB_PASS: root
+
+jobs:
+  build:
+    
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup MySQL
+      run: |
+        sudo systemctl start mysql.service
+        mysql -u root --password=root -e 'CREATE DATABASE IF NOT EXISTS test_db;'
+        mysql -u root --password=root test_db < src/test/test.sql
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: |
+        npm ci
+        npm run build
+        npm test
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
