@@ -43,8 +43,8 @@ Follow the quickstart [here](usage/quickstart.md)
 [travis-badge]: https://travis-ci.com/JWebCoder/funfunz.svg?branch=master
 [travis]: https://travis-ci.com/JWebCoder/funfunz
 
-[codecov-badge]: https://codecov.io/gh/JWebCoder/funfunz/branch/master/graph/badge.svg
-[codecov]: https://codecov.io/gh/JWebCoder/funfunz
+[codecov-badge]: https://codecov.io/gh/Funfunz/funfunz/branch/master/graph/badge.svg
+[codecov]: https://codecov.io/gh/Funfunz/funfunz
 
 [node]: https://img.shields.io/node/v/funfunz.svg
 
