@@ -1,6 +1,6 @@
 import { Funfunz } from '../middleware'
-import config from '../test/configs/MCconfig'
-import settings from '../test/configs/MCsettings'
+import config from './configs/MCconfig'
+import settings from './configs/MCsettings'
 import httpServer from './httpServer'
 
 if (process.env.JAWSDB_URL) {
