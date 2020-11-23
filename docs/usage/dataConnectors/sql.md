@@ -21,12 +21,21 @@ Also, when using this connector, you will need to install the required driver to
 
 **MySQL config**
 
-```js  
+
+```js
 {
-  host: string, // database host
-  database: string, // database name
-  user: string, // database user
-  password: string, // database password
-  ssl: boolean | SSLobject, // if ssl is needed
+  connectors: {
+    [key: string]: { // user defined name for the connector
+      type: '@funfunz/sql-data-connector',
+      config: { // the configuration required for the specific connector, bellow is the example for a MySQL database
+        host: string, // database host
+        database: string, // database name
+        user: string, // database user
+        password: string, // database password
+        ssl: boolean | SSLobject, // if ssl is needed
+      },
+    }
+    ...
+  }
 }
 ```

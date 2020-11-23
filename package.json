@@ -11,7 +11,7 @@
     "jest": "jest --coverage --forceExit",
     "test": "npm run jest",
     "lint": "eslint src",
-    "dev": "DEBUG=funfunz:* NODE_ENV=development ts-node ./src/example/index.ts",
+    "dev": "DEBUG=funfunz:* NODE_ENV=development ts-node ./src/demo/index.ts",
     "start": "DEBUG=funfunz:* node lib/demo/index.js",
     "questions": "DEBUG=funfunz:* NODE_ENV=development ts-node ./src/generator/index.ts",
     "clean": "rm -rf lib && mkdir lib",

@@ -2,6 +2,7 @@
 - Usage
   - [Quickstart](usage/quickstart.md)
   - [Data connectors](usage/dataConnectors/main.md)
+    - [S3](usage/dataConnectors/s3.md)
     - [SQL](usage/dataConnectors/sql.md)
   - [Filters](usage/filters.md)
   - [Hooks](usage/hooks.md)
