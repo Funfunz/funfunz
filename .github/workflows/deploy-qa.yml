@@ -1,0 +1,33 @@
+name: Deploy QA
+
+on:
+  push:
+    branches:
+      - release/* 
+
+env:
+  DB_HOST: w1kr9ijlozl9l79i.chr7pe7iynqr.eu-west-1.rds.amazonaws.com
+  DB_USER: yn6w0rhpoct6mtrv
+  DB_PASS: ${{secrets.DB_PASS_QA}}
+  DB_NAME: db6ha6nfaxc4903a
+
+jobs:
+  nodejs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.6.8
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: funfunz-qa
+          heroku_email: ${{secrets.HEROKU_EMAIL}}
+          delay: 10
+        env:
+          HD_NPM_CONFIG_PRODUCTION: false
+          HD_NODE_MODULES_CACHE: false
+
+  mysql:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: mysql -h $DB_HOST -u $DB_USER -p$DB_PASS $DB_NAME < src/test/test.sql
