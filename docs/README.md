@@ -57,10 +57,10 @@ Follow the quickstart [here](usage/quickstart.md)
 [codecov-badge]: https://codecov.io/gh/Funfunz/funfunz/branch/master/graph/badge.svg
 [codecov]: https://codecov.io/gh/Funfunz/funfunz
 
-[node]: https://img.shields.io/node/v/funfunz.svg
+[node]: https://img.shields.io/node/v/@funfunz/core
 
-[npm-badge]: https://badge.fury.io/js/funfunz.svg
-[npm]: https://badge.fury.io/js/funfunz
+[npm-badge]: https://img.shields.io/npm/v/@funfunz/core?color=brightgreen
+[npm]: https://www.npmjs.com/package/funfunz
 
 [prs-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg
 [prs]: http://makeapullrequest.com
