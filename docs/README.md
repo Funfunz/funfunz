@@ -8,7 +8,18 @@
 [![PRs Welcome][prs-badge]][prs]
 [![GitHub][license-badge]][license]
 
-For the source code you can visit Github [funfunz](https://github.com/JWebCoder/funfunz).
+## Useful links
+
+**Backend**
+- [Source code](https://github.com/Funfunz/funfunz)
+- [Demo app](https://funfunz.herokuapp.com/)
+
+**Backoffice**
+- [Source code](https://github.com/funfunz/backoffice)
+- [Demo app](https://funfunz.github.io/backoffice/)
+
+**Template application**
+- [Source code](https://github.com/Funfunz/funfunz-template)
 
 ## Overview
 
@@ -35,7 +46,7 @@ Follow the quickstart [here](usage/quickstart.md)
 
 ## CLI
 
-* `funfunz` - Runs the Wizard to setup the settings and configuration files needed to connect with a database.
+* `funfunz` - Runs the Wizard to setup the settings and configuration files needed to connect with a data source.
 
 [discord-badge]: https://img.shields.io/discord/774439225520554004?logo=discord
 [discord]: https://discord.gg/HwZ7zMJKwg
