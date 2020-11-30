@@ -10,7 +10,7 @@
 
 ## Documentation
 
-Just follow the link: https://jwebcoder.github.io/funfunz/
+Just follow the link: https://funfunz.github.io/funfunz/
 
 
 ## What is Funfunz?
@@ -42,5 +42,5 @@ The goal is to generate a fully automated back office that can be used to direct
 [prs-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg
 [prs]: http://makeapullrequest.com
 
-[license-badge]: https://img.shields.io/github/license/JWebCoder/funfunz.svg
-[license]: https://github.com/JWebCoder/funfunz/blob/master/LICENSE
+[license-badge]: https://img.shields.io/github/license/funfunz/funfunz.svg
+[license]: https://github.com/funfunz/funfunz/blob/master/LICENSE
