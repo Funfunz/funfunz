@@ -60,7 +60,7 @@ Follow the quickstart [here](usage/quickstart.md)
 [node]: https://img.shields.io/node/v/@funfunz/core
 
 [npm-badge]: https://img.shields.io/npm/v/@funfunz/core?color=brightgreen
-[npm]: https://www.npmjs.com/package/funfunz
+[npm]: https://www.npmjs.com/package/@funfunz/core
 
 [prs-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg
 [prs]: http://makeapullrequest.com
