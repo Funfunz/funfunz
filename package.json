@@ -4,7 +4,7 @@
   "description": "backoffice generator",
   "main": "lib/index.js",
   "engines": {
-    "node": ">=9.11.1"
+    "node": ">=10.0.0"
   },
   "scripts": {
     "docs": "docsify serve ./docs",

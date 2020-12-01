@@ -12,7 +12,6 @@
 
 Just follow the link: https://funfunz.github.io/funfunz/
 
-
 ## What is Funfunz?
 
 Funfunz was created due the lack of a functional back office generator in the NodeJS community.
