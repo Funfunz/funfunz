@@ -24,7 +24,7 @@ stop
 
 When defining the model configuration, the developer can add custom functions to each of the above Hooks.
 
-The hooks have been devided into operation types and hook type:
+The hooks have been divided into operation types and hook type:
 
 **OperationTypes**
 - **all:** applies to all operations
@@ -83,6 +83,6 @@ export interface IHookProps<RequestContext, U extends User = User> {
 - **connector:** the Data Connector instance for the requested entity.
 - **user:** the current user information. Will be an empty unauthenticated user if no user is set in the GraphQL context.
 - **args:** arguments passed during the query request.
-- **query:** arguments parsed that will/was used by the connector. Also on the `beforeResolver` hook, this parse hasn't occured yet, so the value is `undefined.
+- **query:** arguments parsed that will/was used by the connector. Also on the `beforeResolver` hook, this parse hasn't occurred yet, so the value is `undefined.
 - **results:** will contain the results from the Data Connector, only available on `afterQueryResult` and `afterResultSent`.
 - **context:** this is an object created for each request that will contain context that can be used across multiple hooks on the same request.  
