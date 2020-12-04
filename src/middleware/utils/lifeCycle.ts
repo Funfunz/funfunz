@@ -15,9 +15,9 @@ export async function executeHook(
     graph: funfunz.executeGraphQL,
     connector: connector(table.connector)
   }
-  const func = table.hooks?.[operationType]?.[hookType]
+  const func = table.hooks?.all?.[hookType] || table.hooks?.[operationType]?.[hookType]
   if (!func) {
     return fullprops
   }
-  return await func(fullprops)
+  return (await func(fullprops)) || fullprops
 }

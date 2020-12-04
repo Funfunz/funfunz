@@ -2,20 +2,6 @@ export default {
   'name': 'usersroles',
   'connector': 'mainDatabase',
   'visible': true,
-  'roles': {
-    'create': [
-      'admin'
-    ],
-    'read': [
-      'admin'
-    ],
-    'update': [
-      'admin'
-    ],
-    'delete': [
-      'admin'
-    ]
-  },
   'properties': [
     {
       'name': 'createdAt',

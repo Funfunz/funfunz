@@ -42,7 +42,6 @@ function buildUpdateMutation(
     resolve: async (parent, rawargs, ctx, info) => {
       const { user } = ctx
       const { args, context } = await executeHook(table, 'update', 'beforeResolver', { args: rawargs, user }, funfunz)
-      await requirementsCheck(table, 'update', user)
       const data = normalize(args.data as Record<string, unknown>, table)
       const fields = getFields(table, info)
       const filter = args.filter || undefined
@@ -90,7 +89,6 @@ function buildAddMutation(
     resolve: async (parent, rawargs, ctx, info) => {
       const { user } = ctx
       const { args, context } = await executeHook(table, 'add', 'beforeResolver', { args: rawargs, user }, funfunz)
-      await requirementsCheck(table, 'create', user)
       const data = normalize(args.data as Record<string, unknown>, table, true)
       const fields = getFields(table, info)
 
@@ -135,7 +133,6 @@ function buildDeleteMutation(
     resolve: async (parent, rawargs, ctx) => {
       const { user } = ctx
       const { args, context } = await executeHook(table, 'delete', 'beforeResolver', { args: rawargs, user }, funfunz)
-      await requirementsCheck(table, 'create', user)
       const rawquery: IRemoveArgs = {
         entityName: table.name,
         filter: args.filter as IFilter

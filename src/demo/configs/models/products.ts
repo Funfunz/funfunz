@@ -2,20 +2,6 @@ export default {
   'name': 'products',
   'connector': 'mainDatabase',
   'visible': true,
-  'roles': {
-    'create': [
-      'all'
-    ],
-    'read': [
-      'all'
-    ],
-    'update': [
-      'all'
-    ],
-    'delete': [
-      'all'
-    ]
-  },
   'properties': [
     {
       'name': 'id',
