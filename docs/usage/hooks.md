@@ -71,8 +71,8 @@ The hooks have been divided into operation types and hook type:
 export interface IHookProps<Context> {
   graph: ExecuteGraphQL
   connector: DataConnector
-  request: ExpressRequest
-  response: ExpressResponse
+  res: ExpressRequest
+  res: ExpressResponse
   args: IArgs
   query?: IQueryArgs | IUpdateArgs | ICreateArgs | IRemoveArgs
   results?: unknown
