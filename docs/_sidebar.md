@@ -7,7 +7,7 @@
     - [SQL](usage/dataConnectors/sql.md)
   - [Filters](usage/filters.md)
   - [Hooks](usage/hooks.md)
-  - [User data](usage/user.md)
+  - [Permissions](usage/permissions.md)
 - [Configuration](configuration/main.md)
   - [Config](configuration/config.md)
   - [Settings](configuration/settings.md)
