@@ -4,7 +4,7 @@ Funfunz gives you the possibility to inject information for each GraphQL request
 
 ## Usage
 
-A very simple creating a `user` object on the `req` object
+A very simple example creating a `user` object on the `req` object
 
 ```js
 
