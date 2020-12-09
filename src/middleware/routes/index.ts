@@ -7,12 +7,11 @@ class IndexRouter {
   public router: Router
   constructor(funfunz: Funfunz) {
     const graph = graphqlHTTP(
-      (req: unknown, res) => {
+      (req: unknown, res: unknown) => {
         return {
           context: {
             req,
             res,
-            user: (req as Record<string, unknown>).user,
           },
           graphiql: {
             headerEditorEnabled: true

@@ -1,4 +1,3 @@
-import type { IUser } from '../middleware/types'
 import type { IQueryArgs, DataConnector, ICreateArgs, IRemoveArgs, IUpdateArgs } from './connector'
 import { ExecuteGraphQL } from './graphql'
 
@@ -9,17 +8,18 @@ export interface IArgs {
   [key: string]: unknown
 }
 
-export interface IHookProps<C, U extends IUser = IUser> {
+export interface IHookProps<C> {
   graph: ExecuteGraphQL
   connector: DataConnector
-  user: U
+  req: unknown
+  res: unknown
   args: IArgs
   query?: IQueryArgs | IUpdateArgs | ICreateArgs | IRemoveArgs
   results?: unknown
   context?: C
 }
 
-export type HookFunction<C, U extends IUser = IUser> = (props: IHookProps<C, U>) => Promise<IHookProps<C, U>>
+export type HookFunction<C> = (props: IHookProps<C>) => Promise<IHookProps<C>>
 
 export type ITableHooks = {
   [key in OperationTypes]?: {

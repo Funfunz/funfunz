@@ -2,20 +2,6 @@ export default {
   'name': 'roles',
   'connector': 'mainDatabase',
   'visible': false,
-  'roles': {
-    'create': [
-      'all'
-    ],
-    'read': [
-      'all'
-    ],
-    'update': [
-      'all'
-    ],
-    'delete': [
-      'all'
-    ]
-  },
   'relations': [
     {
       'type': 'm:n',
