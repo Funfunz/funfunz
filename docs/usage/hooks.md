@@ -68,14 +68,15 @@ The hooks have been divided into operation types and hook type:
 ## IHookProps interface
 
 ```js
-export interface IHookProps<RequestContext, U extends User = User> {
+export interface IHookProps<Context> {
   graph: ExecuteGraphQL
   connector: DataConnector
-  user: U
+  request: ExpressRequest
+  response: ExpressResponse
   args: IArgs
   query?: IQueryArgs | IUpdateArgs | ICreateArgs | IRemoveArgs
   results?: unknown
-  context?: RequestContext 
+  context?: Context 
 }
 ```
 
