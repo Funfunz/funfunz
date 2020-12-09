@@ -47,7 +47,6 @@ export default {
   hooks: {
     all: {
       async beforeResolver(props: IHookProps<unknown>) {
-        throw new Error('Not authorized')
         if (!props.req?.user?.roles?.find(r => r.name === 'admin')) {
           throw new Error('Not authorized')
         }
