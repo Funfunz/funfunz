@@ -1,3 +1,4 @@
+import { GraphQLList, GraphQLFloat, GraphQLInt } from 'graphql'
 import request from 'supertest'
 import { Funfunz } from '../middleware'
 
@@ -6,9 +7,36 @@ import settings from './configs/MCsettings'
 
 import { authenticatedServer } from './utils'
 
+let randomNumberCount = 4
+
 const application = new Funfunz({
   config,
-  settings
+  settings,
+  queries: {
+    randomNumbers: {
+      type: new GraphQLList(GraphQLFloat),
+      description: 'This will return a list of random numbers.',
+      resolve: () => {
+        return Array.from({length: randomNumberCount}, () => Math.random())
+      },
+    }
+  },
+  mutations: {
+    increaseRandomNumber: {
+      type: GraphQLInt,
+      description: 'This will increase and return the quantity of random numbers.',
+      resolve: () => {
+        return randomNumberCount += 1
+      },
+    },
+    decreaseRandomNumber: {
+      type: GraphQLInt,
+      description: 'This will decrease and return the quantity of random numbers.',
+      resolve: () => {
+        return randomNumberCount -= 1
+      },
+    }
+  }
 }).middleware
 const authApplication = authenticatedServer(application)
 
@@ -79,7 +107,6 @@ describe('graphql', () => {
         if (err) {
           return done(err)
         }
-        console.log(response.body.data)
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
@@ -111,7 +138,6 @@ describe('graphql', () => {
     .set('Accept', 'application/json').end(
       (err, response) => {
         if (err) {
-          console.error(err)
           return done(err)
         }
         expect(response.status).toBe(200)
@@ -351,6 +377,52 @@ describe('graphql', () => {
             path:[ 'users' ]
           }
         ])
+        return done()
+      }
+    )
+  })
+
+  it('should be possible to call custom graphql queries', (done) => {
+    return request(application)
+    .post('/api')
+    .send({
+      query: `{
+        randomNumbers
+      }`,
+    })
+    .set('Accept', 'application/json').end(
+      (err, response) => {
+        if (err) {
+          return done(err)
+        }
+        expect(response.status).toBe(200)
+        expect(response.body).toBeTruthy()
+        const data = response.body.data
+        expect(data.randomNumbers).toBeTruthy()
+        expect(data.randomNumbers.length).toBe(4)
+        return done()
+      }
+    )
+  })
+  it('should be possible to call custom graphql mutations', (done) => {
+    return request(application)
+    .post('/api')
+    .send({
+      query: `
+        mutation {
+          increaseRandomNumber
+        }
+      `,
+    })
+    .set('Accept', 'application/json').end(
+      (err, response) => {
+        if (err) {
+          return done(err)
+        }
+        expect(response.status).toBe(200)
+        expect(response.body).toBeTruthy()
+        const data = response.body.data
+        expect(data.increaseRandomNumber).toBe(5)
         return done()
       }
     )
