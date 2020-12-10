@@ -2,20 +2,6 @@ export default {
   name: 'families',
   connector: 'mainDatabase',
   visible: true,
-  'roles': {
-    'create': [
-      'all'
-    ],
-    'read': [
-      'all'
-    ],
-    'update': [
-      'all'
-    ],
-    'delete': [
-      'all'
-    ]
-  },
   'relations': [
     {
       'type': '1:n',

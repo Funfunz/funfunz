@@ -22,12 +22,6 @@ function buildTableInfo(): IEntityInfo & { layout: Record<string, unknown> } {
     name: '',
     connector: 'mysql',
     visible: true,
-    roles: {
-      create: ['all'],
-      read: ['all'],
-      update: ['all'],
-      delete: ['all'],
-    },
     properties: [],
     layout: {
       label: '',

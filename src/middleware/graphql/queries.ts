@@ -167,23 +167,14 @@ function buildEntities(tables: IEntityInfo[]) {
         type: GraphQLString
       }
     },
-    resolve: (parent, args, context) => {
-      let userRoles = [{
-        name: 'unauthenticated'
-      }]
-      if (context.user?.roles) {
-        userRoles = context.user.roles
-      }
+    resolve: (parent, args) => {
       const requestedEntity = args.name
       const entityNames = tables.filter(
         (table) => {
           if (requestedEntity && requestedEntity !== table.name) {
             return false
           }
-          const hasAccess = table.roles.read.includes('all') || userRoles.find(
-            (role) => table.roles.read.includes(role.name)
-          )
-          return table.visible && hasAccess
+          return table.visible
         }
       )
       return entityNames

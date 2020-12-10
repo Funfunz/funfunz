@@ -5,7 +5,7 @@
   - [Data connectors](usage/dataConnectors/main.md)
   - [Filters](usage/filters.md)
   - [Hooks](usage/hooks.md)
-  - [User data](usage/user.md)
+  - [Permissions](usage/permissions.md)
 - [Configuration](configuration/main.md)
 - [End Goals](endgoals.md)
 - [Contributing](contributing.md)
