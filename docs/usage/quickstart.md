@@ -41,8 +41,8 @@ node_modules/.bin/funfunz
 const express = require('express')
 const path = require('path')
 const cookieParser = require('cookie-parser')
-const mcConfig = require('./mc/MCconfig.json')
-const mcSettings = require('./mc/MCsettings,json')
+const funfunzConfig = require('./config/funfunzConfig.json')
+const funfunzSettings = require('./config/funfunzSettings,json')
 const Funfunz = require('funfunz')
 
 const indexRouter = require('./routes/index')
@@ -56,8 +56,8 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 app.use('/', indexRouter)
 app.use('/admin/api', new Funfunz({
-  config: mcConfig,
-  settings: mcSettings
+  config: funfunzConfig,
+  settings: funfunzSettings
 }).middleware)
 
 // error handler

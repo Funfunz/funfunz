@@ -14,7 +14,7 @@ export interface IFunfunzResponse extends express.Response {
   data?: Record<string, unknown>
 }
 
-export interface IFunfunzConfig<QSource = any, QContext = any> {
+export interface IFunfunzConfig<QSource = unknown, QContext = unknown> {
   config: IConfig
   settings: ISettings
   queries?: Thunk<GraphQLFieldConfigMap<QSource, QContext>>

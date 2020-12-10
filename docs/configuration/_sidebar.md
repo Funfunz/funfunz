@@ -1,5 +1,7 @@
 - [Home](/)
 - [Usage](usage/quickstart.md)
 - [Configuration](configuration/main.md)
+  - [Config](configuration/config.md)
+  - [Settings](configuration/settings.md)
 - [End Goals](endgoals.md)
 - [Contributing](contributing.md)
