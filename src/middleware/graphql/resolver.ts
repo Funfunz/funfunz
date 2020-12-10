@@ -3,7 +3,6 @@ import { getFields } from '../utils/index'
 import { IEntityInfo } from '../../generator/configurationTypes'
 import { GraphQLFieldResolver } from 'graphql'
 import { TUserContext } from './schema'
-import { requirementsCheck } from '../utils/dataAccess'
 import { getParentEntryFilter, FilterValues, ParentFilterResult, IFilter } from '../utils/filter'
 import { executeHook } from '../utils/lifeCycle'
 import { IQueryArgs } from '../../types/connector'
@@ -15,10 +14,8 @@ export function resolver<TSource, TContext extends TUserContext>(
   parentTable?: IEntityInfo,
   relationType?: '1:n' | 'n:1' | 'm:n',
 ): GraphQLFieldResolver<TSource, TContext> {
-  return async (parent, rawargs, ctx, info) => {
-    const { user, superUser } = ctx
-    const { args, context } = await executeHook(table, 'query', 'beforeResolver', { args: rawargs, user }, funfunz)
-    await requirementsCheck(table, 'read', user, superUser)
+  return async (parent, rawargs, { req, res }, info) => {
+    const { args, context } = await executeHook(table, 'query', 'beforeResolver', { args: rawargs, req, res }, funfunz)
     const fields = getFields(table, info)
     let filter = args.filter || undefined
     let parentFilter: ParentFilterResult | undefined
@@ -43,7 +40,7 @@ export function resolver<TSource, TContext extends TUserContext>(
       skip: args.skip as number,
       take: args.take as number
     }
-    const { query, context: newContext } = await executeHook(table, 'query', 'beforeSendQuery', { user, args, query: rawquery, context }, funfunz)
+    const { query, context: newContext } = await executeHook(table, 'query', 'beforeSendQuery', { req, res, args, query: rawquery, context }, funfunz)
     
     let results = await sendQuery(table.connector, query as IQueryArgs)
     if (relationType === 'n:1') {
@@ -54,7 +51,8 @@ export function resolver<TSource, TContext extends TUserContext>(
       'query',
       'afterQueryResult',
       {
-        user,
+        req,
+        res,
         args,
         query,
         results,
@@ -71,12 +69,8 @@ export function resolverCount<TSource, TContext extends TUserContext>(
   table: IEntityInfo,
   funfunz: Funfunz
 ): GraphQLFieldResolver<TSource, TContext> {
-  return async (parent, rawargs, ctx) => {
-    const { user, superUser } = ctx
-
-    const { args, context } = await executeHook(table, 'count', 'beforeResolver', { args: rawargs, user }, funfunz)
-
-    await requirementsCheck(table, 'read', user, superUser)
+  return async (parent, rawargs, { req, res }) => {
+    const { args, context } = await executeHook(table, 'count', 'beforeResolver', { args: rawargs, req, res }, funfunz)
 
     const rawquery: IQueryArgs = {
       entityName: table.name,
@@ -87,7 +81,7 @@ export function resolverCount<TSource, TContext extends TUserContext>(
       take: args.take as number
     }
 
-    const { query, context: newContext } = await executeHook(table, 'count', 'beforeSendQuery', { user, args, query: rawquery, context }, funfunz)
+    const { query, context: newContext } = await executeHook(table, 'count', 'beforeSendQuery', { req, res, args, query: rawquery, context }, funfunz)
     
     const results = await sendQuery(table.connector, query as IQueryArgs)
     const { results: modifiedResults } = await executeHook(
@@ -95,7 +89,8 @@ export function resolverCount<TSource, TContext extends TUserContext>(
       'count',
       'afterQueryResult',
       {
-        user,
+        req,
+        res,
         args,
         query,
         results,

@@ -6,7 +6,6 @@ export default {
     required: [
       'name',
       'properties',
-      'roles',
     ],
     properties: {
       name: {type: 'string'},
@@ -30,41 +29,6 @@ export default {
                 type: {type: 'string'},
                 allowNull: {type: 'boolean'},
               },
-            },
-          },
-        },
-      },
-      roles: {
-        type: 'object',
-        required: [
-          'read',
-          'create',
-          'update',
-          'delete',
-        ],
-        properties: {
-          read: {
-            type: 'array',
-            items: {
-              type: 'string',
-            },
-          },
-          create: {
-            type: 'array',
-            items: {
-              type: 'string',
-            },
-          },
-          update: {
-            type: 'array',
-            items: {
-              type: 'string',
-            },
-          },
-          delete: {
-            type: 'array',
-            items: {
-              type: 'string',
             },
           },
         },

@@ -1,23 +1,19 @@
 import { IHookProps } from "../../../types/hooks"
 
+interface IRequest {
+  user?: {
+    id: number
+    roles?: Array<{ 
+      id: number
+      name: string
+    }>
+  }
+}
+
 export default {
   'name': 'users',
   'connector': 'mainDatabase',
   'visible': true,
-  'roles': {
-    'create': [
-      'admin'
-    ],
-    'read': [
-      'admin'
-    ],
-    'update': [
-      'admin'
-    ],
-    'delete': [
-      'admin'
-    ]
-  },
   'relations': [
     {
       'type': 'm:n',
@@ -151,9 +147,11 @@ export default {
     }
   ],
   'hooks': {
-    count: {
+    all: {
       async beforeResolver(props: IHookProps<unknown>) {
-        throw new Error('Not authorized')
+        if (!(props.req as IRequest)?.user?.roles?.find(r => r.name === 'admin')) {
+          throw new Error('Not authorized')
+        }
       }
     }
   },

@@ -40,12 +40,6 @@ export interface IEntityInfo {
   connector: string,
   visible: boolean,
   relations?: IRelation[],
-  roles: {
-    create: string[],
-    read: string[],
-    update: string[],
-    delete: string[],
-  },
   properties: IPropertyInfo[],
   hooks?: ITableHooks,
   layout?: Record<string, unknown>,

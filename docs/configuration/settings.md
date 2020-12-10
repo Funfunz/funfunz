@@ -34,12 +34,6 @@ return [
     },
     ...
   ],
-  roles: {
-    create: [string],  // array of role names
-    read: [string],
-    update: [string],
-    delete: [string],
-  },
   columns: [
     {
       name: string,  // column name

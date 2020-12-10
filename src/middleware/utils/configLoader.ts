@@ -13,13 +13,6 @@ const config: IFunfunzConfig = {
 
 export function setConfig(configs: IConfig | IEntityInfo[], target: string): void {
   if (configCheck(configs, target)) {
-    if (target === 'settings') {
-      (configs as IEntityInfo[]).forEach(
-        (table) => {
-          table.roles.read = Array.from(new Set<string>([...table.roles.read, ...table.roles.update]))
-        }
-      )
-    }
     config[target] = configs
   }
 }
