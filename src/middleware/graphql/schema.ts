@@ -6,7 +6,7 @@ import {
   GraphQLObjectType,
   GraphQLSchema,
 } from 'graphql'
-import { IUser } from '../types'
+import { IFunfunzConfig, IUser } from '../types'
 import { Request, Response } from 'express'
 import type { Funfunz } from '../index'
 
@@ -22,19 +22,28 @@ const debug = Debug('funfunz:graphql-schema')
 export let schema: GraphQLSchema
 
 // export the schema
-export default (funfunz: Funfunz): GraphQLSchema => {
+export default (
+  funfunz: Funfunz,
+  customGraphQL?: {
+    queries?: IFunfunzConfig['queries']
+    mutations?: IFunfunzConfig['mutations']
+  }
+): GraphQLSchema => {
   debug('Creating graphql schema')
   // lets define our root query
   const RootQuery = new GraphQLObjectType({
     name: 'Query',
     fields: {
       ...buildQueries(funfunz),
+      ...customGraphQL?.queries
     },
   })
+  
   const RootMutation = new GraphQLObjectType({
     name: 'Mutation',
     fields: {
       ...mutations(funfunz),
+      ...customGraphQL?.mutations
     },
   })
 

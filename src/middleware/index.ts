@@ -25,7 +25,9 @@ class Funfunz {
 
     Object.keys(configs).forEach(
       (configKey) => {
-        setConfig(configs[configKey], configKey)
+        if (configKey !== 'queries' && configKey !== 'mutations') {
+          setConfig(configs[configKey], configKey)
+        }
       }
     )
 
@@ -35,7 +37,13 @@ class Funfunz {
     debug('INIT PARAMETERS:\n', this.config().config)
     debug('NODE_ENV', process.env.NODE_ENV)
     debug('---------------------------------------------')
-    this.schema = buildGraphQLSchema(this)
+    this.schema = buildGraphQLSchema(
+      this,
+      {
+        queries: configs.queries,
+        mutations: configs.mutations
+      }
+    )
 
     this.middleware = (new App(this)).server
   }

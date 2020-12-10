@@ -1,3 +1,4 @@
+import { GraphQLFloat, GraphQLInt, GraphQLList } from 'graphql'
 import { Funfunz } from '../middleware'
 import config from './configs/MCconfig'
 import settings from './configs/MCsettings'
@@ -21,9 +22,36 @@ if (process.env.JAWSDB_URL) {
   console.log('mysql config', config.connectors.mainDatabase.config)
 }
 
+let randomNumberCount = 4
+
 const funfunz = new Funfunz({
   config,
   settings,
+  queries: {
+    randomNumbers: {
+      type: new GraphQLList(GraphQLFloat),
+      description: 'This will return a list of random numbers.',
+      resolve: () => {
+        return Array.from({length: randomNumberCount}, () => Math.random())
+      },
+    }
+  },
+  mutations: {
+    increaseRandomNumber: {
+      type: GraphQLInt,
+      description: 'This will increase and return the quantity of random numbers.',
+      resolve: () => {
+        return randomNumberCount += 1
+      },
+    },
+    decreaseRandomNumber: {
+      type: GraphQLInt,
+      description: 'This will decrease and return the quantity of random numbers.',
+      resolve: () => {
+        return randomNumberCount -= 1
+      },
+    }
+  }
 })
 
 /**

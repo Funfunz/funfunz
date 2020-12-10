@@ -13,6 +13,23 @@ const application = new Funfunz({
 const authApplication = authenticatedServer(application)
 
 describe('graphql', () => {
+  it('should throw an error if instanciating Funfunz without configs', (done) => {
+    try {
+      new Funfunz({
+        config,
+      })
+    } catch (error) {
+      expect(error.message).toBe('Missing object "settings" on the cofiguration')
+    }
+    try {
+      new Funfunz({
+        settings,
+      })
+    } catch (error) {
+      expect(error.message).toBe('Missing object "config" on the cofiguration')
+    }
+    done()
+  })
   it('graphql endpoint should return status 200', (done) => {
     return request(application)
       .post('/api')
