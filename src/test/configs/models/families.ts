@@ -4,39 +4,36 @@ export default {
   name: 'families',
   connector: 'mainDatabase',
   visible: true,
-  'relations': [
+  relations: [
     {
-      'type': '1:n',
-      'foreignKey': 'FamilyId',
-      'remoteTable': 'products'
+      type: '1:n',
+      foreignKey: 'FamilyId',
+      remoteTable: 'products'
     }
   ],
-  'properties': [
+  properties: [
     {
-      'name': 'id',
-      'searchable': true,
-      'visible': {
-        'list': true,
-        'detail': true,
-        'relation': true
+      name: 'id',
+      filterable: true,
+      model: {
+        type: 'int',
+        allowNull: false,
+        isPk: true
       },
-      'model': {
-        'type': 'int',
-        'allowNull': false,
-        'isPk': true
-      },
-      'layout': {
-        'label': 'Id',
-        'listColumn': {},
-        'editField': {
-          'type': 'number'
+      layout: {
+        label: 'Id',
+        entityPage: {
+          searchable: true,
+        },
+        editField: {
+          type: 'number'
         }
       }
     },
     {
-      'name': 'order',
-      'searchable': true,
-      'visible': {
+      name: 'order',
+      filterable: true,
+      visible: {
         'list': true,
         'detail': true,
         'relation': false
@@ -55,7 +52,7 @@ export default {
     },
     {
       'name': 'imageUrl',
-      'searchable': true,
+      'filterable': true,
       'model': {
         'type': 'varchar(255)',
         'allowNull': true
@@ -70,7 +67,7 @@ export default {
     },
     {
       'name': 'name',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': true,
@@ -90,7 +87,7 @@ export default {
     },
     {
       'name': 'email',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': true,
@@ -110,7 +107,7 @@ export default {
     },
     {
       'name': 'createdAt',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': false,
@@ -130,7 +127,7 @@ export default {
     },
     {
       'name': 'updatedAt',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': false,
