@@ -1,148 +1,138 @@
 export default {
-  'name': 'users',
-  'connector': 'mainDatabase',
-  'visible': true,
-  'relations': [
+  name: 'users',
+  connector: 'mainDatabase',
+  visible: true,
+  relations: [
     {
-      'type': 'm:n',
-      'relationalTable': 'usersroles',
-      'foreignKey': 'userId',
-      'remoteTable': 'roles',
-      'remoteForeignKey': 'roleId',
+      type: 'm:n',
+      relationalTable: 'usersroles',
+      foreignKey: 'userId',
+      remoteTable: 'roles',
+      remoteForeignKey: 'roleId',
     },
   ],
-  'properties': [
+  properties: [
     {
-      'name': 'id',
-      'filterable': true,
-      'visible': {
-        'list': true,
-        'detail': true,
-        'relation': true
+      name: 'id',
+      filterable: true,
+      model: {
+        type: 'int',
+        allowNull: false,
+        isPk: true
       },
-      'model': {
-        'type': 'int',
-        'allowNull': false,
-        'isPk': true
-      },
-      'layout': {
-        'label': 'Id',
-        'listColumn': {},
-        'editField': {
-          'type': 'number'
+      layout: {
+        label: 'Id',
+        visible: {
+          entityPage: true,
+          detail: true,
+          relation: true
+        },
+        editField: {
+          type: 'number'
         }
       }
     },
     {
-      'name': 'email',
-      'filterable': true,
-      'visible': {
-        'list': true,
-        'detail': true,
-        'relation': false
+      name: 'email',
+      filterable: true,
+      model: {
+        type: 'varchar(255)',
+        allowNull: false
       },
-      'model': {
-        'type': 'varchar(255)',
-        'allowNull': false
-      },
-      'layout': {
-        'label': 'Email',
-        'listColumn': {},
-        'editField': {
-          'type': 'text'
+      layout: {
+        label: 'Email',
+        visible: {
+          entityPage: true,
+          detail: true,
+          relation: false
+        },
+        editField: {
+          type: 'text'
         }
       }
     },
     {
-      'name': 'name',
-      'filterable': true,
-      'visible': {
-        'list': true,
-        'detail': true,
-        'relation': false
+      name: 'name',
+      filterable: true,
+      model: {
+        type: 'varchar(255)',
+        allowNull: true
       },
-      'model': {
-        'type': 'varchar(255)',
-        'allowNull': true
-      },
-      'layout': {
-        'label': 'Name',
-        'listColumn': {},
-        'editField': {
-          'type': 'text'
+      layout: {
+        label: 'Name',
+        visible: {
+          entityPage: true,
+          detail: true,
+          relation: false
+        },
+        editField: {
+          type: 'text'
         }
       }
     },
     {
-      'name': 'password',
-      'filterable': true,
-      'visible': {
-        'list': true,
-        'detail': true,
-        'relation': false
+      name: 'password',
+      filterable: false,
+      visible: false,
+      model: {
+        type: 'varchar(255)',
+        allowNull: true
       },
-      'model': {
-        'type': 'varchar(255)',
-        'allowNull': true
-      },
-      'layout': {
-        'label': 'Password',
-        'listColumn': {},
-        'editField': {
-          'type': 'text'
+      layout: {
+        label: 'Password',
+        editField: {
+          type: 'text'
         }
       }
     },
     {
-      'name': 'createdAt',
-      'filterable': true,
-      'visible': {
-        'list': true,
-        'detail': false,
-        'relation': false
+      name: 'createdAt',
+      filterable: true,
+      model: {
+        type: 'datetime',
+        allowNull: false
       },
-      'model': {
-        'type': 'datetime',
-        'allowNull': false
-      },
-      'layout': {
-        'label': 'CreatedAt',
-        'listColumn': {},
-        'editField': {
-          'type': 'date'
+      layout: {
+        label: 'CreatedAt',
+        visible: {
+          entityPage: true,
+          detail: false,
+          relation: false
+        },
+        editField: {
+          type: 'date'
         }
       }
     },
     {
-      'name': 'updatedAt',
-      'filterable': true,
-      'visible': {
-        'list': true,
-        'detail': false,
-        'relation': false
+      name: 'updatedAt',
+      filterable: true,
+      model: {
+        type: 'datetime',
+        allowNull: false
       },
-      'model': {
-        'type': 'datetime',
-        'allowNull': false
-      },
-      'layout': {
-        'label': 'UpdatedAt',
-        'listColumn': {},
-        'editField': {
-          'type': 'date'
+      layout: {
+        label: 'UpdatedAt',
+        visible: {
+          entityPage: true,
+          detail: false,
+          relation: false
+        },
+        editField: {
+          type: 'date'
         }
       }
     }
   ],
-  'layout': {
-    'label': 'Users',
-    'listPage': {},
-    'searchField': {},
-    'createButton': {},
-    'editButton': {},
-    'deleteButton': {},
-    'editPage': {
-      'sections': []
+  layout: {
+    label: 'Users',
+    listPage: {},
+    searchField: {},
+    createButton: {},
+    editButton: {},
+    deleteButton: {},
+    editPage: {
+      sections: []
     }
   }
 }
