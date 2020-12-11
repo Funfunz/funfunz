@@ -2,160 +2,158 @@ export default {
   name: 'families',
   connector: 'mainDatabase',
   visible: true,
-  'relations': [
+  relations: [
     {
-      'type': '1:n',
-      'foreignKey': 'FamilyId',
-      'remoteTable': 'products'
+      type: '1:n',
+      foreignKey: 'FamilyId',
+      remoteTable: 'products'
     }
   ],
-  'properties': [
+  properties: [
     {
-      'name': 'id',
-      'searchable': true,
-      'visible': {
-        'list': true,
-        'detail': true,
-        'relation': true
+      name: 'id',
+      filterable: true,
+      model: {
+        type: 'int',
+        allowNull: false,
+        isPk: true
       },
-      'model': {
-        'type': 'int',
-        'allowNull': false,
-        'isPk': true
-      },
-      'layout': {
-        'label': 'Id',
-        'listColumn': {},
-        'editField': {
-          'type': 'number'
+      layout: {
+        label: 'Id',
+        visible: {
+          entityPage: true,
+          detail: true,
+          relation: true
+        },
+        editField: {
+          type: 'number'
         }
       }
     },
     {
-      'name': 'order',
-      'searchable': true,
-      'visible': {
-        'list': true,
-        'detail': true,
-        'relation': false
+      name: 'order',
+      filterable: true,
+      model: {
+        type: 'int',
+        allowNull: true
       },
-      'model': {
-        'type': 'int',
-        'allowNull': true
-      },
-      'layout': {
-        'label': 'Order',
-        'listColumn': {},
-        'editField': {
-          'type': 'number'
+      layout: {
+        label: 'Order',
+        visible: {
+          entityPage: true,
+          detail: true,
+          relation: false
+        },
+        editField: {
+          type: 'number'
         }
       }
     },
     {
-      'name': 'imageUrl',
-      'searchable': true,
-      'model': {
-        'type': 'varchar(255)',
-        'allowNull': true
+      name: 'imageUrl',
+      filterable: true,
+      model: {
+        type: 'varchar(255)',
+        allowNull: true
       },
-      'layout': {
-        'label': 'ImageUrl',
-        'listColumn': {},
-        'editField': {
-          'type': 'text'
+      layout: {
+        label: 'ImageUrl',
+        visible: {
+          entityPage: false,
+          detail: true,
+          relation: false,
+        },
+        editField: {
+          type: 'text'
         }
       }
     },
     {
-      'name': 'name',
-      'searchable': true,
-      'visible': {
-        'list': true,
-        'detail': true,
-        'relation': false,
+      name: 'name',
+      filterable: true,
+      model: {
+        type: 'varchar(255)',
+        allowNull: false
       },
-      'model': {
-        'type': 'varchar(255)',
-        'allowNull': false
-      },
-      'layout': {
-        'label': 'Name',
-        'listColumn': {},
-        'editField': {
-          'type': 'text'
+      layout: {
+        label: 'Name',
+        visible: {
+          entityPage: true,
+          detail: true,
+          relation: false,
+        },
+        editField: {
+          type: 'text'
         }
       }
     },
     {
-      'name': 'email',
-      'searchable': true,
-      'visible': {
-        'list': true,
-        'detail': true,
-        'relation': false
+      name: 'email',
+      filterable: true,
+      model: {
+        type: 'varchar(255)',
+        allowNull: true
       },
-      'model': {
-        'type': 'varchar(255)',
-        'allowNull': true
-      },
-      'layout': {
-        'label': 'Email',
-        'listColumn': {},
-        'editField': {
-          'type': 'text'
+      layout: {
+        label: 'Email',
+        visible: {
+          entityPage: true,
+          detail: true,
+          relation: false
+        },
+        editField: {
+          type: 'text'
         }
       }
     },
     {
-      'name': 'createdAt',
-      'searchable': true,
-      'visible': {
-        'list': true,
-        'detail': false,
-        'relation': false
+      name: 'createdAt',
+      filterable: true,
+      model: {
+        type: 'datetime',
+        allowNull: false
       },
-      'model': {
-        'type': 'datetime',
-        'allowNull': false
-      },
-      'layout': {
-        'label': 'CreatedAt',
-        'listColumn': {},
-        'editField': {
-          'type': 'date'
+      layout: {
+        label: 'CreatedAt',
+        visible: {
+          entityPage: true,
+          detail: false,
+          relation: false
+        },
+        editField: {
+          type: 'date'
         }
       }
     },
     {
-      'name': 'updatedAt',
-      'searchable': true,
-      'visible': {
-        'list': true,
-        'detail': false,
-        'relation': false
+      name: 'updatedAt',
+      filterable: true,
+      model: {
+        type: 'datetime',
+        allowNull: false
       },
-      'model': {
-        'type': 'datetime',
-        'allowNull': false
-      },
-      'layout': {
-        'label': 'UpdatedAt',
-        'listColumn': {},
-        'editField': {
-          'type': 'date'
+      layout: {
+        label: 'UpdatedAt',
+        visible: {
+          entityPage: true,
+          detail: false,
+          relation: false
+        },
+        editField: {
+          type: 'date'
         }
       }
     }
   ],
-  'layout': {
-    'label': 'Families',
-    'listPage': {},
-    'searchField': {},
-    'createButton': {},
-    'editButton': {},
-    'deleteButton': {},
-    'editPage': {
-      'sections': []
+  layout: {
+    label: 'Families',
+    listPage: {},
+    searchField: {},
+    createButton: {},
+    editButton: {},
+    deleteButton: {},
+    editPage: {
+      sections: []
     }
   }
 }

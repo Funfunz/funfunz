@@ -1,114 +1,110 @@
 export default {
-  'name': 'usersroles',
-  'connector': 'mainDatabase',
-  'visible': true,
-  'properties': [
+  name: 'usersroles',
+  connector: 'mainDatabase',
+  visible: true,
+  relations: [
     {
-      'name': 'createdAt',
-      'searchable': true,
-      'visible': {
-        'list': true,
-        'detail': false,
-        'relation': false
+      type: 'n:1',
+      relationalTable: 'usersroles',
+      foreignKey: 'userId',
+      remoteTable: 'users'
+    },
+    {
+      type: 'n:1',
+      relationalTable: 'usersroles',
+      foreignKey: 'roleId',
+      remoteTable: 'roles'
+    }
+  ],
+  properties: [
+    {
+      name: 'createdAt',
+      filterable: true,
+      model: {
+        type: 'datetime',
+        allowNull: false
       },
-      'model': {
-        'type': 'datetime',
-        'allowNull': false
-      },
-      'layout': {
-        'label': 'CreatedAt',
-        'listColumn': {},
-        'editField': {
-          'type': 'date'
+      layout: {
+        label: 'CreatedAt',
+        visible: {
+          entityPage: true,
+          detail: false,
+          relation: false
+        },
+        editField: {
+          type: 'date'
         }
       }
     },
     {
-      'name': 'updatedAt',
-      'searchable': true,
-      'visible': {
-        'list': true,
-        'detail': false,
-        'relation': false
+      name: 'updatedAt',
+      filterable: true,
+      model: {
+        type: 'datetime',
+        allowNull: false
       },
-      'model': {
-        'type': 'datetime',
-        'allowNull': false
-      },
-      'layout': {
-        'label': 'UpdatedAt',
-        'listColumn': {},
-        'editField': {
-          'type': 'date'
+      layout: {
+        label: 'UpdatedAt',
+        visible: {
+          entityPage: true,
+          detail: false,
+          relation: false
+        },
+        editField: {
+          type: 'date'
         }
       }
     },
     {
-      'name': 'userId',
-      'searchable': true,
-      'visible': {
-        'list': true,
-        'detail': true,
-        'relation': true
-      },
-      'model': {
-        'type': 'int',
-        'allowNull': false,
+      name: 'userId',
+      filterable: true,
+      model: {
+        type: 'int',
+        allowNull: false,
         'isPk': true
       },
-      'layout': {
-        'label': 'UserId',
-        'listColumn': {},
-        'editField': {
-          'type': 'number'
+      layout: {
+        label: 'UserId',
+        visible: {
+          entityPage: true,
+          detail: true,
+          relation: true
+        },
+        editField: {
+          type: 'number'
         }
       }
     },
     {
-      'name': 'roleId',
-      'searchable': true,
-      'visible': {
-        'list': true,
-        'detail': true,
-        'relation': true
-      },
-      'model': {
-        'type': 'int',
-        'allowNull': false,
+      name: 'roleId',
+      filterable: true,
+      model: {
+        type: 'int',
+        allowNull: false,
         'isPk': true
       },
-      'layout': {
-        'label': 'RoleId',
-        'listColumn': {},
-        'editField': {
-          'type': 'number'
+      layout: {
+        label: 'RoleId',
+        visible: {
+          entityPage: true,
+          detail: true,
+          relation: true
+        },
+        editField: {
+          type: 'number'
         }
       }
     }
   ],
-  'layout': {
-    'label': 'Usersroles',
-    'listPage': {},
-    'searchField': {},
-    'createButton': {},
-    'editButton': {},
-    'deleteButton': {},
-    'editPage': {
-      'sections': []
+  layout: {
+    label: 'Usersroles',
+    listPage: {},
+    searchField: {},
+    createButton: {},
+    editButton: {},
+    deleteButton: {},
+    editPage: {
+      sections: []
     }
-  },
-  'relations': [
-    {
-      'type': 'n:1',
-      'relationalTable': 'usersroles',
-      'foreignKey': 'userId',
-      'remoteTable': 'users'
-    },
-    {
-      'type': 'n:1',
-      'relationalTable': 'usersroles',
-      'foreignKey': 'roleId',
-      'remoteTable': 'roles'
-    }
-  ]
+  }
 }

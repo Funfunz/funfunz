@@ -26,7 +26,7 @@ export default {
   'properties': [
     {
       'name': 'id',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': true,
@@ -47,7 +47,7 @@ export default {
     },
     {
       'name': 'email',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': true,
@@ -67,7 +67,7 @@ export default {
     },
     {
       'name': 'name',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': true,
@@ -87,7 +87,7 @@ export default {
     },
     {
       'name': 'password',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': true,
@@ -107,7 +107,7 @@ export default {
     },
     {
       'name': 'createdAt',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': false,
@@ -127,7 +127,7 @@ export default {
     },
     {
       'name': 'updatedAt',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': false,
@@ -152,6 +152,7 @@ export default {
         if (!(props.req as IRequest)?.user?.roles?.find(r => r.name === 'admin')) {
           throw new Error('Not authorized')
         }
+        return props
       }
     }
   },

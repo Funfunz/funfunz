@@ -5,7 +5,7 @@ export default {
   'properties': [
     {
       'name': 'id',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': true,
@@ -24,7 +24,7 @@ export default {
     },
     {
       'name': 'name',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': true,
@@ -44,7 +44,7 @@ export default {
     },
     {
       'name': 'main',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': true,
@@ -64,7 +64,7 @@ export default {
     },
     {
       'name': 'createdAt',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': false,
@@ -84,7 +84,7 @@ export default {
     },
     {
       'name': 'updatedAt',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': false,
@@ -104,7 +104,7 @@ export default {
     },
     {
       'name': 'ProductId',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': true,
