@@ -18,8 +18,10 @@ export function buildQueries(funfunz: Funfunz): Thunk<GraphQLFieldConfigMap<unkn
   const queries: Thunk<GraphQLFieldConfigMap<unknown, TUserContext>> = {}
   configs.settings.forEach(
     (table) => {
-      queries[table.name] = buildQuery(table, funfunz)
-      queries[table.name + 'Count'] = buildCount(table, funfunz)
+      if (table.visible) {
+        queries[table.name] = buildQuery(table, funfunz)
+        queries[table.name + 'Count'] = buildCount(table, funfunz)
+      }
     }
   )
   queries.config = buildConfig(configs.settings)

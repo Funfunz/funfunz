@@ -7,7 +7,7 @@ export default {
   'properties': [
     {
       'name': 'id',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': true,
@@ -28,7 +28,7 @@ export default {
     },
     {
       'name': 'name',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': true,
@@ -47,29 +47,34 @@ export default {
       }
     },
     {
-      'name': 'color',
-      'searchable': true,
-      'visible': {
-        'list': true,
-        'detail': true,
-        'relation': false
+      name: 'color',
+      filterable: true,
+      visible: {
+        list: true,
+        detail: true,
+        relation: false
       },
-      'model': {
-        'type': 'varchar(255)',
-        'allowNull': true
+      model: {
+        type: 'varchar(255)',
+        allowNull: true
       },
-      'layout': {
-        'label': 'Color',
-        'listColumn': {},
-        'editField': {
-          'type': 'text'
+      layout: {
+        label: 'Color',
+        entityPage: {
+          filterable: {
+            type: 'enum',
+            content: ['Blue', 'Red', 'Yellow']
+          },
+        },
+        editField: {
+          type: 'text'
         }
       }
     },
     {
-      'name': 'type',
-      'searchable': true,
-      'visible': {
+      name: 'type',
+      filterable: true,
+      visible: {
         'list': true,
         'detail': true,
         'relation': false
@@ -86,7 +91,7 @@ export default {
     },
     {
       'name': 'createdAt',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': false,
@@ -106,7 +111,7 @@ export default {
     },
     {
       'name': 'updatedAt',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': false,
@@ -126,7 +131,7 @@ export default {
     },
     {
       'name': 'FamilyId',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': true,
@@ -146,7 +151,7 @@ export default {
     },
     {
       'name': 'active',
-      'searchable': true,
+      'filterable': true,
       'visible': {
         'list': true,
         'detail': true,
