@@ -14,6 +14,7 @@ export interface IHookProps<C> {
   req: unknown
   res: unknown
   args: IArgs
+  superUser?: boolean
   query?: IQueryArgs | IUpdateArgs | ICreateArgs | IRemoveArgs
   results?: unknown
   context?: C

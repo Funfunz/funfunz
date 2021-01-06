@@ -38,8 +38,8 @@ function buildUpdateMutation(
   const mutation: GraphQLFieldConfig<unknown, TUserContext>  = {
     type: dataConnectorMutation?.type || new GraphQLList(buildType(table, funfunz, { relations: true })),
     args: dataConnectorMutation?.args || buildArgs(table, { pagination: true, data: true, filter: true }),
-    resolve: async (parent, rawargs, { req, res }, info) => {
-      const { args, context } = await executeHook(table, 'update', 'beforeResolver', { args: rawargs, req, res }, funfunz)
+    resolve: async (parent, rawargs, { req, res, superUser }, info) => {
+      const { args, context } = await executeHook(table, 'update', 'beforeResolver', { args: rawargs, req, res, superUser }, funfunz)
       const data = normalize(args.data as Record<string, unknown>, table)
       const fields = getFields(table, info)
       const filter = args.filter || undefined
@@ -51,7 +51,7 @@ function buildUpdateMutation(
         skip: args.skip,
         take: args.take
       }
-      const { query, context: newContext } = await executeHook(table, 'update', 'beforeSendQuery', { req, res, args, query: rawquery, context }, funfunz)
+      const { query, context: newContext } = await executeHook(table, 'update', 'beforeSendQuery', { req, res, args, query: rawquery, context, superUser }, funfunz)
       
       const results = await update(table.connector, query as IUpdateArgs)
       
@@ -65,7 +65,8 @@ function buildUpdateMutation(
           args,
           query,
           results,
-          context: newContext
+          context: newContext,
+          superUser
         },
         funfunz
       )
@@ -85,8 +86,8 @@ function buildAddMutation(
   const mutation: GraphQLFieldConfig<unknown, TUserContext>  = {
     type: dataConnectorMutation?.type || new GraphQLList(buildType(table, funfunz)),
     args: dataConnectorMutation?.args || buildArgs(table, { data: true }),
-    resolve: async (parent, rawargs, { req, res }, info) => {
-      const { args, context } = await executeHook(table, 'add', 'beforeResolver', { args: rawargs, req, res }, funfunz)
+    resolve: async (parent, rawargs, { req, res, superUser }, info) => {
+      const { args, context } = await executeHook(table, 'add', 'beforeResolver', { args: rawargs, req, res, superUser }, funfunz)
       const data = normalize(args.data as Record<string, unknown>, table, true)
       const fields = getFields(table, info)
 
@@ -97,7 +98,7 @@ function buildAddMutation(
         skip: args.skip as number,
         take: args.take as number
       }
-      const { query, context: newContext } = await executeHook(table, 'add', 'beforeSendQuery', { req, res, args, query: rawquery, context }, funfunz)
+      const { query, context: newContext } = await executeHook(table, 'add', 'beforeSendQuery', { req, res, args, query: rawquery, context, superUser }, funfunz)
       const results = await create(table.connector, query as ICreateArgs)
       const { results: modifiedResults } = await executeHook(
         table,
@@ -109,7 +110,8 @@ function buildAddMutation(
           args,
           query,
           results,
-          context: newContext
+          context: newContext,
+          superUser
         },
         funfunz
       )
@@ -129,13 +131,13 @@ function buildDeleteMutation(
   const mutation: GraphQLFieldConfig<unknown, TUserContext>  = {
     type: dataConnectorMutation?.type || buildDeleteMutationType(table),
     args: dataConnectorMutation?.args || buildArgs(table, { filter: true }),
-    resolve: async (parent, rawargs, { req, res }) => {
-      const { args, context } = await executeHook(table, 'delete', 'beforeResolver', { args: rawargs, req, res }, funfunz)
+    resolve: async (parent, rawargs, { req, res, superUser }) => {
+      const { args, context } = await executeHook(table, 'delete', 'beforeResolver', { args: rawargs, req, res, superUser }, funfunz)
       const rawquery: IRemoveArgs = {
         entityName: table.name,
         filter: args.filter as IFilter
       }
-      const { query, context: newContext } = await executeHook(table, 'delete', 'beforeSendQuery', { req, res, args, query: rawquery, context }, funfunz)
+      const { query, context: newContext } = await executeHook(table, 'delete', 'beforeSendQuery', { req, res, args, query: rawquery, context, superUser }, funfunz)
 
       const deleted = await remove(table.connector, query as IRemoveArgs)
       const results = { deleted }
@@ -150,7 +152,8 @@ function buildDeleteMutation(
           args,
           query,
           results,
-          context: newContext
+          context: newContext,
+          superUser
         },
         funfunz
       )
