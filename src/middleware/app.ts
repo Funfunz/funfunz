@@ -1,6 +1,5 @@
 import { initDataConnectors } from './dataConnector/index'
 import IndexRouter from './routes/index'
-import cors from 'cors'
 import Debug from 'debug'
 import express, { Response, Request } from 'express'
 import logger from 'morgan'
@@ -22,10 +21,7 @@ class App {
     this.server = express()
     this.server.disable('x-powered-by')
 
-    this.server.use([
-      cors(),
-      logger('dev'),
-    ])
+    this.server.use(logger('dev'))
 
     const indexRouter = new IndexRouter(funfunz)
     this.server.use('/', indexRouter.getRouter())
