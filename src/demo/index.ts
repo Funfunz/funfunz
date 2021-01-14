@@ -25,6 +25,9 @@ if (process.env.JAWSDB_URL) {
 let randomNumberCount = 4
 
 const funfunz = new Funfunz({
+  context: {
+    test: true,
+  },
   config,
   settings,
   queries: {

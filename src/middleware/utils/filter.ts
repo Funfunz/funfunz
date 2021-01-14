@@ -1,6 +1,7 @@
 import { isNull, getPKs } from './index'
 import { IEntityInfo, IRelationMN, IRelation } from '../../generator/configurationTypes'
-import { Funfunz } from '../index'
+import { Funfunz } from '..'
+import { SchemaObjectMap } from '../graphql/manager'
 
 const oneToManyRelation = (table: IEntityInfo, parentTable: IEntityInfo): IRelation | undefined => {
   return parentTable.relations?.find(
@@ -40,7 +41,7 @@ export async function getParentEntryFilter(
   table: IEntityInfo,
   parentTable: IEntityInfo,
   parentObj: Record<string, FilterValues>,
-  funfunz: Funfunz
+  schemas: SchemaObjectMap
 ): Promise<ParentFilterResult | undefined> {
   let relation: IRelation | undefined = oneToManyRelation(table, parentTable)
   if (relation) {
@@ -84,7 +85,7 @@ export async function getParentEntryFilter(
     const remotePk = remotePks[0]
     const relationalTable = relation.relationalTable
     const remoteForeignKey = relation.remoteForeignKey
-    const result = funfunz.executeGraphQL(`query {
+    const result = Funfunz.executeGraphQL(schemas.global, `query {
       ${relationalTable} (
         filter: {
           ${relation.foreignKey}: {
