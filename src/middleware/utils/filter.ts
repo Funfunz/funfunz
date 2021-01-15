@@ -85,7 +85,7 @@ export async function getParentEntryFilter(
     const remotePk = remotePks[0]
     const relationalTable = relation.relationalTable
     const remoteForeignKey = relation.remoteForeignKey
-    const result = Funfunz.executeGraphQL(schemas.global, `query {
+    const result = Funfunz.executeGraphQL(schemas.local, `query {
       ${relationalTable} (
         filter: {
           ${relation.foreignKey}: {

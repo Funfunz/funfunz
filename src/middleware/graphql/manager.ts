@@ -1,5 +1,5 @@
 import Debug from 'debug'
-import { GraphQLSchema, GraphQLObjectType, GraphQLFieldConfigMap, Thunk } from 'graphql'
+import { GraphQLSchema, GraphQLObjectType, GraphQLFieldConfigMap, GraphQLFieldConfig } from 'graphql'
 import type { IFunfunzConfig } from '../types'
 import { buildMutations } from './mutations'
 import { buildQueries } from './queries'
@@ -10,24 +10,29 @@ export type getSchemas = SchemaManager<unknown>['getSchemas']
 export type TSchemaOptions<Context> = {
   queries?: IFunfunzConfig['queries']
   mutations?: IFunfunzConfig['mutations']
-  global?: boolean
+  local?: boolean
   context?: Context
 }
 
-type SchemaObject = {
-  queries: GraphQLFieldConfigMap<unknown, unknown>,
-  mutations: GraphQLFieldConfigMap<unknown, unknown>,
+type TQueriesList = {
+  api: string[]
+  local: string[]
+}
+
+type SchemaObject<TSource = unknown, TContext = unknown> = {
+  queries: GraphQLFieldConfigMap<TSource, TContext>,
+  mutations: GraphQLFieldConfigMap<TSource, TContext>,
   schema: GraphQLSchema
 }
 
 export type SchemaObjectMap = {
-  main: GraphQLSchema,
-  global: GraphQLSchema
+  api: GraphQLSchema,
+  local: GraphQLSchema
 }
 
 export class SchemaManager<OptionsContext> {
-  mainSchema!: SchemaObject
-  globalSchema!: SchemaObject
+  apiSchema!: SchemaObject
+  localSchema!: SchemaObject
 
   constructor(options: TSchemaOptions<OptionsContext>) {
     this.generateSchema(options)
@@ -35,31 +40,49 @@ export class SchemaManager<OptionsContext> {
 
   getSchemas(): SchemaObjectMap {
     return {
-      main: this.mainSchema.schema,
-      global: this.globalSchema.schema,
+      api: this.apiSchema.schema,
+      local: this.localSchema.schema,
     }
   }
 
   generateSchema<OptionsContext>(options: TSchemaOptions<OptionsContext>): void {
-    this.mainSchema = this.buildGraphQLSchema<OptionsContext>(options)
-    this.globalSchema = this.buildGraphQLSchema<OptionsContext>({
+    this.apiSchema = this.buildGraphQLSchema<OptionsContext>(options)
+    this.localSchema = this.buildGraphQLSchema<OptionsContext>({
       ...options,
-      global: true,
+      local: true,
     })
   }
 
-  addQuery<TSource, TContext>(id: 'main' | 'global', query: Thunk<GraphQLFieldConfigMap<TSource, TContext>>): void {
-    console.log('add query', id, query)
+  addOrUpdateQuery<TSource = unknown, TContext = unknown>(query: GraphQLFieldConfigMap<TSource, TContext>, id?: 'api' | 'local'): void {
+    Object.entries(query).forEach(
+      ([key, value]) => {
+        if (id === 'api' || !id) {
+          this.apiSchema.queries[key] = value as GraphQLFieldConfig<unknown, unknown>
+        }
+        if (id === 'local' || !id) {
+          this.localSchema.queries[key] = value as GraphQLFieldConfig<unknown, unknown>
+        }
+        
+      }
+    )
+  }
+
+  listQueries(): TQueriesList {
+    return {
+      api: Object.keys(this.apiSchema.queries),
+      local: Object.keys(this.localSchema.queries),
+    }
+  }
+
+  removeQuery(queryName: string, id?: 'api' | 'local'): number {
+    return id ? Number(this.removeQueryById(queryName, id)) : Number(this.removeQueryById(queryName, 'api')) + Number(this.removeQueryById(queryName, 'local'))
+  }
+
+  private removeQueryById(queryName: string, id: 'api' | 'local'): boolean {
+    return this[`${id}Schema`].queries[queryName] ? delete this[`${id}Schema`].queries[queryName]: false
   }
 
   /* TODO
-  updateQuery() {
-
-  }
-
-  removeQuery() {
-
-  }
 
   addMutation() {
 

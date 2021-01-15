@@ -16,7 +16,7 @@ class IndexRouter {
           graphiql: {
             headerEditorEnabled: true
           },
-          schema: funfunz.schemaManager.getSchemas().main
+          schema: funfunz.schemaManager.getSchemas().api
         }
       }
     )
