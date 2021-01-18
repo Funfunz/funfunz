@@ -1,3 +1,4 @@
+import { GraphQLString } from 'graphql'
 import request from 'supertest'
 import { Funfunz } from '../middleware'
 
@@ -6,10 +7,12 @@ import settings from './configs/MCsettings'
 
 import { authenticatedServer } from './utils'
 
-const application = new Funfunz({
+const funfunz = new Funfunz({
   config,
   settings
-}).middleware
+})
+
+const application = funfunz.middleware
 const authApplication = authenticatedServer(application)
 
 describe('graphql', () => {
@@ -32,7 +35,7 @@ describe('graphql', () => {
   })
   it('graphql endpoint should return status 200', (done) => {
     return request(application)
-      .post('/api')
+      .post('/')
       .send({
         query: `{
           families {
@@ -52,7 +55,7 @@ describe('graphql', () => {
   })
   it('graphql endpoint with deep queries should return 200', (done) => {
     return request(application)
-      .post('/api')
+      .post('/')
       .send({
         query: `{
           products {
@@ -76,7 +79,7 @@ describe('graphql', () => {
 
   it('graphql endpoint with recursive deep queries should return 200', (done) => {
     return request(application)
-      .post('/api')
+      .post('/')
       .send({
         query: `{
           images {
@@ -109,7 +112,7 @@ describe('graphql', () => {
 
   it('graphql endpoint with unauthorized access', (done) => {
     return request(application)
-      .post('/api')
+      .post('/')
       .send({
         query: `{
           users {
@@ -131,7 +134,7 @@ describe('graphql', () => {
 
   it('graphql endpoint with many to many relations', (done) => {
     return request(authApplication)
-      .post('/api')
+      .post('/')
       .send({
         query: `{
           users {
@@ -161,7 +164,7 @@ describe('graphql', () => {
 
   it('graphql endpoint with many to one relations', (done) => {
     return request(application)
-      .post('/api')
+      .post('/')
       .send({
         query: `{
           products {
@@ -190,7 +193,7 @@ describe('graphql', () => {
   })
   it('graphql endpoint with one to many relations', (done) => {
     return request(application)
-      .post('/api')
+      .post('/')
       .send({
         query: `{
           families {
@@ -219,7 +222,7 @@ describe('graphql', () => {
   })
   it('graphql endpoint with one to many relations with child filter', (done) => {
     return request(application)
-      .post('/api')
+      .post('/')
       .send({
         query: `{
           families {
@@ -248,7 +251,7 @@ describe('graphql', () => {
   
   it('graphql pagination', (done) => {
     return request(authApplication)
-      .post('/api')
+      .post('/')
       .send({
         query: `{
          users(take:1, skip: 1) {
@@ -269,5 +272,95 @@ describe('graphql', () => {
           return done()
         }
       )
+  })
+})
+
+describe('schema manager', () => {
+  it('should be possible to add new queries and mutations during runtime', (done) => {
+    const queryDescription = 'query created during runtime'
+    const queryName = 'jejayQuery'
+
+    const mutationDescription = 'mutation created during runtime'
+    const mutationName = 'jejayMutation'
+    
+    funfunz.schemaManager.addOrUpdateQuery({
+      [queryName]: {
+        description: queryDescription,
+        type: GraphQLString,
+        resolve: () => {
+          return queryDescription
+        },
+      }
+    })
+    funfunz.schemaManager.addOrUpdateMutation({
+      [mutationName]: {
+        description: mutationDescription,
+        type: GraphQLString,
+        resolve: () => {
+          return mutationDescription
+        },
+      }
+    })
+    expect(funfunz.schemaManager.listQueries().api.indexOf(queryName)).toBeGreaterThan(-1)
+    expect(funfunz.schemaManager.listMutations().api.indexOf(mutationName)).toBeGreaterThan(-1)
+
+    return new Promise(
+      (res, rej) => {
+        request(application)
+          .post('/')
+          .send({
+            query: `{
+              ${queryName}
+            }`,
+          })
+          .set('Accept', 'application/json').end(
+            (err, response) => {
+              if (err) {
+                rej(err)
+              }
+              console.log(response.body)
+              expect(response.status).toBe(200)
+              expect(response.body).toBeTruthy()
+              const data = response.body.data
+              expect(data[queryName]).toBeTruthy()
+              expect(data[queryName]).toBe(queryDescription)
+              res(true)
+            }
+        )
+      }
+    ).then(
+      () => {
+        return new Promise(
+          (res, rej) => {
+            request(application)
+              .post('/')
+              .send({
+                query: `mutation {${mutationName}}`,
+              })
+              .set('Accept', 'application/json').end(
+                (err, response) => {
+                  if (err) {
+                    rej(err)
+                  }
+                  expect(response.status).toBe(200)
+                  expect(response.body).toBeTruthy()
+                  const data = response.body.data
+                  expect(data[mutationName]).toBeTruthy()
+                  expect(data[mutationName]).toBe(mutationDescription)
+                  res(true)
+                }
+              )
+          }
+        )
+      }
+    ).then(
+      () => {
+        done()
+      }
+    ).catch(
+      (err) => {
+        done(err)
+      }
+    )
   })
 })

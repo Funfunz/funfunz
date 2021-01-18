@@ -24,7 +24,7 @@ export class ExpressMiddleware {
     this.express.use(logger('dev'))
 
     const indexRouter = new IndexRouter(funfunz)
-    this.express.use('/', indexRouter.getRouter())
+    this.express.use(indexRouter.getRouter())
 
     this.express.use((err: HttpException, req: Request, res: Response) => {
       res.status(err.status || 500)

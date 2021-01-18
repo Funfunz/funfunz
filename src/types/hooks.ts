@@ -11,7 +11,7 @@ export interface IArgs {
 export interface IHookProps<Context, SchemaOptions> {
   graph: SchemaObjectMap
   connector: DataConnector
-  requestContext: unknown
+  requestContext: any
   args: IArgs
   schemaOptions: TSchemaOptions<SchemaOptions>,
   query?: IQueryArgs | IUpdateArgs | ICreateArgs | IRemoveArgs

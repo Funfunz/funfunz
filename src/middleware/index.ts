@@ -11,7 +11,7 @@ export * from './types'
 export class Funfunz {
   public middleware: Express
   public config: () => IFunfunzConfig
-  public schemaManager: SchemaManager<undefined>
+  public schemaManager: SchemaManager<unknown>
 
   constructor(configs: IFunfunzConfig) {
     const debug = Debug('funfunz:server')
@@ -38,7 +38,7 @@ export class Funfunz {
     debug('INIT PARAMETERS:\n', this.config().config)
     debug('NODE_ENV', process.env.NODE_ENV)
     debug('---------------------------------------------')
-    this.schemaManager = new SchemaManager({
+    this.schemaManager = new SchemaManager<unknown>({
       queries: configs.queries,
       mutations: configs.mutations,
       context: configs.context

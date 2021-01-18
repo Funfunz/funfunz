@@ -1,6 +1,5 @@
 import Debug from 'debug'
-import { GraphQLSchema, GraphQLObjectType, GraphQLFieldConfigMap, GraphQLFieldConfig } from 'graphql'
-import type { IFunfunzConfig } from '../types'
+import { GraphQLSchema, GraphQLObjectType, GraphQLFieldConfigMap, GraphQLFieldConfig, Thunk } from 'graphql'
 import { buildMutations } from './mutations'
 import { buildQueries } from './queries'
 const debug = Debug('funfunz:graphql-schema')
@@ -8,9 +7,21 @@ const debug = Debug('funfunz:graphql-schema')
 export type getSchemas = SchemaManager<unknown>['getSchemas']
 
 export type TSchemaOptions<Context> = {
-  queries?: IFunfunzConfig['queries']
-  mutations?: IFunfunzConfig['mutations']
-  local?: boolean
+  api: {
+    queries: Thunk<GraphQLFieldConfigMap<unknown, unknown>>,
+    mutations: Thunk<GraphQLFieldConfigMap<unknown, unknown>>,
+  },
+  local: {
+    queries: Thunk<GraphQLFieldConfigMap<unknown, unknown>>,
+    mutations: Thunk<GraphQLFieldConfigMap<unknown, unknown>>,
+  },
+  isLocal?: boolean
+  context?: Context
+}
+
+export type TSchemaConfig<Context> = {
+  queries: Thunk<GraphQLFieldConfigMap<unknown, unknown>>,
+  mutations: Thunk<GraphQLFieldConfigMap<unknown, unknown>>,
   context?: Context
 }
 
@@ -33,9 +44,23 @@ export type SchemaObjectMap = {
 export class SchemaManager<OptionsContext> {
   apiSchema!: SchemaObject
   localSchema!: SchemaObject
+  options: TSchemaOptions<OptionsContext>
 
-  constructor(options: TSchemaOptions<OptionsContext>) {
-    this.generateSchema(options)
+  constructor(options: Partial<TSchemaConfig<OptionsContext>>) {
+    this.options = {
+      ...options,
+      api: {
+        queries: options.queries || {},
+        mutations: options.mutations || {}
+      },
+      local: {
+        queries: options.queries || {},
+        mutations: options.mutations || {}
+      }
+      
+      
+    }
+    this.generateSchema()
   }
 
   getSchemas(): SchemaObjectMap {
@@ -45,26 +70,12 @@ export class SchemaManager<OptionsContext> {
     }
   }
 
-  generateSchema<OptionsContext>(options: TSchemaOptions<OptionsContext>): void {
-    this.apiSchema = this.buildGraphQLSchema<OptionsContext>(options)
-    this.localSchema = this.buildGraphQLSchema<OptionsContext>({
-      ...options,
-      local: true,
+  generateSchema(): void {
+    this.apiSchema = this.buildGraphQLSchema(this.options)
+    this.localSchema = this.buildGraphQLSchema({
+      ...this.options,
+      isLocal: true,
     })
-  }
-
-  addOrUpdateQuery<TSource = unknown, TContext = unknown>(query: GraphQLFieldConfigMap<TSource, TContext>, id?: 'api' | 'local'): void {
-    Object.entries(query).forEach(
-      ([key, value]) => {
-        if (id === 'api' || !id) {
-          this.apiSchema.queries[key] = value as GraphQLFieldConfig<unknown, unknown>
-        }
-        if (id === 'local' || !id) {
-          this.localSchema.queries[key] = value as GraphQLFieldConfig<unknown, unknown>
-        }
-        
-      }
-    )
   }
 
   listQueries(): TQueriesList {
@@ -74,37 +85,62 @@ export class SchemaManager<OptionsContext> {
     }
   }
 
+  addOrUpdateQuery<TSource = unknown, TContext = unknown>(query: GraphQLFieldConfigMap<TSource, TContext>, id?: 'api' | 'local'): void {
+    Object.entries(query).forEach(
+      ([key, value]) => {
+        if (id === 'api' || !id) {
+          this.options.api.queries[key] = value as GraphQLFieldConfig<unknown, unknown>
+        }
+        if (id === 'local' || !id) {
+          this.options.local.queries[key] = value as GraphQLFieldConfig<unknown, unknown>
+        }
+      }
+    )
+    this.generateSchema()
+  }
+
   removeQuery(queryName: string, id?: 'api' | 'local'): number {
-    return id ? Number(this.removeQueryById(queryName, id)) : Number(this.removeQueryById(queryName, 'api')) + Number(this.removeQueryById(queryName, 'local'))
+    return id ? Number(this.removeById(queryName, id, 'queries')) : Number(this.removeById(queryName, 'api', 'queries')) + Number(this.removeById(queryName, 'local', 'queries'))
   }
 
-  private removeQueryById(queryName: string, id: 'api' | 'local'): boolean {
-    return this[`${id}Schema`].queries[queryName] ? delete this[`${id}Schema`].queries[queryName]: false
+  listMutations(): TQueriesList {
+    return {
+      api: Object.keys(this.apiSchema.mutations),
+      local: Object.keys(this.localSchema.mutations),
+    }
   }
 
-  /* TODO
-
-  addMutation() {
-
+  addOrUpdateMutation<TSource = unknown, TContext = unknown>(query: GraphQLFieldConfigMap<TSource, TContext>, id?: 'api' | 'local'): void {
+    Object.entries(query).forEach(
+      ([key, value]) => {
+        if (id === 'api' || !id) {
+          this.options.api.mutations[key] = value as GraphQLFieldConfig<unknown, unknown>
+        }
+        if (id === 'local' || !id) {
+          this.options.local.mutations[key] = value as GraphQLFieldConfig<unknown, unknown>
+        }
+      }
+    )
+    this.generateSchema()
   }
 
-  updateMutation() {
-
+  removeMutation(queryName: string, id?: 'api' | 'local'): number {
+    return id ? Number(this.removeById(queryName, id, 'mutations')) : Number(this.removeById(queryName, 'api', 'mutations')) + Number(this.removeById(queryName, 'local', 'mutations'))
   }
 
-  removeMutation() {
-    
+  private removeById(queryName: string, id: 'api' | 'local', type: 'queries' | 'mutations'): boolean {
+    return this.options[id][type][queryName] ? delete this.options[id][type][queryName]: false
   }
-  */
 
-  private buildGraphQLSchema<OptionsContext> (
+  private buildGraphQLSchema (
     options: TSchemaOptions<OptionsContext>
   ): SchemaObject {
     debug('Creating graphql schema')
+    const targetSchema = options.isLocal ? 'local' : 'api'
     // lets define our root query
     const queries = {
       ...buildQueries<OptionsContext>(this, options),
-      ...options?.queries
+      ...options[targetSchema].queries
     }
     const RootQuery = new GraphQLObjectType({
       name: 'Query',
@@ -113,7 +149,7 @@ export class SchemaManager<OptionsContext> {
     
     const mutations = {
       ...buildMutations<OptionsContext>(this, options),
-      ...options?.mutations
+      ...options[targetSchema].mutations
     }
     const RootMutation = new GraphQLObjectType({
       name: 'Mutation',

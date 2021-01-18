@@ -22,7 +22,6 @@ class IndexRouter {
     )
     this.router = Router()
     this.router.use(
-      '/',
       graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }),
       graph
     )
