@@ -81,7 +81,7 @@ jobs:
         git push --tags -f https://$GIT_USER:$GIT_TOKEN@github.com/$REPO_OWNER/$REPO_NAME.git
         git push -u https://$GIT_USER:$GIT_TOKEN@github.com/$REPO_OWNER/$REPO_NAME.git master
         npm install
-        npm publish
+        npm publish --access public
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
