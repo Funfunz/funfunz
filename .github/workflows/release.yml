@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  pull_request:
+    types: 
+      - closed
+    branches:
+      - master
+
+env:
+  VERSION_PATCH: ${{ contains(github.event.pull_request.labels.*.name, 'patch') }}
+  VERSION_MINOR: ${{ contains(github.event.pull_request.labels.*.name, 'minor') }}
+  VERSION_MAJOR: ${{ contains(github.event.pull_request.labels.*.name, 'major') }}
+  VERSION_BETA: ${{ contains(github.event.pull_request.labels.*.name, 'beta') }}
+  GIT_USER: ${{ github.event.pull_request.merged_by.login }}
+  GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+  REPO_NAME: ${{ github.event.repository.name }}
+  REPO_OWNER: ${{ github.event.repository.owner.login }}
+
+
+jobs:
+  release:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 12
+        registry-url: https://registry.npmjs.org/
+    - run: |
+        git config --global user.name "$GIT_USER"
+        if [[ "$VERSION_BETA" = true ]] ; then
+          CURRENT_VERSION=$(npm -s run env echo '$npm_package_version')
+          if [[ $CURRENT_VERSION == *"beta"* ]]; then
+            npm version prerelease
+          elif [[ "$VERSION_PATCH" = true ]] ; then
+            if [[ "$VERSION_MINOR" = true || "$VERSION_MAJOR" = true ]] ; then
+              exit -1
+            fi
+            echo 'PREPATCH VERSION'
+            npm version prepatch --preid beta
+          elif [[ "$VERSION_MINOR" = true ]] ; then
+            if [[ "$VERSION_PATCH" = true || "$VERSION_MAJOR" = true ]] ; then
+              exit -1
+            fi
+            echo 'PREMINOR VERSION'
+            npm version preminor --preid beta
+          elif [[ "$VERSION_MAJOR" = true ]] ; then
+            if [[ "$VERSION_PATCH" = true || "$VERSION_MINOR" = true ]] ; then
+              exit -1
+            fi
+            echo 'PREMAJOR VERSION'
+            npm version premajor --preid beta
+          else
+            exit -1
+          fi
+        elif [[ "$VERSION_PATCH" = true ]] ; then
+          if [[ "$VERSION_MINOR" = true || "$VERSION_MAJOR" = true ]] ; then
+            exit -1
+          fi
+          echo 'PATCH VERSION'
+          npm version patch
+        elif [[ "$VERSION_MINOR" = true ]] ; then
+          if [[ "$VERSION_PATCH" = true || "$VERSION_MAJOR" = true ]] ; then
+            exit -1
+          fi
+          echo 'MINOR VERSION'
+          npm version minor
+        elif [[ "$VERSION_MAJOR" = true ]] ; then
+          if [[ "$VERSION_PATCH" = true || "$VERSION_MINOR" = true ]] ; then
+            exit -1
+          fi
+          echo 'MAJOR VERSION'
+          npm version major
+        else
+          exit -1
+        fi
+        git push --tags -f https://$GIT_USER:$GIT_TOKEN@github.com/$REPO_OWNER/$REPO_NAME.git
+        git push -u https://$GIT_USER:$GIT_TOKEN@github.com/$REPO_OWNER/$REPO_NAME.git master
+        npm install
+        npm publish --access public
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
