@@ -1,4 +1,3 @@
-import { timeStamp } from 'console'
 import Debug from 'debug'
 import { GraphQLSchema, GraphQLObjectType, GraphQLFieldConfigMap, GraphQLFieldConfig, Thunk } from 'graphql'
 import { buildMutations } from './mutations'
