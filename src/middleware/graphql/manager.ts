@@ -1,3 +1,4 @@
+import { timeStamp } from 'console'
 import Debug from 'debug'
 import { GraphQLSchema, GraphQLObjectType, GraphQLFieldConfigMap, GraphQLFieldConfig, Thunk } from 'graphql'
 import { buildMutations } from './mutations'
@@ -100,7 +101,9 @@ export class SchemaManager<OptionsContext> {
   }
 
   removeQuery(queryName: string, id?: 'api' | 'local'): number {
-    return id ? Number(this.removeById(queryName, id, 'queries')) : Number(this.removeById(queryName, 'api', 'queries')) + Number(this.removeById(queryName, 'local', 'queries'))
+    const count = id ? Number(this.removeById(queryName, id, 'queries')) : Number(this.removeById(queryName, 'api', 'queries')) + Number(this.removeById(queryName, 'local', 'queries'))
+    this.generateSchema()
+    return count
   }
 
   listMutations(): TQueriesList {
@@ -125,7 +128,9 @@ export class SchemaManager<OptionsContext> {
   }
 
   removeMutation(queryName: string, id?: 'api' | 'local'): number {
-    return id ? Number(this.removeById(queryName, id, 'mutations')) : Number(this.removeById(queryName, 'api', 'mutations')) + Number(this.removeById(queryName, 'local', 'mutations'))
+    const count = id ? Number(this.removeById(queryName, id, 'mutations')) : Number(this.removeById(queryName, 'api', 'mutations')) + Number(this.removeById(queryName, 'local', 'mutations'))
+    this.generateSchema()
+    return count
   }
 
   private removeById(queryName: string, id: 'api' | 'local', type: 'queries' | 'mutations'): boolean {

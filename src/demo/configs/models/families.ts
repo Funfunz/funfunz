@@ -152,8 +152,8 @@ export default {
     all: {
       async beforeResolver(props) {
         console.log(props.schemaOptions.context)
-        if (!props.schemaOptions.global) {
-          console.log(await Funfunz.executeGraphQL(props.graph.global, 'query families { id }'))
+        if (!props.schemaOptions.isLocal) {
+          console.log(await Funfunz.executeGraphQL(props.graph.local, 'query families { id }'))
         }
         return props
       }
