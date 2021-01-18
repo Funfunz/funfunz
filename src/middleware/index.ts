@@ -1,16 +1,17 @@
-import App from './app'
+import { ExpressMiddleware } from './middleware'
 import configLoaded, { setConfig } from './utils/configLoader'
 import { Express } from 'express'
 import Debug from 'debug'
 import { IFunfunzConfig } from './types'
 import { execute, ExecutionResult, GraphQLSchema, parse } from 'graphql'
 import { isPromise } from './utils'
-import buildGraphQLSchema from './graphql/schema'
+import { SchemaManager } from './graphql/manager'
 
-class Funfunz {
+export * from './types'
+export class Funfunz {
   public middleware: Express
   public config: () => IFunfunzConfig
-  public schema: GraphQLSchema
+  public schemaManager: SchemaManager<unknown>
 
   constructor(configs: IFunfunzConfig) {
     const debug = Debug('funfunz:server')
@@ -37,24 +38,19 @@ class Funfunz {
     debug('INIT PARAMETERS:\n', this.config().config)
     debug('NODE_ENV', process.env.NODE_ENV)
     debug('---------------------------------------------')
-    this.schema = buildGraphQLSchema(
-      this,
-      {
-        queries: configs.queries,
-        mutations: configs.mutations
-      }
-    )
+    this.schemaManager = new SchemaManager<unknown>({
+      queries: configs.queries,
+      mutations: configs.mutations,
+      context: configs.context
+    })
 
-    this.middleware = (new App(this)).server
+    this.middleware = (new ExpressMiddleware(this)).express
   }
 
-  public executeGraphQL(document: string): Promise<ExecutionResult> {
+  public static executeGraphQL(schema: GraphQLSchema, document: string): Promise<ExecutionResult> {
     const result = execute({
-      schema: this.schema,
+      schema,
       document: parse(document),
-      contextValue: {
-        superUser: true
-      }
     })
     if (isPromise<ExecutionResult>(result)) {
       return result
@@ -62,6 +58,3 @@ class Funfunz {
     return Promise.resolve<ExecutionResult>(result)
   }
 }
-
-export { Funfunz }
-export * from './types'

@@ -11,10 +11,9 @@ import {
   GraphQLObjectType,
 } from 'graphql'
 import { capitalize, getPKs } from '../utils/index'
-import { TUserContext } from './schema'
 import { buildArgs } from './argumentsBuilder'
 import { MATCHER } from './helpers'
-import { Funfunz } from '../index'
+import type { SchemaManager, TSchemaOptions } from './manager'
 
 const debug = Debug('funfunz:graphql-type-builder')
 
@@ -29,13 +28,14 @@ const entitiesType: Record<string, GraphQLObjectType> = {}
 
 export function buildFields<TSource>(
   table: IEntityInfo,
-  funfunz: Funfunz,
+  schemaManager: SchemaManager<unknown>,
+  schemaOptions: TSchemaOptions<unknown>,
   options: IBuildTypeOptions = {
     relations: true
   }
-): GraphQLFieldConfigMap<TSource, TUserContext> {
+): GraphQLFieldConfigMap<TSource, unknown> {
   const { relations, required, include } = options
-  const result: GraphQLFieldConfigMap<TSource, TUserContext> = {}
+  const result: GraphQLFieldConfigMap<TSource, unknown> = {}
   
   const tablePKs = getPKs(table)
   const tableRelations = table.relations || []
@@ -76,9 +76,9 @@ export function buildFields<TSource>(
           throw new Error('Invalid relation configuration: relatedTable not found')
         }
         result[remoteTable] = {
-          type: buildType(relatedTable, funfunz),
+          type: buildType(relatedTable, schemaManager, schemaOptions),
           description: column.layout?.label as string || column.name,
-          resolve: resolver(relatedTable, funfunz, table, relation.type),
+          resolve: resolver(relatedTable, schemaManager, schemaOptions,  table, relation.type),
           args: buildArgs(relatedTable, { pagination: false, filter: true }),
         }
         result[column.name] = {
@@ -107,9 +107,9 @@ export function buildFields<TSource>(
           throw new Error('Invalid relation configuration: relatedTable not found')
         }
         result[remoteTable] = {
-          type: new GraphQLList(buildType(relatedTable, funfunz)),
+          type: new GraphQLList(buildType(relatedTable, schemaManager, schemaOptions)),
           description: relatedTable.name,
-          resolve: resolver(relatedTable, funfunz, table),
+          resolve: resolver(relatedTable, schemaManager, schemaOptions, table),
           args: buildArgs(relatedTable, { pagination: true, filter: true }),
         }
       })
@@ -125,9 +125,9 @@ export function buildFields<TSource>(
           throw new Error('Invalid relation configuration: remoteTable not found')
         }
         result[columnName] = {
-          type: new GraphQLList(buildType(remoteTable, funfunz)),
+          type: new GraphQLList(buildType(remoteTable, schemaManager, schemaOptions)),
           description: remoteTable.name,
-          resolve: resolver(remoteTable, funfunz, table),
+          resolve: resolver(remoteTable, schemaManager, schemaOptions, table),
           args: buildArgs(remoteTable, { pagination: true, filter: true }),
         }
       })
@@ -138,7 +138,8 @@ export function buildFields<TSource>(
 
 export function buildType(
   table: IEntityInfo,
-  funfunz: Funfunz,
+  schemaManager: SchemaManager<unknown>,
+  schemaOptions: TSchemaOptions<unknown>,
   options: IBuildTypeOptions = { relations: true }
 ): GraphQLObjectType {
   const name = table.name
@@ -147,7 +148,7 @@ export function buildType(
     entitiesType[name] = new GraphQLObjectType({
       name,
       fields: () => {
-        return buildFields(table, funfunz, options)
+        return buildFields(table, schemaManager, schemaOptions, options)
       },
     })
     debug(`Created type for table ${name}`)

@@ -16,13 +16,12 @@ class IndexRouter {
           graphiql: {
             headerEditorEnabled: true
           },
-          schema: funfunz.schema
+          schema: funfunz.schemaManager.getSchemas().api
         }
       }
     )
     this.router = Router()
     this.router.use(
-      '/',
       graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }),
       graph
     )

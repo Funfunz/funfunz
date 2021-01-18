@@ -1,3 +1,4 @@
+import { GraphQLString } from 'graphql'
 import request from 'supertest'
 import { Funfunz } from '../middleware'
 
@@ -6,10 +7,12 @@ import settings from './configs/MCsettings'
 
 import { authenticatedServer } from './utils'
 
-const application = new Funfunz({
+const funfunz = new Funfunz({
   config,
   settings
-}).middleware
+})
+
+const application = funfunz.middleware
 const authApplication = authenticatedServer(application)
 
 describe('graphql', () => {
@@ -32,7 +35,7 @@ describe('graphql', () => {
   })
   it('graphql endpoint should return status 200', (done) => {
     return request(application)
-      .post('/api')
+      .post('/')
       .send({
         query: `{
           families {
@@ -52,7 +55,7 @@ describe('graphql', () => {
   })
   it('graphql endpoint with deep queries should return 200', (done) => {
     return request(application)
-      .post('/api')
+      .post('/')
       .send({
         query: `{
           products {
@@ -76,7 +79,7 @@ describe('graphql', () => {
 
   it('graphql endpoint with recursive deep queries should return 200', (done) => {
     return request(application)
-      .post('/api')
+      .post('/')
       .send({
         query: `{
           images {
@@ -109,7 +112,7 @@ describe('graphql', () => {
 
   it('graphql endpoint with unauthorized access', (done) => {
     return request(application)
-      .post('/api')
+      .post('/')
       .send({
         query: `{
           users {
@@ -131,7 +134,7 @@ describe('graphql', () => {
 
   it('graphql endpoint with many to many relations', (done) => {
     return request(authApplication)
-      .post('/api')
+      .post('/')
       .send({
         query: `{
           users {
@@ -161,7 +164,7 @@ describe('graphql', () => {
 
   it('graphql endpoint with many to one relations', (done) => {
     return request(application)
-      .post('/api')
+      .post('/')
       .send({
         query: `{
           products {
@@ -190,7 +193,7 @@ describe('graphql', () => {
   })
   it('graphql endpoint with one to many relations', (done) => {
     return request(application)
-      .post('/api')
+      .post('/')
       .send({
         query: `{
           families {
@@ -219,7 +222,7 @@ describe('graphql', () => {
   })
   it('graphql endpoint with one to many relations with child filter', (done) => {
     return request(application)
-      .post('/api')
+      .post('/')
       .send({
         query: `{
           families {
@@ -248,7 +251,7 @@ describe('graphql', () => {
   
   it('graphql pagination', (done) => {
     return request(authApplication)
-      .post('/api')
+      .post('/')
       .send({
         query: `{
          users(take:1, skip: 1) {
