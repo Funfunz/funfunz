@@ -9,24 +9,24 @@ import { Funfunz } from './index'
 const debug = Debug('funfunz:init')
 
 /** Class representing the express server instance. */
-class App {
+export class ExpressMiddleware {
   /**
    * Create an express server instance.
    */
 
-  public server: express.Express
+  public express: express.Express
   constructor(funfunz: Funfunz) {
-    debug('starting funfunz')
+    debug('starting express middleware')
     initDataConnectors(funfunz)
-    this.server = express()
-    this.server.disable('x-powered-by')
+    this.express = express()
+    this.express.disable('x-powered-by')
 
-    this.server.use(logger('dev'))
+    this.express.use(logger('dev'))
 
     const indexRouter = new IndexRouter(funfunz)
-    this.server.use('/', indexRouter.getRouter())
+    this.express.use(indexRouter.getRouter())
 
-    this.server.use((err: HttpException, req: Request, res: Response) => {
+    this.express.use((err: HttpException, req: Request, res: Response) => {
       res.status(err.status || 500)
       if (process.env.NODE_ENV !== 'developement' && process.env.NODE_ENV !== 'test') {
         res.send('Error')
@@ -36,8 +36,6 @@ class App {
         })
       }
     })
-    debug('funfunz ready')
+    debug('express middleware ready')
   }
 }
-
-export default App

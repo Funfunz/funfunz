@@ -7,20 +7,19 @@ import Debug from 'debug'
 import GraphQLJSON, { GraphQLJSONObject } from 'graphql-type-json'
 import { GraphQLBoolean, GraphQLFieldConfig, GraphQLFieldConfigMap, GraphQLInt, GraphQLList, GraphQLObjectType, GraphQLString, Thunk } from 'graphql'
 import pluralize from 'pluralize'
-import { TUserContext } from './schema'
 import { buildArgs } from './argumentsBuilder'
-import type { Funfunz } from '../index'
+import type { SchemaManager, TSchemaOptions } from './manager'
 
 const debug = Debug('funfunz:graphql-query-builder')
 
-export function buildQueries(funfunz: Funfunz): Thunk<GraphQLFieldConfigMap<unknown, TUserContext>> {
+export function buildQueries<OptionsContext>(schemaManager: SchemaManager<OptionsContext>, options: TSchemaOptions<OptionsContext>): Thunk<GraphQLFieldConfigMap<unknown, unknown>> {
   const configs = config()
-  const queries: Thunk<GraphQLFieldConfigMap<unknown, TUserContext>> = {}
+  const queries: Thunk<GraphQLFieldConfigMap<unknown, unknown>> = {}
   configs.settings.forEach(
     (table) => {
       if (table.visible) {
-        queries[table.name] = buildQuery(table, funfunz)
-        queries[table.name + 'Count'] = buildCount(table, funfunz)
+        queries[table.name] = buildQuery<OptionsContext>(table, schemaManager, options)
+        queries[table.name + 'Count'] = buildCount(table, schemaManager, options)
       }
     }
   )
@@ -30,24 +29,24 @@ export function buildQueries(funfunz: Funfunz): Thunk<GraphQLFieldConfigMap<unkn
   return queries
 }
 
-function buildQuery(table: IEntityInfo, funfunz: Funfunz): GraphQLFieldConfig<unknown, TUserContext> {
+function buildQuery<OptionsContext>(table: IEntityInfo, schemaManager: SchemaManager<OptionsContext>, options: TSchemaOptions<OptionsContext>): GraphQLFieldConfig<unknown, unknown> {
   debug(`Creating ${table.name} query`)
-  const query: GraphQLFieldConfig<unknown, TUserContext> = {
-    type: new GraphQLList(buildType(table, funfunz)),
+  const query: GraphQLFieldConfig<unknown, unknown> = {
+    type: new GraphQLList(buildType(table, schemaManager, options)),
     description: `This will return all the ${pluralize(table.name)}.`,
-    resolve: resolver(table, funfunz),
+    resolve: resolver(table, schemaManager, options),
     args: buildArgs(table, { pagination: true, filter: true }),
   }
   debug(`Created ${table.name} query`)
   return query
 }
 
-function buildCount(table: IEntityInfo, funfunz: Funfunz) {
+function buildCount<OptionsContext>(table: IEntityInfo, schemaManager: SchemaManager<OptionsContext>, options: TSchemaOptions<OptionsContext>) {
   debug(`Creating ${table.name} query`)
-  const query: GraphQLFieldConfig<unknown, TUserContext> = {
+  const query: GraphQLFieldConfig<unknown, unknown> = {
     type: GraphQLInt,
     description: `This will return the ${pluralize(table.name)} count.`,
-    resolve: resolverCount(table, funfunz),
+    resolve: resolverCount(table, schemaManager, options),
     args: buildArgs(table, { pagination: false,  filter: true }),
   }
   debug(`Created ${table.name} count`)
@@ -72,7 +71,7 @@ function buildConfig(tables: IEntityInfo[]) {
     }
   )
 
-  const query: GraphQLFieldConfig<unknown, TUserContext> = {
+  const query: GraphQLFieldConfig<unknown, unknown> = {
     type: new GraphQLObjectType({
       name: 'config',
       fields,
@@ -88,7 +87,7 @@ function buildConfig(tables: IEntityInfo[]) {
 
 function buildEntities(tables: IEntityInfo[]) {
   
-  const query: GraphQLFieldConfig<unknown, TUserContext> = {
+  const query: GraphQLFieldConfig<unknown, unknown> = {
     type: new GraphQLList(new GraphQLObjectType({
       name: 'tableConfig',
       fields: {

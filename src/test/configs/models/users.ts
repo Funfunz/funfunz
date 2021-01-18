@@ -148,8 +148,8 @@ export default {
   ],
   'hooks': {
     all: {
-      async beforeResolver(props: IHookProps<unknown>) {
-        if (!(props.req as IRequest)?.user?.roles?.find(r => r.name === 'admin')) {
+      async beforeResolver(props: IHookProps<unknown, any>) {
+        if (!(props.requestContext.req as IRequest)?.user?.roles?.find(r => r.name === 'admin')) {
           throw new Error('Not authorized')
         }
         return props

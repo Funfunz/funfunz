@@ -14,11 +14,12 @@ export interface IFunfunzResponse extends express.Response {
   data?: Record<string, unknown>
 }
 
-export interface IFunfunzConfig<QSource = unknown, QContext = unknown> {
+export interface IFunfunzConfig<QSource = unknown, QContext = unknown, SchemaContext = unknown> {
   config: IConfig
   settings: ISettings
   queries?: Thunk<GraphQLFieldConfigMap<QSource, QContext>>
   mutations?: Thunk<GraphQLFieldConfigMap<QSource, QContext>>
+  context?: SchemaContext
 }
 
 export interface IFunfunzRequest extends express.Request {

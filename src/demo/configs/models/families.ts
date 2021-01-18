@@ -1,3 +1,6 @@
+import { IEntityInfo } from '../../../generator/configurationTypes'
+import { Funfunz } from '../../../middleware'
+
 export default {
   name: 'families',
   connector: 'mainDatabase',
@@ -145,6 +148,17 @@ export default {
       }
     }
   ],
+  hooks: {
+    all: {
+      async beforeResolver(props) {
+        console.log(props.schemaOptions.context)
+        if (!props.schemaOptions.isLocal) {
+          console.log(await Funfunz.executeGraphQL(props.graph.local, 'query families { id }'))
+        }
+        return props
+      }
+    }
+  },
   layout: {
     label: 'Families',
     listPage: {},
@@ -156,4 +170,4 @@ export default {
       sections: []
     }
   }
-}
+} as IEntityInfo

@@ -1,15 +1,19 @@
 import Debug from 'debug'
 import express from 'express'
 import http from 'http'
+import cors from 'cors'
 
 const debug = Debug('funfunz:http-server')
 
 export default function startServer(app: express.Application): void {
+  const innerServer = express()
+  innerServer.use(cors())
+  innerServer.use(app)
   const PORT = process.env.PORT || '3004'
   /**
    * Create HTTP server.
    */
-  const server = http.createServer(app)
+  const server = http.createServer(innerServer)
 
   /**
    * Listen on provided port, on all network interfaces.

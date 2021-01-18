@@ -1,5 +1,5 @@
+import type { SchemaObjectMap, TSchemaOptions } from '../middleware/graphql/manager'
 import type { IQueryArgs, DataConnector, ICreateArgs, IRemoveArgs, IUpdateArgs } from './connector'
-import { ExecuteGraphQL } from './graphql'
 
 export type OperationTypes = 'all' | 'config' | 'count' | 'add' | 'query' | 'update' | 'delete'
 export type HookTypes = 'beforeResolver' | 'beforeSendQuery' | 'afterQueryResult' | 'afterResultSent'
@@ -8,22 +8,21 @@ export interface IArgs {
   [key: string]: unknown
 }
 
-export interface IHookProps<C> {
-  graph: ExecuteGraphQL
+export interface IHookProps<Context, SchemaOptions> {
+  graph: SchemaObjectMap
   connector: DataConnector
-  req: unknown
-  res: unknown
+  requestContext: unknown
   args: IArgs
-  superUser?: boolean
+  schemaOptions: TSchemaOptions<SchemaOptions>,
   query?: IQueryArgs | IUpdateArgs | ICreateArgs | IRemoveArgs
   results?: unknown
-  context?: C
+  context?: Context
 }
 
-export type HookFunction<C> = (props: IHookProps<C>) => Promise<IHookProps<C>>
+export type HookFunction<Context, SchemaOptions> = (props: IHookProps<Context, SchemaOptions>) => Promise<IHookProps<Context, SchemaOptions>> | IHookProps<Context, SchemaOptions>
 
-export type ITableHooks = {
+export type ITableHooks<Context = unknown, SchemaOptions = unknown> = {
   [key in OperationTypes]?: {
-    [key in HookTypes]?: HookFunction<unknown>
+    [key in HookTypes]?: HookFunction<Context, SchemaOptions>
   }
 }
