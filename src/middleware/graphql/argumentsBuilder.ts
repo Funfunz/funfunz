@@ -134,6 +134,8 @@ export function buildArgs(
           description: `Data to update ${table.name}`,
           fields: () => {
             const inputFields: GraphQLInputFieldConfigMap = {}
+            const tableRelations = table.relations || []
+            const relationalColumns = tableRelations.map((relation) => relation.foreignKey)
             const tablePKs = getPKs(table)
       
             table.properties.forEach(
@@ -156,9 +158,11 @@ export function buildArgs(
                 )
                 
                 const matchedType = MATCHER[property.model.type]
-    
+                
                 if (isPk || matchedType) {
-                  const type = isPk ? GraphQLID : matchedType
+                  const type = (isPk || relationalColumns.includes(property.name))
+                    ? GraphQLID
+                    : matchedType
                   inputFields[property.name] = {
                     type: isRequired ? new GraphQLNonNull(type) : type,
                     description: property.layout?.label || property.name,
