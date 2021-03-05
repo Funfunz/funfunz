@@ -66,6 +66,7 @@ describe('graphql', () => {
         if (err) {
           return done(err)
         }
+        console.log('response create', response.body, response.error)
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
@@ -140,6 +141,7 @@ describe('graphql', () => {
         if (err) {
           return done(err)
         }
+        console.log('delete', response.body, response.error)
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
@@ -207,24 +209,24 @@ describe('graphql', () => {
         expect(response.body).toBeTruthy()
         const data = response.body.data
         expect(data).toMatchObject({
-          "families": [
+          families: [
             {
-              "id": "1",
-              "products": [
+              id: 1,
+              products: [
                 {
-                  "id": "1",
-                  "name": "name1",
-                  "FamilyId": "1",
-                  "families": {
-                    "id": "1"
+                  id: 1,
+                  name: 'name1',
+                  FamilyId: 1,
+                  families: {
+                    id: 1
                   }
                 },
                 {
-                  "id": "2",
-                  "name": "name2",
-                  "FamilyId": "1",
-                  "families": {
-                    "id": "1"
+                  id: 2,
+                  name: "name2",
+                  FamilyId: 1,
+                  families: {
+                    id: 1
                   }
                 }
               ]
@@ -245,7 +247,7 @@ describe('graphql', () => {
         families (
           filter: {
             id: {
-              _eq: "NonExistingId"
+              _eq: 1234
             }
           }
         ){
@@ -318,24 +320,24 @@ describe('graphql', () => {
         expect(data).toMatchObject({
           users: [
             {
-              id:'2',
+              id: 2,
               roles: [
                 {
-                  id: '1'
+                  id: 1
                 }
               ]
             },
             {
-              id: '1',
+              id: 1,
               roles: [
                 {
-                  id: '3'
+                  id: 3
                 },
                 {
-                  id: '1'
+                  id: 1
                 },
                 {
-                  id: '2'
+                  id: 2
                 }
               ]
             }

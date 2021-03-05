@@ -77,7 +77,7 @@ export interface IPropertyInfo {
   } | boolean,
   model: {
     isPk?: boolean,
-    type: 'varchar(255)' | 'tinyint(1)' | 'smallint(5)' | 'int(11)' | 'int' | 'datetime'| 'text',
+    type: 'string' | 'number' | 'boolean',
     allowNull: boolean,
   },
   relation?: IPropertyRelation,

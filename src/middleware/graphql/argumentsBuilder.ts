@@ -4,7 +4,6 @@ import Debug from 'debug'
 import {
   GraphQLArgumentConfig,
   GraphQLFieldConfigArgumentMap,
-  GraphQLID,
   GraphQLInputFieldConfigMap,
   GraphQLInputObjectType,
   GraphQLInt,
@@ -92,11 +91,11 @@ export function buildArgs(
                 const supportedOperators = (property.filterable === true || property.filterable === undefined)
                   ? operators
                   : property.filterable.filters
-                if (isPk || matchedType) {
+                if (matchedType) {
                   const type = new GraphQLInputObjectType({
                     name: `table${table.name}Field${property.name}`,
                     description: `Filter for the field ${property.name}`,
-                    fields: () => argFieldBuilder(isPk, matchedType, supportedOperators)
+                    fields: () => argFieldBuilder(matchedType, supportedOperators)
                   })
                   inputFields[property.name] = {
                     type: isRequired ? new GraphQLNonNull(type) : type,
@@ -158,7 +157,7 @@ export function buildArgs(
                 const matchedType = MATCHER[property.model.type]
     
                 if (isPk || matchedType) {
-                  const type = isPk ? GraphQLID : matchedType
+                  const type = matchedType
                   inputFields[property.name] = {
                     type: isRequired ? new GraphQLNonNull(type) : type,
                     description: property.layout?.label || property.name,
@@ -179,17 +178,17 @@ export function buildArgs(
 }
 
 
-export function argFieldBuilder(isPk: boolean, matchedType: GraphQLScalarType, supportedOperators: OperatorsType[]): GraphQLInputFieldConfigMap {
+export function argFieldBuilder(matchedType: GraphQLScalarType, supportedOperators: OperatorsType[]): GraphQLInputFieldConfigMap {
   const argFilter = {}
   supportedOperators.forEach(
     operator => {
       if (operator === '_in' || operator === '_nin') {
         argFilter[operator] = {
-          type: isPk ? GraphQLList(GraphQLID) : GraphQLList(matchedType)
+          type: GraphQLList(matchedType)
         }
       } else {
         argFilter[operator] = {
-          type: isPk ? GraphQLID : matchedType
+          type: matchedType
         }
       }
       

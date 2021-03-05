@@ -4,7 +4,6 @@ import { IRelation, IEntityInfo } from '../../generator/configurationTypes'
 import Debug from 'debug'
 import {
   GraphQLFieldConfigMap,
-  GraphQLID,
   GraphQLInt,
   GraphQLList,
   GraphQLNonNull,
@@ -54,8 +53,8 @@ export function buildFields<TSource>(
       )
     )
     
-    if (isPk || MATCHER[column.model.type]) {
-      const type = isPk ? GraphQLID : MATCHER[column.model.type]
+    if (MATCHER[column.model.type]) {
+      const type = MATCHER[column.model.type]
       result[column.name] = {
         type: isRequired ? new GraphQLNonNull(type) : type,
         description: column.layout?.label as string || column.name,
@@ -73,7 +72,7 @@ export function buildFields<TSource>(
           (settingsEntity) => settingsEntity.name === remoteTable
         )
         if (!relatedTable) {
-          throw new Error('Invalid relation configuration: relatedTable not found')
+          throw new Error(`Invalid relation configuration: remoteTable "${remoteTable}" not found on relation ${relation.foreignKey} on table ${table.name}`)
         }
         result[remoteTable] = {
           type: buildType(relatedTable, schemaManager, schemaOptions),
@@ -82,12 +81,12 @@ export function buildFields<TSource>(
           args: buildArgs(relatedTable, { pagination: false, filter: true }),
         }
         result[column.name] = {
-          type: GraphQLID,
+          type: MATCHER[column.model.type],
           description: column.layout?.label as string || column.name,
         }
       } else {
         result[column.name] = {
-          type: isRequired ? new GraphQLNonNull(GraphQLID) : GraphQLID,
+          type: isRequired ? new GraphQLNonNull(MATCHER[column.model.type]) : MATCHER[column.model.type],
           description: column.layout?.label as string || column.name,
         }
       }

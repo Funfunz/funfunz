@@ -9,12 +9,9 @@ const debug = Debug('funfunz:config-generator')
 const INPUT_TYPES: {
   [key: string]: 'text' | 'checkbox' | 'number' | 'date'
 } = {
-  'varchar(255)': 'text',
-  'tinyint(1)': 'checkbox',
-  'int(11)': 'number',
-  'int': 'number',
-  'datetime': 'date',
-  'text': 'text',
+  'string': 'text',
+  'boolean': 'checkbox',
+  'number': 'number',
 }
 
 function buildTableInfo(): IEntityInfo & { layout: Record<string, unknown> } {
@@ -41,7 +38,7 @@ function buildColumnInfo(): IPropertyInfo & { layout : {editField : Record<strin
   return {
     name: '',
     model: {
-      type: 'varchar(255)',
+      type: 'string',
       allowNull: true,
     },
     layout: {

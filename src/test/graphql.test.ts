@@ -1,4 +1,3 @@
-import { GraphQLString } from 'graphql'
 import request from 'supertest'
 import { Funfunz } from '../middleware'
 
