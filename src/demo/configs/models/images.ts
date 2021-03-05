@@ -7,7 +7,7 @@ export default {
       name: 'id',
       filterable: true,
       model: {
-        type: 'bigint',
+        type: 'number',
         allowNull: false,
         isPk: true
       },
@@ -25,7 +25,7 @@ export default {
       name: 'name',
       filterable: true,
       model: {
-        type: 'varchar(255)',
+        type: 'string',
         allowNull: true
       },
       layout: {
@@ -44,7 +44,7 @@ export default {
       name: 'main',
       filterable: true,
       model: {
-        type: 'tinyint(1)',
+        type: 'boolean',
         allowNull: false
       },
       layout: {
@@ -63,7 +63,7 @@ export default {
       name: 'createdAt',
       filterable: true,
       model: {
-        type: 'datetime',
+        type: 'string',
         allowNull: false
       },
       layout: {
@@ -82,7 +82,7 @@ export default {
       name: 'updatedAt',
       filterable: true,
       model: {
-        type: 'datetime',
+        type: 'string',
         allowNull: false
       },
       layout: {
@@ -101,7 +101,7 @@ export default {
       name: 'ProductId',
       filterable: true,
       model: {
-        type: 'int',
+        type: 'number',
         allowNull: true
       },
       layout: {
