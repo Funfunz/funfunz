@@ -10,7 +10,7 @@ services:
     volumes:
       - ./docker/mysql/db:/docker-entrypoint-initdb.d
     ports:
-      - 3306:3306
+      - 40740:3306
 
   mongodb:
     image: mongo

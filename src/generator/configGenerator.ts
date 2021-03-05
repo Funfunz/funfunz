@@ -70,7 +70,13 @@ export function generateSettings(
           const columnData = buildColumnInfo()
           columnData.name = column.Field
           columnData.layout.label = column.Field.charAt(0).toUpperCase() + column.Field.substring(1)
-          columnData.model.type = column.Type
+          columnData.model.type = column.Type.indexOf('var') === 0
+            ? 'string'
+            : column.Type.indexOf('tinyint') === 0
+              ? 'boolean'
+              : column.Type.indexOf('int') > 0
+                ? 'number'
+                : 'string'
           columnData.layout.editField.type = INPUT_TYPES[column.Type]
           columnData.model.allowNull = column.Null === 'NO' ? false : true
           if (column.Key === 'PRI') {

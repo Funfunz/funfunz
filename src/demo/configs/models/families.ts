@@ -17,7 +17,7 @@ export default {
       name: 'id',
       filterable: true,
       model: {
-        type: 'int',
+        type: 'number',
         allowNull: false,
         isPk: true
       },
@@ -37,7 +37,7 @@ export default {
       name: 'order',
       filterable: true,
       model: {
-        type: 'int',
+        type: 'number',
         allowNull: true
       },
       layout: {
@@ -56,7 +56,7 @@ export default {
       name: 'imageUrl',
       filterable: true,
       model: {
-        type: 'varchar(255)',
+        type: 'string',
         allowNull: true
       },
       layout: {
@@ -75,7 +75,7 @@ export default {
       name: 'name',
       filterable: true,
       model: {
-        type: 'varchar(255)',
+        type: 'string',
         allowNull: false
       },
       layout: {
@@ -94,7 +94,7 @@ export default {
       name: 'email',
       filterable: true,
       model: {
-        type: 'varchar(255)',
+        type: 'string',
         allowNull: true
       },
       layout: {
@@ -113,7 +113,7 @@ export default {
       name: 'createdAt',
       filterable: true,
       model: {
-        type: 'datetime',
+        type: 'string',
         allowNull: false
       },
       layout: {
@@ -132,7 +132,7 @@ export default {
       name: 'updatedAt',
       filterable: true,
       model: {
-        type: 'datetime',
+        type: 'string',
         allowNull: false
       },
       layout: {
