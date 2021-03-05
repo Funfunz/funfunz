@@ -66,7 +66,6 @@ describe('graphql', () => {
         if (err) {
           return done(err)
         }
-        console.log('response create', response.body, response.error)
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
@@ -141,7 +140,6 @@ describe('graphql', () => {
         if (err) {
           return done(err)
         }
-        console.log('delete', response.body, response.error)
         expect(response.status).toBe(200)
         expect(response.body).toBeTruthy()
         const data = response.body.data
