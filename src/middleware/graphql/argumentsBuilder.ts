@@ -155,7 +155,7 @@ export function buildArgs(
                 )
                 
                 const matchedType = MATCHER[property.model.type]
-    
+                
                 if (isPk || matchedType) {
                   const type = matchedType
                   inputFields[property.name] = {
