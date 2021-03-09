@@ -1,48 +1,48 @@
 import { IHookProps } from "../../../types/hooks"
 
 export default {
-  'name': 'products',
-  'connector': 'mainDatabase',
-  'visible': true,
-  'properties': [
+  name: 'products',
+  connector: 'mainDatabase',
+  visible: true,
+  properties: [
     {
-      'name': 'id',
-      'filterable': true,
-      'visible': {
-        'list': true,
-        'detail': true,
-        'relation': true
+      name: 'id',
+      filterable: true,
+      visible: {
+        list: true,
+        detail: true,
+        relation: true
       },
-      'model': {
-        'type': 'int',
-        'allowNull': false,
-        'isPk': true
+      model: {
+        type: 'number',
+        allowNull: false,
+        isPk: true
       },
-      'layout': {
-        'label': 'Id',
-        'listColumn': {},
-        'editField': {
-          'type': 'number'
+      layout: {
+        label: 'Id',
+        listColumn: {},
+        editField: {
+          type: 'number'
         }
       }
     },
     {
-      'name': 'name',
-      'filterable': true,
-      'visible': {
-        'list': true,
-        'detail': true,
-        'relation': false
+      name: 'name',
+      filterable: true,
+      visible: {
+        list: true,
+        detail: true,
+        relation: false
       },
-      'model': {
-        'type': 'varchar(255)',
-        'allowNull': true
+      model: {
+        type: 'string',
+        allowNull: true
       },
-      'layout': {
-        'label': 'Name',
-        'listColumn': {},
-        'editField': {
-          'type': 'text'
+      layout: {
+        label: 'Name',
+        listColumn: {},
+        editField: {
+          type: 'text'
         }
       }
     },
@@ -55,7 +55,7 @@ export default {
         relation: false
       },
       model: {
-        type: 'varchar(255)',
+        type: 'string',
         allowNull: true
       },
       layout: {
@@ -75,132 +75,132 @@ export default {
       name: 'type',
       filterable: true,
       visible: {
-        'list': true,
-        'detail': true,
-        'relation': false
+        list: true,
+        detail: true,
+        relation: false
       },
-      'model': {
-        'type': 'smallint',
-        'allowNull': true
+      model: {
+        type: 'number',
+        allowNull: true
       },
-      'layout': {
-        'label': 'Type',
-        'listColumn': {},
-        'editField': {}
+      layout: {
+        label: 'Type',
+        listColumn: {},
+        editField: {}
       }
     },
     {
-      'name': 'createdAt',
-      'filterable': true,
-      'visible': {
-        'list': true,
-        'detail': false,
-        'relation': false
+      name: 'createdAt',
+      filterable: true,
+      visible: {
+        list: true,
+        detail: false,
+        relation: false
       },
-      'model': {
-        'type': 'datetime',
-        'allowNull': false
+      model: {
+        type: 'string',
+        allowNull: false
       },
-      'layout': {
-        'label': 'CreatedAt',
-        'listColumn': {},
-        'editField': {
-          'type': 'date'
+      layout: {
+        label: 'CreatedAt',
+        listColumn: {},
+        editField: {
+          type: 'date'
         }
       }
     },
     {
-      'name': 'updatedAt',
-      'filterable': true,
-      'visible': {
-        'list': true,
-        'detail': false,
-        'relation': false
+      name: 'updatedAt',
+      filterable: true,
+      visible: {
+        list: true,
+        detail: false,
+        relation: false
       },
-      'model': {
-        'type': 'datetime',
-        'allowNull': false
+      model: {
+        type: 'string',
+        allowNull: false
       },
-      'layout': {
-        'label': 'UpdatedAt',
-        'listColumn': {},
-        'editField': {
-          'type': 'date'
+      layout: {
+        label: 'UpdatedAt',
+        listColumn: {},
+        editField: {
+          type: 'date'
         }
       }
     },
     {
-      'name': 'FamilyId',
-      'filterable': true,
-      'visible': {
-        'list': true,
-        'detail': true,
-        'relation': false
+      name: 'FamilyId',
+      filterable: true,
+      visible: {
+        list: true,
+        detail: true,
+        relation: false
       },
-      'model': {
-        'type': 'int',
-        'allowNull': true
+      model: {
+        type: 'number',
+        allowNull: true
       },
-      'layout': {
-        'label': 'FamilyId',
-        'listColumn': {},
-        'editField': {
-          'type': 'number'
+      layout: {
+        label: 'FamilyId',
+        listColumn: {},
+        editField: {
+          type: 'number'
         }
       }
     },
     {
-      'name': 'active',
-      'filterable': true,
-      'visible': {
-        'list': true,
-        'detail': true,
-        'relation': false
+      name: 'active',
+      filterable: true,
+      visible: {
+        list: true,
+        detail: true,
+        relation: false
       },
-      'model': {
-        'type': 'tinyint(1)',
-        'allowNull': true
+      model: {
+        type: 'boolean',
+        allowNull: true
       },
-      'layout': {
-        'label': 'Active',
-        'listColumn': {},
-        'editField': {
-          'type': 'checkbox'
+      layout: {
+        label: 'Active',
+        listColumn: {},
+        editField: {
+          type: 'checkbox'
         }
       }
     }
   ],
-  'layout': {
-    'label': 'Products',
-    'listPage': {},
-    'searchField': {},
-    'createButton': {},
-    'editButton': {},
-    'deleteButton': {},
-    'editPage': {
-      'sections': []
+  layout: {
+    label: 'Products',
+    listPage: {},
+    searchField: {},
+    createButton: {},
+    editButton: {},
+    deleteButton: {},
+    editPage: {
+      sections: []
     }
   },
-  'hooks': {
+  hooks: {
     count: {
-      async beforeResolver(props: IHookProps<unknown>) {
+      async beforeResolver(props: IHookProps<unknown, unknown>) {
         props.args.filter =  { id: { _eq: 1 }}
         return props
       }
     }
   },
-  'relations': [
+  relations: [
     {
-      'type': 'n:1',
-      'relationalTable': 'products',
-      'foreignKey': 'FamilyId',
-      'remoteTable': 'families'
+      type: 'n:1',
+      relationalTable: 'products',
+      foreignKey: 'FamilyId',
+      remoteTable: 'families'
     },
     {
-      'type': '1:n',
-      'relationalTable': 'images',
-      'foreignKey': 'ProductId',
-      'remoteTable': 'images'
+      type: '1:n',
+      relationalTable: 'images',
+      foreignKey: 'ProductId',
+      remoteTable: 'images'
     }
   ]
 }

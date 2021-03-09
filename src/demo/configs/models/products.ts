@@ -7,7 +7,7 @@ export default {
       name: 'id',
       filterable: true,
       model: {
-        type: 'int',
+        type: 'number',
         allowNull: false,
         isPk: true
       },
@@ -30,7 +30,7 @@ export default {
       name: 'name',
       filterable: true,
       model: {
-        type: 'varchar(255)',
+        type: 'string',
         allowNull: true
       },
       layout: {
@@ -52,7 +52,7 @@ export default {
       name: 'color',
       filterable: true,
       model: {
-        type: 'varchar(255)',
+        type: 'string',
         allowNull: true
       },
       layout: {
@@ -91,7 +91,7 @@ export default {
       name: 'type',
       filterable: true,
       model: {
-        type: 'smallint',
+        type: 'number',
         allowNull: true
       },
       layout: {
@@ -128,7 +128,7 @@ export default {
       name: 'createdAt',
       filterable: true,
       model: {
-        type: 'datetime',
+        type: 'string',
         allowNull: false
       },
       layout: {
@@ -147,7 +147,7 @@ export default {
       name: 'updatedAt',
       filterable: true,
       model: {
-        type: 'datetime',
+        type: 'string',
         allowNull: false
       },
       layout: {
@@ -166,7 +166,7 @@ export default {
       name: 'FamilyId',
       filterable: true,
       model: {
-        type: 'int',
+        type: 'number',
         allowNull: true
       },
       layout: {
@@ -185,7 +185,7 @@ export default {
       name: 'active',
       filterable: true,
       model: {
-        type: 'tinyint(1)',
+        type: 'boolean',
         allowNull: true
       },
       layout: {

@@ -16,7 +16,7 @@ export default {
       name: 'id',
       filterable: true,
       model: {
-        type: 'int',
+        type: 'number',
         allowNull: false,
         isPk: true
       },
@@ -34,34 +34,34 @@ export default {
       name: 'order',
       filterable: true,
       visible: {
-        'list': true,
-        'detail': true,
-        'relation': false
+        list: true,
+        detail: true,
+        relation: false
       },
-      'model': {
-        'type': 'int',
-        'allowNull': true
+      model: {
+        type: 'number',
+        allowNull: true
       },
-      'layout': {
-        'label': 'Order',
-        'listColumn': {},
-        'editField': {
-          'type': 'number'
+      layout: {
+        label: 'Order',
+        listColumn: {},
+        editField: {
+          type: 'number'
         }
       }
     },
     {
-      'name': 'imageUrl',
-      'filterable': true,
-      'model': {
-        'type': 'varchar(255)',
-        'allowNull': true
+      name: 'imageUrl',
+      filterable: true,
+      model: {
+        type: 'string',
+        allowNull: true
       },
       'layout': {
         'label': 'ImageUrl',
         'listColumn': {},
         'editField': {
-          'type': 'text'
+          type: 'text'
         }
       }
     },
@@ -73,96 +73,96 @@ export default {
         'detail': true,
         'relation': false,
       },
-      'model': {
-        'type': 'varchar(255)',
-        'allowNull': false
+      model: {
+        type: 'string',
+        allowNull: false
       },
-      'layout': {
-        'label': 'Name',
-        'listColumn': {},
-        'editField': {
-          'type': 'text'
+      layout: {
+        label: 'Name',
+        listColumn: {},
+        editField: {
+          type: 'text'
         }
       }
     },
     {
-      'name': 'email',
-      'filterable': true,
-      'visible': {
-        'list': true,
-        'detail': true,
-        'relation': false
+      name: 'email',
+      filterable: true,
+      visible: {
+        list: true,
+        detail: true,
+        relation: false
       },
-      'model': {
-        'type': 'varchar(255)',
-        'allowNull': true
+      model: {
+        type: 'string',
+        allowNull: true
       },
-      'layout': {
-        'label': 'Email',
-        'listColumn': {},
-        'editField': {
-          'type': 'text'
+      layout: {
+        label: 'Email',
+        listColumn: {},
+        editField: {
+          type: 'text'
         }
       }
     },
     {
-      'name': 'createdAt',
-      'filterable': true,
-      'visible': {
-        'list': true,
-        'detail': false,
-        'relation': false
+      name: 'createdAt',
+      filterable: true,
+      visible: {
+        list: true,
+        detail: false,
+        relation: false
       },
-      'model': {
-        'type': 'datetime',
-        'allowNull': false
+      model: {
+        type: 'string',
+        allowNull: false
       },
-      'layout': {
-        'label': 'CreatedAt',
-        'listColumn': {},
-        'editField': {
-          'type': 'date'
+      layout: {
+        label: 'CreatedAt',
+        listColumn: {},
+        editField: {
+          type: 'date'
         }
       }
     },
     {
-      'name': 'updatedAt',
-      'filterable': true,
-      'visible': {
-        'list': true,
-        'detail': false,
-        'relation': false
+      name: 'updatedAt',
+      filterable: true,
+      visible: {
+        list: true,
+        detail: false,
+        relation: false
       },
-      'model': {
-        'type': 'datetime',
-        'allowNull': false
+      model: {
+        type: 'string',
+        allowNull: false
       },
-      'layout': {
-        'label': 'UpdatedAt',
-        'listColumn': {},
-        'editField': {
-          'type': 'date'
+      layout: {
+        label: 'UpdatedAt',
+        listColumn: {},
+        editField: {
+          type: 'date'
         }
       }
     }
   ],
-  'hooks': {
+  hooks: {
     count: {
-      async afterQueryResult(props: IHookProps<unknown>) {
+      async afterQueryResult(props: IHookProps<unknown, unknown>) {
         props.results = 69
         return props
       }
     }
   },
-  'layout': {
-    'label': 'Families',
-    'listPage': {},
-    'searchField': {},
-    'createButton': {},
-    'editButton': {},
-    'deleteButton': {},
-    'editPage': {
-      'sections': []
+  layout: {
+    label: 'Families',
+    listPage: {},
+    searchField: {},
+    createButton: {},
+    editButton: {},
+    deleteButton: {},
+    editPage: {
+      sections: []
     }
   }
 }

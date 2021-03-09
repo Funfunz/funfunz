@@ -9,12 +9,9 @@ const debug = Debug('funfunz:config-generator')
 const INPUT_TYPES: {
   [key: string]: 'text' | 'checkbox' | 'number' | 'date'
 } = {
-  'varchar(255)': 'text',
-  'tinyint(1)': 'checkbox',
-  'int(11)': 'number',
-  'int': 'number',
-  'datetime': 'date',
-  'text': 'text',
+  'string': 'text',
+  'boolean': 'checkbox',
+  'number': 'number',
 }
 
 function buildTableInfo(): IEntityInfo & { layout: Record<string, unknown> } {
@@ -41,7 +38,7 @@ function buildColumnInfo(): IPropertyInfo & { layout : {editField : Record<strin
   return {
     name: '',
     model: {
-      type: 'varchar(255)',
+      type: 'string',
       allowNull: true,
     },
     layout: {
@@ -73,7 +70,13 @@ export function generateSettings(
           const columnData = buildColumnInfo()
           columnData.name = column.Field
           columnData.layout.label = column.Field.charAt(0).toUpperCase() + column.Field.substring(1)
-          columnData.model.type = column.Type
+          columnData.model.type = column.Type.indexOf('var') === 0
+            ? 'string'
+            : column.Type.indexOf('tinyint') === 0
+              ? 'boolean'
+              : column.Type.indexOf('int') > 0
+                ? 'number'
+                : 'string'
           columnData.layout.editField.type = INPUT_TYPES[column.Type]
           columnData.model.allowNull = column.Null === 'NO' ? false : true
           if (column.Key === 'PRI') {

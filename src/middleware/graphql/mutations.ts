@@ -91,7 +91,7 @@ function buildAddMutation<OptionsContext>(
     args: dataConnectorMutation?.args || buildArgs(table, { data: true }),
     resolve: async (parent, rawargs, requestContext, info) => {
       const { args, context } = await executeHook(table, 'add', 'beforeResolver', { args: rawargs, requestContext }, options, schemaManager.getSchemas())
-      const data = normalize(args.data as Record<string, unknown>, table, true)
+      const data = normalize(args.data as Record<string, unknown>, table)
       const fields = getFields(table, info)
 
       const rawquery: ICreateArgs = {
