@@ -5,104 +5,29 @@ export default {
   relations: [
     {
       type: 'm:n',
-      relationalTable: 'usersroles',
+      relationalEntity: 'usersroles',
       foreignKey: 'roleId',
-      remoteTable: 'users',
+      remoteEntity: 'users',
       remoteForeignKey: 'userId',
     },
   ],
   properties: [
     {
       name: 'id',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: true,
-        relation: true
-      },
-      model: {
-        type: 'number',
-        allowNull: false,
-        isPk: true
-      },
-      layout: {
-        label: 'Id',
-        listColumn: {},
-        editField: {
-          type: 'number'
-        }
-      }
+      type: 'number',
+      isPk: true
     },
     {
       name: 'name',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: true,
-        relation: true,
-      },
-      model: {
-        type: 'string',
-        allowNull: false
-      },
-      layout: {
-        label: 'Name',
-        listColumn: {},
-        editField: {
-          type: 'text'
-        }
-      }
+      type: 'string',
     },
     {
       name: 'createdAt',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: false,
-        relation: false
-      },
-      model: {
-        type: 'string',
-        allowNull: false
-      },
-      layout: {
-        label: 'CreatedAt',
-        listColumn: {},
-        editField: {
-          type: 'date'
-        }
-      }
+      type: 'string',
     },
     {
       name: 'updatedAt',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: false,
-        relation: false
-      },
-      model: {
-        type: 'string',
-        allowNull: false
-      },
-      layout: {
-        label: 'UpdatedAt',
-        listColumn: {},
-        editField: {
-          type: 'date'
-        }
-      }
+      type: 'string',
     }
   ],
-  layout: {
-    label: 'Roles',
-    listPage: {},
-    searchField: {},
-    createButton: {},
-    editButton: {},
-    deleteButton: {},
-    editPage: {
-      sections: []
-    }
-  }
 }

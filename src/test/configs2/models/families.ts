@@ -1,6 +1,4 @@
-import { IEntityInfo } from '../../../generator/configurationTypes'
-import { Funfunz } from '../../../middleware'
-import { IHookProps } from '../../../types'
+import { IHookProps } from '../../../types/hooks'
 
 export default {
   name: 'families',
@@ -21,6 +19,11 @@ export default {
     },
     {
       name: 'order',
+      visible: {
+        list: true,
+        detail: true,
+        relation: false
+      },
       type: 'number',
     },
     {
@@ -29,18 +32,38 @@ export default {
     },
     {
       name: 'name',
+      visible: {
+        'list': true,
+        'detail': true,
+        'relation': false,
+      },
       type: 'string',
     },
     {
       name: 'email',
+      visible: {
+        list: true,
+        detail: true,
+        relation: false
+      },
       type: 'string',
     },
     {
       name: 'createdAt',
+      visible: {
+        list: true,
+        detail: false,
+        relation: false
+      },
       type: 'string',
     },
     {
       name: 'updatedAt',
+      visible: {
+        list: true,
+        detail: false,
+        relation: false
+      },
       type: 'string',
     }
   ],
@@ -52,15 +75,4 @@ export default {
       }
     }
   },
-  layout: {
-    label: 'Families',
-    listPage: {},
-    searchField: {},
-    createButton: {},
-    editButton: {},
-    deleteButton: {},
-    editPage: {
-      sections: []
-    }
-  }
-} as IEntityInfo
+}

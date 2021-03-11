@@ -1,4 +1,4 @@
-import { IHookProps } from "../../../types"
+import { IHookProps } from "../../../types/hooks"
 
 interface IRequest {
   user?: {
@@ -26,29 +26,57 @@ export default {
   properties: [
     {
       name: 'id',
+      visible: {
+        list: true,
+        detail: true,
+        relation: true
+      },
       type: 'number',
       isPk: true
     },
     {
       name: 'email',
+      visible: {
+        list: true,
+        detail: true,
+        relation: false
+      },
       type: 'string',
     },
     {
       name: 'name',
+      visible: {
+        list: true,
+        detail: true,
+        relation: false
+      },
       type: 'string',
     },
     {
       name: 'password',
-      visible: false,
-      filterable: false,
+      visible: {
+        list: true,
+        detail: true,
+        relation: false
+      },
       type: 'string',
     },
     {
       name: 'createdAt',
+      visible: {
+        list: true,
+        detail: false,
+        relation: false
+      },
       type: 'string',
     },
     {
       name: 'updatedAt',
+      visible: {
+        list: true,
+        detail: false,
+        relation: false
+      },
       type: 'string',
     }
   ],

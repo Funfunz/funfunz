@@ -3,26 +3,26 @@ import { IEntityInfo, IRelationMN, IRelation } from '../../generator/configurati
 import { Funfunz } from '..'
 import { SchemaObjectMap } from '../graphql/manager'
 
-const oneToManyRelation = (table: IEntityInfo, parentTable: IEntityInfo): IRelation | undefined => {
-  return parentTable.relations?.find(
+const oneToManyRelation = (entity: IEntityInfo, parentEntity: IEntityInfo): IRelation | undefined => {
+  return parentEntity.relations?.find(
     (relation) => {
-      return relation.type === '1:n' && relation.remoteTable === table.name
+      return relation.type === '1:n' && relation.remoteEntity === entity.name
     }
   )
 }
 
-const manyToOneRelation = (table: IEntityInfo, parentTable: IEntityInfo): IRelation | undefined => {
-  return parentTable.relations?.find(
+const manyToOneRelation = (entity: IEntityInfo, parentEntity: IEntityInfo): IRelation | undefined => {
+  return parentEntity.relations?.find(
     (relation) => {
-      return relation.type === 'n:1' && relation.remoteTable === table.name
+      return relation.type === 'n:1' && relation.remoteEntity === entity.name
     }
   )
 }
 
-const manyToManyRelation = (table: IEntityInfo, parentTable: IEntityInfo): IRelation | undefined => {
-  return parentTable.relations?.find(
+const manyToManyRelation = (entity: IEntityInfo, parentEntity: IEntityInfo): IRelation | undefined => {
+  return parentEntity.relations?.find(
     (relation) => {
-      return relation.type === 'm:n' && relation.remoteTable === table.name
+      return relation.type === 'm:n' && relation.remoteEntity === entity.name
     }
   )
 }
@@ -38,14 +38,14 @@ export type ParentFilterResult = {
 }
 
 export async function getParentEntryFilter(
-  table: IEntityInfo,
-  parentTable: IEntityInfo,
+  entity: IEntityInfo,
+  parentEntity: IEntityInfo,
   parentObj: Record<string, FilterValues>,
   schemas: SchemaObjectMap
 ): Promise<ParentFilterResult | undefined> {
-  let relation: IRelation | undefined = oneToManyRelation(table, parentTable)
+  let relation: IRelation | undefined = oneToManyRelation(entity, parentEntity)
   if (relation) {
-    const pks = getPKs(parentTable)
+    const pks = getPKs(parentEntity)
     if (pks.length > 1) {
       throw new Error('Multiple pks relation not supported')
     }
@@ -57,9 +57,9 @@ export async function getParentEntryFilter(
     }
   }
 
-  relation = manyToOneRelation(table, parentTable)
+  relation = manyToOneRelation(entity, parentEntity)
   if (relation) {
-    const pks = getPKs(table)
+    const pks = getPKs(entity)
     if (pks.length > 1) {
       throw new Error('Multiple pks relation not supported')
     }
@@ -71,22 +71,22 @@ export async function getParentEntryFilter(
     }
   }
 
-  relation = manyToManyRelation(table, parentTable) as IRelationMN
+  relation = manyToManyRelation(entity, parentEntity) as IRelationMN
   if (relation) {
-    const pks = getPKs(table)
+    const pks = getPKs(entity)
     if (pks.length > 1) {
       throw new Error('Multiple pks relation not supported')
     }
     const pk = pks[0]
-    const remotePks = getPKs(parentTable)
+    const remotePks = getPKs(parentEntity)
     if (remotePks.length > 1) {
       throw new Error('Multiple pks relation not supported')
     }
     const remotePk = remotePks[0]
-    const relationalTable = relation.relationalTable
+    const relationalEntity = relation.relationalEntity
     const remoteForeignKey = relation.remoteForeignKey
     const result = Funfunz.executeGraphQL(schemas.local, `query {
-      ${relationalTable} (
+      ${relationalEntity} (
         filter: {
           ${relation.foreignKey}: {
             _eq: ${parentObj[remotePk]}
@@ -101,7 +101,7 @@ export async function getParentEntryFilter(
     return result.then(
       (results) => {
         if (results && results.data) {
-          const ids = results.data[relationalTable].map(
+          const ids = results.data[relationalEntity].map(
             (obj) => {
               return obj[remoteForeignKey]
             }

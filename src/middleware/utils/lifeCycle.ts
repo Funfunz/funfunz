@@ -4,7 +4,7 @@ import { connector } from '../dataConnector'
 import type { SchemaObjectMap, TSchemaOptions } from '../graphql/manager'
 
 export async function executeHook(
-  table: IEntityInfo,
+  entity: IEntityInfo,
   operationType: OperationTypes,
   hookType: HookTypes,
   props: Partial<IHookProps<unknown, unknown>>,
@@ -15,9 +15,9 @@ export async function executeHook(
     ...props as IHookProps<unknown, unknown>,
     schemaOptions,
     graph: schemas,
-    connector: connector(table.connector)
+    connector: connector(typeof entity.connector === 'string' ? entity.connector : entity.connector.name)
   }
-  const func = table.hooks?.all?.[hookType] || table.hooks?.[operationType]?.[hookType]
+  const func = entity.hooks?.all?.[hookType] || entity.hooks?.[operationType]?.[hookType]
   if (!func) {
     return fullprops
   }
