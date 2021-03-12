@@ -1,51 +1,23 @@
-import { describeInfo, IPropertyInfo, IConfig, ISettings, IEntityInfo, schemaInfo } from './configurationTypes'
+import { describeInfo, IProperty, IConfig, ISettings, IEntityInfo, schemaInfo } from './configurationTypes'
 import Debug from 'debug'
 import fs from 'fs'
 import path from 'path'
-import pluralize from 'pluralize'
 
 const debug = Debug('funfunz:config-generator')
 
-const INPUT_TYPES: {
-  [key: string]: 'text' | 'checkbox' | 'number' | 'date'
-} = {
-  'string': 'text',
-  'boolean': 'checkbox',
-  'number': 'number',
-}
-
-function buildTableInfo(): IEntityInfo & { layout: Record<string, unknown> } {
+function buildTableInfo(): IEntityInfo {
   return {
     name: '',
     connector: 'mysql',
     visible: true,
     properties: [],
-    layout: {
-      label: '',
-      listPage: true,
-      searchField: true,
-      createButton: true,
-      editButton: true,
-      deleteButton: true,
-      editPage: {
-        sections: [],
-      },
-    },
   }
 }
 
-function buildColumnInfo(): IPropertyInfo & { layout : {editField : Record<string, unknown>}}{
+function buildColumnInfo(): IProperty {
   return {
     name: '',
-    model: {
-      type: 'string',
-      allowNull: true,
-    },
-    layout: {
-      label: '',
-      listColumn: true,
-      editField: {},
-    },
+    type: 'string',
   }
 }
 
@@ -62,25 +34,20 @@ export function generateSettings(
       const describe = tableData.describe
       table.name = schema[0].TABLE_NAME
 
-      const pluralName = pluralize(table.name)
-
-      table.layout.label = pluralName.charAt(0).toUpperCase() + pluralName.slice(1)
       describe.forEach(
         (column) => {
           const columnData = buildColumnInfo()
           columnData.name = column.Field
-          columnData.layout.label = column.Field.charAt(0).toUpperCase() + column.Field.substring(1)
-          columnData.model.type = column.Type.indexOf('var') === 0
+          columnData.type = column.Type.indexOf('var') === 0
             ? 'string'
             : column.Type.indexOf('tinyint') === 0
               ? 'boolean'
               : column.Type.indexOf('int') > 0
                 ? 'number'
                 : 'string'
-          columnData.layout.editField.type = INPUT_TYPES[column.Type]
-          columnData.model.allowNull = column.Null === 'NO' ? false : true
+          columnData.required = column.Null === 'NO' ? true : false
           if (column.Key === 'PRI') {
-            columnData.model.isPk = true
+            columnData.isPk = true
           }
           tableData.schema.forEach(
             (schemaData) => {
@@ -91,7 +58,7 @@ export function generateSettings(
                 table.relations.push({
                   type: 'n:1',
                   foreignKey: columnData.name,
-                  remoteTable: schemaData.REFERENCED_TABLE_NAME || '',
+                  remoteEntity: schemaData.REFERENCED_TABLE_NAME || '',
                 })
               }
             }

@@ -20,46 +20,46 @@ export function buildMutations<OptionsContext>(
 ): GraphQLFieldConfigMap<unknown, unknown> {
   const configs = config()
   const mutations: GraphQLFieldConfigMap<unknown, unknown> = {}
-  configs.settings.forEach((table) => {
+  configs.settings.forEach((entity) => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const dataConnector = require(configs.config.connectors[table.connector].type)
-    mutations[`add${capitalize(table.name)}`] = buildAddMutation(table, schemaManager, options, typeof dataConnector.addMutation === 'function' && dataConnector.addMutation(table))
-    mutations[`update${capitalize(table.name)}`] = buildUpdateMutation(table, schemaManager, options, typeof dataConnector.updateMutation === 'function' && dataConnector.updateMutation(table))
-    mutations[`delete${capitalize(table.name)}`] = buildDeleteMutation(table, schemaManager, options, typeof dataConnector.deleteMutation === 'function' && dataConnector.deleteMutation(table))
+    const dataConnector = require(configs.config.connectors[typeof entity.connector === 'string' ? entity.connector : entity.connector.name].type)
+    mutations[`add${capitalize(entity.name)}`] = buildAddMutation(entity, schemaManager, options, typeof dataConnector.addMutation === 'function' && dataConnector.addMutation(entity))
+    mutations[`update${capitalize(entity.name)}`] = buildUpdateMutation(entity, schemaManager, options, typeof dataConnector.updateMutation === 'function' && dataConnector.updateMutation(entity))
+    mutations[`delete${capitalize(entity.name)}`] = buildDeleteMutation(entity, schemaManager, options, typeof dataConnector.deleteMutation === 'function' && dataConnector.deleteMutation(entity))
   })
   debug('Mutations built')
   return mutations
 }
 
 function buildUpdateMutation<OptionsContext>(
-  table: IEntityInfo,
+  entity: IEntityInfo,
   schemaManager: SchemaManager<OptionsContext>,
   options: TSchemaOptions<OptionsContext>,
   dataConnectorMutation?: GraphQLFieldConfig<unknown, unknown>
 ): GraphQLFieldConfig<unknown, unknown> {
-  debug(`Creating ${table.name} update mutation`)
+  debug(`Creating ${entity.name} update mutation`)
   const mutation: GraphQLFieldConfig<unknown, unknown>  = {
-    type: dataConnectorMutation?.type || new GraphQLList(buildType(table, schemaManager, options, { relations: true })),
-    args: dataConnectorMutation?.args || buildArgs(table, { pagination: true, data: true, filter: true }),
+    type: dataConnectorMutation?.type || new GraphQLList(buildType(entity, schemaManager, options, { relations: true })),
+    args: dataConnectorMutation?.args || buildArgs(entity, { pagination: true, data: true, filter: true }),
     resolve: async (parent, rawargs, requestContext, info) => {
-      const { args, context } = await executeHook(table, 'update', 'beforeResolver', { args: rawargs, requestContext }, options, schemaManager.getSchemas())
-      const data = normalize(args.data as Record<string, unknown>, table)
-      const fields = getFields(table, info)
+      const { args, context } = await executeHook(entity, 'update', 'beforeResolver', { args: rawargs, requestContext }, options, schemaManager.getSchemas())
+      const data = normalize(args.data as Record<string, unknown>, entity)
+      const fields = getFields(entity, info)
       const filter = args.filter || undefined
       const rawquery = {
-        entityName: table.name,
+        entityName: entity.name,
         fields,
         filter: filter as IFilter,
         data: data as Record<string, unknown>,
         skip: args.skip,
         take: args.take
       }
-      const { query, context: newContext } = await executeHook(table, 'update', 'beforeSendQuery', { args, query: rawquery, context, requestContext }, options, schemaManager.getSchemas())
+      const { query, context: newContext } = await executeHook(entity, 'update', 'beforeSendQuery', { args, query: rawquery, context, requestContext }, options, schemaManager.getSchemas())
       
-      const results = await update(table.connector, query as IUpdateArgs)
+      const results = await update(typeof entity.connector === 'string' ? entity.connector : entity.connector.name, query as IUpdateArgs)
       
       const { results: modifiedResults } = await executeHook(
-        table,
+        entity,
         'update',
         'afterQueryResult',
         {
@@ -75,36 +75,36 @@ function buildUpdateMutation<OptionsContext>(
       return modifiedResults
     }
   }
-  debug(`Created ${table.name} add mutation`)
+  debug(`Created ${entity.name} add mutation`)
   return mutation
 }
 
 function buildAddMutation<OptionsContext>(
-  table: IEntityInfo,
+  entity: IEntityInfo,
   schemaManager: SchemaManager<OptionsContext>,
   options: TSchemaOptions<OptionsContext>,
   dataConnectorMutation?: GraphQLFieldConfig<unknown, unknown>
 ): GraphQLFieldConfig<unknown, unknown> {
-  debug(`Creating ${table.name} add mutation`)
+  debug(`Creating ${entity.name} add mutation`)
   const mutation: GraphQLFieldConfig<unknown, unknown>  = {
-    type: dataConnectorMutation?.type || new GraphQLList(buildType(table, schemaManager, options)),
-    args: dataConnectorMutation?.args || buildArgs(table, { data: true }),
+    type: dataConnectorMutation?.type || new GraphQLList(buildType(entity, schemaManager, options)),
+    args: dataConnectorMutation?.args || buildArgs(entity, { data: true }),
     resolve: async (parent, rawargs, requestContext, info) => {
-      const { args, context } = await executeHook(table, 'add', 'beforeResolver', { args: rawargs, requestContext }, options, schemaManager.getSchemas())
-      const data = normalize(args.data as Record<string, unknown>, table)
-      const fields = getFields(table, info)
+      const { args, context } = await executeHook(entity, 'add', 'beforeResolver', { args: rawargs, requestContext }, options, schemaManager.getSchemas())
+      const data = normalize(args.data as Record<string, unknown>, entity)
+      const fields = getFields(entity, info)
 
       const rawquery: ICreateArgs = {
-        entityName: table.name,
+        entityName: entity.name,
         fields,
         data: data as Record<string, unknown>,
         skip: args.skip as number,
         take: args.take as number
       }
-      const { query, context: newContext } = await executeHook(table, 'add', 'beforeSendQuery', { args, query: rawquery, context, requestContext }, options, schemaManager.getSchemas())
-      const results = await create(table.connector, query as ICreateArgs)
+      const { query, context: newContext } = await executeHook(entity, 'add', 'beforeSendQuery', { args, query: rawquery, context, requestContext }, options, schemaManager.getSchemas())
+      const results = await create(typeof entity.connector === 'string' ? entity.connector : entity.connector.name, query as ICreateArgs)
       const { results: modifiedResults } = await executeHook(
-        table,
+        entity,
         'add',
         'afterQueryResult',
         {
@@ -120,33 +120,33 @@ function buildAddMutation<OptionsContext>(
       return modifiedResults
     }
   }
-  debug(`Created ${table.name} add mutation`)
+  debug(`Created ${entity.name} add mutation`)
   return mutation
 }
 
 function buildDeleteMutation<OptionsContext>(
-  table: IEntityInfo,
+  entity: IEntityInfo,
   schemaManager: SchemaManager<OptionsContext>,
   options: TSchemaOptions<OptionsContext>,
   dataConnectorMutation?: GraphQLFieldConfig<unknown, unknown>,
 ): GraphQLFieldConfig<unknown, unknown> {
-  debug(`Creating ${table.name} delete mutation`)
+  debug(`Creating ${entity.name} delete mutation`)
   const mutation: GraphQLFieldConfig<unknown, unknown>  = {
-    type: dataConnectorMutation?.type || buildDeleteMutationType(table),
-    args: dataConnectorMutation?.args || buildArgs(table, { filter: true }),
+    type: dataConnectorMutation?.type || buildDeleteMutationType(entity),
+    args: dataConnectorMutation?.args || buildArgs(entity, { filter: true }),
     resolve: async (parent, rawargs, requestContext) => {
-      const { args, context } = await executeHook(table, 'delete', 'beforeResolver', { args: rawargs, requestContext }, options, schemaManager.getSchemas())
+      const { args, context } = await executeHook(entity, 'delete', 'beforeResolver', { args: rawargs, requestContext }, options, schemaManager.getSchemas())
       const rawquery: IRemoveArgs = {
-        entityName: table.name,
+        entityName: entity.name,
         filter: args.filter as IFilter
       }
-      const { query, context: newContext } = await executeHook(table, 'delete', 'beforeSendQuery', { args, query: rawquery, context, requestContext }, options, schemaManager.getSchemas())
+      const { query, context: newContext } = await executeHook(entity, 'delete', 'beforeSendQuery', { args, query: rawquery, context, requestContext }, options, schemaManager.getSchemas())
 
-      const deleted = await remove(table.connector, query as IRemoveArgs)
+      const deleted = await remove(typeof entity.connector === 'string' ? entity.connector : entity.connector.name, query as IRemoveArgs)
       const results = { deleted }
 
       const { results: modifiedResults } = await executeHook(
-        table,
+        entity,
         'delete',
         'afterQueryResult',
         {
@@ -162,6 +162,6 @@ function buildDeleteMutation<OptionsContext>(
       return modifiedResults
     },
   }
-  debug(`Created ${table.name} delete mutation`)
+  debug(`Created ${entity.name} delete mutation`)
   return mutation
 }

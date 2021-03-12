@@ -8,11 +8,13 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
+  GraphQLString,
 } from 'graphql'
 import { capitalize, getPKs } from '../utils/index'
 import { buildArgs } from './argumentsBuilder'
 import { MATCHER } from './helpers'
 import type { SchemaManager, TSchemaOptions } from './manager'
+import { GraphQLUpload } from 'graphql-upload'
 
 const debug = Debug('funfunz:graphql-type-builder')
 
@@ -25,8 +27,31 @@ interface IBuildTypeOptions {
 
 const entitiesType: Record<string, GraphQLObjectType> = {}
 
+function buildQueryFileType(name) {
+  return {
+    type: new GraphQLObjectType({
+      name: 'File',
+      fields: {
+        url: {
+          type: GraphQLString,
+          description: 'Download url',
+        },
+        content: {
+          type: GraphQLString,
+          description: 'File content',
+        },
+        type: {
+          type: GraphQLString,
+          description: 'MIME type'
+        }
+      }
+    }),
+    description: name,
+  }
+}
+
 export function buildFields<TSource>(
-  table: IEntityInfo,
+  entity: IEntityInfo,
   schemaManager: SchemaManager<unknown>,
   schemaOptions: TSchemaOptions<unknown>,
   options: IBuildTypeOptions = {
@@ -36,11 +61,11 @@ export function buildFields<TSource>(
   const { relations, required, include } = options
   const result: GraphQLFieldConfigMap<TSource, unknown> = {}
   
-  const tablePKs = getPKs(table)
-  const tableRelations = table.relations || []
-  const relationalColumns = tableRelations.map((relation) => relation.foreignKey)
-  table.properties.forEach((column) => {
-    const isPk = tablePKs.indexOf(column.name) >= 0
+  const entityPKs = getPKs(entity)
+  const entityRelations = entity.relations || []
+  const relationalColumns = entityRelations.map((relation) => relation.foreignKey)
+  entity.properties.forEach((column) => {
+    const isPk = entityPKs.indexOf(column.name) >= 0
     /*
      *  if include option is passed check if the column is present there
      */
@@ -53,81 +78,84 @@ export function buildFields<TSource>(
       )
     )
     
-    if (MATCHER[column.model.type]) {
-      const type = MATCHER[column.model.type]
-      result[column.name] = {
-        type: isRequired ? new GraphQLNonNull(type) : type,
-        description: column.layout?.label as string || column.name,
-      }
+    if (MATCHER[column.type]) {
+      const type = MATCHER[column.type]
+      result[column.name] = type === GraphQLUpload
+        ? buildQueryFileType(column.name)
+        : {
+          type: isRequired ? new GraphQLNonNull(type) : type,
+          description: column.name,
+        }
+      
     }
 
     if (relationalColumns.includes(column.name)) {
       if (relations) {
-        const relation = tableRelations.find((relation) => relation.foreignKey === column.name)
+        const relation = entityRelations.find((relation) => relation.foreignKey === column.name)
         if (!relation) {
           throw new Error('Invalid relation configuration: relation not found')
         }
-        const remoteTable = relation.remoteTable
-        const relatedTable = config().settings.find(
-          (settingsEntity) => settingsEntity.name === remoteTable
+        const remoteEntity = relation.remoteEntity
+        const relatedEntity = config().settings.find(
+          (settingsEntity) => settingsEntity.name === remoteEntity
         )
-        if (!relatedTable) {
-          throw new Error(`Invalid relation configuration: remoteTable "${remoteTable}" not found on relation ${relation.foreignKey} on table ${table.name}`)
+        if (!relatedEntity) {
+          throw new Error(`Invalid relation configuration: remoteEntity "${remoteEntity}" not found on relation ${relation.foreignKey} on entity ${entity.name}`)
         }
-        result[remoteTable] = {
-          type: buildType(relatedTable, schemaManager, schemaOptions),
-          description: column.layout?.label as string || column.name,
-          resolve: resolver(relatedTable, schemaManager, schemaOptions,  table, relation.type),
-          args: buildArgs(relatedTable, { pagination: false, filter: true }),
+        result[remoteEntity] = {
+          type: buildType(relatedEntity, schemaManager, schemaOptions),
+          description: column.name,
+          resolve: resolver(relatedEntity, schemaManager, schemaOptions,  entity, relation.type),
+          args: buildArgs(relatedEntity, { pagination: false, filter: true }),
         }
         result[column.name] = {
-          type: MATCHER[column.model.type],
-          description: column.layout?.label as string || column.name,
+          type: MATCHER[column.type],
+          description: column.name,
         }
       } else {
         result[column.name] = {
-          type: isRequired ? new GraphQLNonNull(MATCHER[column.model.type]) : MATCHER[column.model.type],
-          description: column.layout?.label as string || column.name,
+          type: isRequired ? new GraphQLNonNull(MATCHER[column.type]) : MATCHER[column.type],
+          description: column.name,
         }
       }
     }
   })
-  if (tableRelations && relations) {
-    const oneToMany = tableRelations.filter((r) => r.type === '1:n')
+  if (entityRelations && relations) {
+    const oneToMany = entityRelations.filter((r) => r.type === '1:n')
     if (oneToMany) {
       oneToMany.forEach((relation: IRelation) => {
-        const remoteTable = relation.remoteTable
-        const relatedTable = config().settings.find(
-          (settingsTable) => (
-            settingsTable.name === relation.remoteTable
+        const remoteEntity = relation.remoteEntity
+        const relatedEntity = config().settings.find(
+          (settingsEntity) => (
+            settingsEntity.name === relation.remoteEntity
           )
         )
-        if (!relatedTable) {
-          throw new Error('Invalid relation configuration: relatedTable not found')
+        if (!relatedEntity) {
+          throw new Error('Invalid relation configuration: relatedEntity not found')
         }
-        result[remoteTable] = {
-          type: new GraphQLList(buildType(relatedTable, schemaManager, schemaOptions)),
-          description: relatedTable.name,
-          resolve: resolver(relatedTable, schemaManager, schemaOptions, table),
-          args: buildArgs(relatedTable, { pagination: true, filter: true }),
+        result[remoteEntity] = {
+          type: new GraphQLList(buildType(relatedEntity, schemaManager, schemaOptions)),
+          description: relatedEntity.name,
+          resolve: resolver(relatedEntity, schemaManager, schemaOptions, entity),
+          args: buildArgs(relatedEntity, { pagination: true, filter: true }),
         }
       })
     }
-    const manyToMany = tableRelations.filter((r) => r.type === 'm:n')
+    const manyToMany = entityRelations.filter((r) => r.type === 'm:n')
     if (manyToMany) {
       manyToMany.forEach((relation) => {
-        const columnName = relation.remoteTable
-        const remoteTable = config().settings.find(
-          (settingsTable) => settingsTable.name === relation.remoteTable
+        const columnName = relation.remoteEntity
+        const remoteEntity = config().settings.find(
+          (settingsEntity) => settingsEntity.name === relation.remoteEntity
         )
-        if (!remoteTable) {
-          throw new Error('Invalid relation configuration: remoteTable not found')
+        if (!remoteEntity) {
+          throw new Error('Invalid relation configuration: remoteEntity not found')
         }
         result[columnName] = {
-          type: new GraphQLList(buildType(remoteTable, schemaManager, schemaOptions)),
-          description: remoteTable.name,
-          resolve: resolver(remoteTable, schemaManager, schemaOptions, table),
-          args: buildArgs(remoteTable, { pagination: true, filter: true }),
+          type: new GraphQLList(buildType(remoteEntity, schemaManager, schemaOptions)),
+          description: remoteEntity.name,
+          resolve: resolver(remoteEntity, schemaManager, schemaOptions, entity),
+          args: buildArgs(remoteEntity, { pagination: true, filter: true }),
         }
       })
     }
@@ -136,26 +164,26 @@ export function buildFields<TSource>(
 }
 
 export function buildType(
-  table: IEntityInfo,
+  entity: IEntityInfo,
   schemaManager: SchemaManager<unknown>,
   schemaOptions: TSchemaOptions<unknown>,
   options: IBuildTypeOptions = { relations: true }
 ): GraphQLObjectType {
-  const name = table.name
-  debug(`Creating type for table ${name}`)
+  const name = entity.name
+  debug(`Creating type for entity ${name}`)
   if (!entitiesType[name]) {
     entitiesType[name] = new GraphQLObjectType({
       name,
       fields: () => {
-        return buildFields(table, schemaManager, schemaOptions, options)
+        return buildFields(entity, schemaManager, schemaOptions, options)
       },
     })
-    debug(`Created type for table ${name}`)
+    debug(`Created type for entity ${name}`)
   }
   return entitiesType[name]
 }
-export function buildDeleteMutationType(table: IEntityInfo): GraphQLObjectType<unknown, unknown> {
-  const name = `delete${capitalize(table.name)}`
+export function buildDeleteMutationType(entity: IEntityInfo): GraphQLObjectType<unknown, unknown> {
+  const name = `delete${capitalize(entity.name)}`
   debug(`Creating ${name}`)
   if (!entitiesType[name]) {
     entitiesType[name] = new GraphQLObjectType({

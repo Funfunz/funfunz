@@ -1,6 +1,6 @@
 import { OperatorsType } from '../middleware/utils/filter'
 import { IDataConnector } from '../types/connector'
-import { ITableHooks } from '../types/hooks'
+import { IHooks } from '../types/hooks'
 
 export interface IDatabaseData {
   schema: schemaInfo,
@@ -36,55 +36,45 @@ export type schemaInfo = Array<{
 }>
 
 export interface IEntityInfo {
-  name: string,
-  connector: string,
-  visible: boolean,
-  relations?: IRelation[],
-  properties: IPropertyInfo[],
-  hooks?: ITableHooks,
-  layout?: Record<string, unknown>,
+  name: string
+  connector: string | {
+    name: string
+    [key: string]: unknown
+  },
+  visible: boolean
+  relations?: IRelation[]
+  properties: IProperty[]
+  hooks?: IHooks
+  [key: string]: unknown  // aditional settings for plugins (for example: backoffice)
 }
 
 export interface IRelation1N {
-  type: '1:n',
-  foreignKey: string,
-  remoteTable: string,
+  type: '1:n'
+  foreignKey: string
+  remoteEntity: string
 }
 export interface IRelationN1 {
   type: 'n:1'
-  foreignKey: string,
-  remoteTable: string,
+  foreignKey: string
+  remoteEntity: string
 }
 export interface IRelationMN {
   type: 'm:n'
-  relationalTable: string,
-  foreignKey: string,
-  remoteForeignKey: string,
-  remoteTable: string,
+  relationalEntity: string
+  foreignKey: string
+  remoteForeignKey: string
+  remoteEntity: string
 }
 export type IRelation = IRelation1N | IRelationN1 | IRelationMN
 
-export interface IPropertyRelation {
-  type: 'n:1',
-  table: string,
-  key: string,
-}
-
-export interface IPropertyInfo {
-  name: string,
-  filterable?: {
-    filters: OperatorsType[]
-  } | boolean,
-  model: {
-    isPk?: boolean,
-    type: 'string' | 'number' | 'boolean',
-    allowNull: boolean,
-  },
-  relation?: IPropertyRelation,
-  layout?: {
-    label: string,
-    [key: string]: unknown
-  },
+export interface IProperty {
+  name: string
+  type: 'string' | 'number' | 'boolean' | 'file'
+  isPk?: boolean
+  required?: boolean
+  filterable?: boolean |  OperatorsType[]
+  connector?: Record<string, unknown> // additional connector settings for this property
+  [key: string]: unknown  // aditional settings for plugins (for example: backoffice)
 }
 
 export interface IConfig {

@@ -15,21 +15,12 @@ export default {
           type: 'object',
           required: [
             'name',
-            'model',
+            'type',
           ],
           properties: {
             name: {type: 'string'},
-            model: {
-              type: 'object',
-              required: [
-                'type',
-                'allowNull',
-              ],
-              properties: {
-                type: {type: 'string'},
-                allowNull: {type: 'boolean'},
-              },
-            },
+            type: {type: 'string'},
+            required: {type: 'boolean'},
           },
         },
       },

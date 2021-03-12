@@ -2,113 +2,38 @@ export default {
   name: 'usersroles',
   connector: 'mainDatabase',
   visible: true,
-  properties: [
-    {
-      name: 'createdAt',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: false,
-        relation: false
-      },
-      model: {
-        type: 'string',
-        allowNull: false
-      },
-      layout: {
-        label: 'CreatedAt',
-        listColumn: {},
-        editField: {
-          type: 'date'
-        }
-      }
-    },
-    {
-      name: 'updatedAt',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: false,
-        relation: false
-      },
-      model: {
-        type: 'string',
-        allowNull: false
-      },
-      layout: {
-        label: 'UpdatedAt',
-        listColumn: {},
-        editField: {
-          type: 'date'
-        }
-      }
-    },
-    {
-      name: 'userId',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: true,
-        relation: true
-      },
-      model: {
-        type: 'number',
-        allowNull: false,
-        isPk: true
-      },
-      layout: {
-        label: 'UserId',
-        listColumn: {},
-        editField: {
-          type: 'number'
-        }
-      }
-    },
-    {
-      name: 'roleId',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: true,
-        relation: true
-      },
-      model: {
-        type: 'number',
-        allowNull: false,
-        isPk: true
-      },
-      layout: {
-        label: 'RoleId',
-        listColumn: {},
-        editField: {
-          type: 'number'
-        }
-      }
-    }
-  ],
-  layout: {
-    label: 'Usersroles',
-    listPage: {},
-    searchField: {},
-    createButton: {},
-    editButton: {},
-    deleteButton: {},
-    editPage: {
-      sections: []
-    }
-  },
   relations: [
     {
       type: 'n:1',
-      relationalTable: 'usersroles',
+      relationalEntity: 'usersroles',
       foreignKey: 'userId',
-      remoteTable: 'users'
+      remoteEntity: 'users'
     },
     {
       type: 'n:1',
-      relationalTable: 'usersroles',
+      relationalEntity: 'usersroles',
       foreignKey: 'roleId',
-      remoteTable: 'roles'
+      remoteEntity: 'roles'
     }
-  ]
+  ],
+  properties: [
+    {
+      name: 'createdAt',
+      type: 'string',
+    },
+    {
+      name: 'updatedAt',
+      type: 'string',
+    },
+    {
+      name: 'userId',
+      type: 'number',
+      isPk: true
+    },
+    {
+      name: 'roleId',
+      type: 'number',
+      isPk: true
+    }
+  ],
 }
