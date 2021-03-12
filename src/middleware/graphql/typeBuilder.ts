@@ -27,29 +27,6 @@ interface IBuildTypeOptions {
 
 const entitiesType: Record<string, GraphQLObjectType> = {}
 
-function buildQueryFileType(name) {
-  return {
-    type: new GraphQLObjectType({
-      name: 'File',
-      fields: {
-        url: {
-          type: GraphQLString,
-          description: 'Download url',
-        },
-        content: {
-          type: GraphQLString,
-          description: 'File content',
-        },
-        type: {
-          type: GraphQLString,
-          description: 'MIME type'
-        }
-      }
-    }),
-    description: name,
-  }
-}
-
 export function buildFields<TSource>(
   entity: IEntityInfo,
   schemaManager: SchemaManager<unknown>,
@@ -81,7 +58,10 @@ export function buildFields<TSource>(
     if (MATCHER[column.type]) {
       const type = MATCHER[column.type]
       result[column.name] = type === GraphQLUpload
-        ? buildQueryFileType(column.name)
+        ? {
+          type: GraphQLString,
+          description: column.name,
+        }
         : {
           type: isRequired ? new GraphQLNonNull(type) : type,
           description: column.name,
