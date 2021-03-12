@@ -51,16 +51,5 @@ export default {
         return props
       }
     }
-  },
-  layout: {
-    label: 'Families',
-    listPage: {},
-    searchField: {},
-    createButton: {},
-    editButton: {},
-    deleteButton: {},
-    editPage: {
-      sections: []
-    }
   }
 } as IEntityInfo
