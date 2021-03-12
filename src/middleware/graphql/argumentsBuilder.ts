@@ -13,6 +13,7 @@ import {
 } from 'graphql'
 import { getPKs } from '../utils/index'
 import { MATCHER } from './helpers'
+import { GraphQLUpload } from 'graphql-upload'
 
 const debug = Debug('funfunz:graphql-args-builder')
 
@@ -30,46 +31,46 @@ const dataInputs: Record<string, GraphQLArgumentConfig> = {}
 const filters: Record<string, GraphQLArgumentConfig> = {}
 
 export function buildArgs(
-  table: IEntityInfo,
+  entity: IEntityInfo,
   options: IBuildArgsOptions
 ): GraphQLFieldConfigArgumentMap {
-  const tableId = `${table.name}-${JSON.stringify(options)}`
-  if (args[tableId]) {
-    return args[tableId]
+  const entityId = `${entity.name}-${JSON.stringify(options)}`
+  if (args[entityId]) {
+    return args[entityId]
   }
-  args[tableId] = {}
-  debug(`Creating args for table ${table.name}`)
+  args[entityId] = {}
+  debug(`Creating args for entity ${entity.name}`)
   const {required, include, pagination, filter, data } = options
   if (pagination) {
-    args[tableId].take = {
+    args[entityId].take = {
       type: GraphQLInt,
       description: 'Take N items',
     }
-    args[tableId].skip = {
+    args[entityId].skip = {
       type: GraphQLInt,
       description: 'Skip N items',
     }
   }
 
   if (filter) {
-    const filterId = `filter${table.name}Data`
+    const filterId = `filter${entity.name}Data`
     if (filters[filterId]) {
-      args[tableId].filter = filters[filterId]
+      args[entityId].filter = filters[filterId]
     } else {
-      args[tableId].filter = filters[filterId] = {
+      args[entityId].filter = filters[filterId] = {
         type: new GraphQLInputObjectType({
           name: filterId,
-          description: `Filter for the ${table.name} data`,
+          description: `Filter for the ${entity.name} data`,
           fields: () => {
             const inputFields: GraphQLInputFieldConfigMap = {}
-            const tablePKs = getPKs(table)
+            const entityPKs = getPKs(entity)
       
-            table.properties.forEach(
+            entity.properties.forEach(
               (property) => {
                 if (property.filterable === false) {
                   return
                 }
-                const isPk = tablePKs.indexOf(property.name) >= 0
+                const isPk = entityPKs.indexOf(property.name) >= 0
                 /*
                 *  if include option is passed check if the column is present there
                 */
@@ -86,32 +87,32 @@ export function buildArgs(
                   )
                 )
                 
-                const matchedType = MATCHER[property.model.type]
+                const matchedType = MATCHER[property.type]
     
                 const supportedOperators = (property.filterable === true || property.filterable === undefined)
                   ? operators
-                  : property.filterable.filters
-                if (matchedType) {
+                  : property.filterable
+                if (matchedType && matchedType !== GraphQLUpload) {
                   const type = new GraphQLInputObjectType({
-                    name: `table${table.name}Field${property.name}`,
+                    name: `entity${entity.name}Field${property.name}`,
                     description: `Filter for the field ${property.name}`,
                     fields: () => argFieldBuilder(matchedType, supportedOperators)
                   })
                   inputFields[property.name] = {
                     type: isRequired ? new GraphQLNonNull(type) : type,
-                    description: property.layout?.label || property.name,
+                    description: property.name,
                   }
                 }
               }
             )
             inputFields._and = {
               type: new GraphQLList(
-                buildArgs(table, options).filter.type
+                buildArgs(entity, options).filter.type
               )
             }
             inputFields._or = {
               type: new GraphQLList(
-                buildArgs(table, options).filter.type
+                buildArgs(entity, options).filter.type
               )
             }
             return inputFields
@@ -123,21 +124,21 @@ export function buildArgs(
   }
 
   if (data) {
-    const dataInputId = `input${table.name}Data`
+    const dataInputId = `input${entity.name}Data`
     if (dataInputs[dataInputId]) {
-      args[tableId].data = dataInputs[dataInputId]
+      args[entityId].data = dataInputs[dataInputId]
     } else {
-      args[tableId].data = dataInputs[dataInputId] = {
+      args[entityId].data = dataInputs[dataInputId] = {
         type: new GraphQLInputObjectType({
-          name: `input${table.name}Data`,
-          description: `Data to update ${table.name}`,
+          name: `input${entity.name}Data`,
+          description: `Data to update ${entity.name}`,
           fields: () => {
             const inputFields: GraphQLInputFieldConfigMap = {}
-            const tablePKs = getPKs(table)
+            const entityPKs = getPKs(entity)
       
-            table.properties.forEach(
+            entity.properties.forEach(
               (property) => {
-                const isPk = tablePKs.indexOf(property.name) >= 0
+                const isPk = entityPKs.indexOf(property.name) >= 0
                 /*
                 *  if include option is passed check if the column is present there
                 */
@@ -154,13 +155,13 @@ export function buildArgs(
                   )
                 )
                 
-                const matchedType = MATCHER[property.model.type]
+                const matchedType = MATCHER[property.type]
                 
-                if (isPk || matchedType) {
+                if ((isPk || matchedType)) {
                   const type = matchedType
                   inputFields[property.name] = {
                     type: isRequired ? new GraphQLNonNull(type) : type,
-                    description: property.layout?.label || property.name,
+                    description: property.name,
                   }
                 }
               }
@@ -173,8 +174,8 @@ export function buildArgs(
     }
   }
   
-  debug(`Created args for table ${table.name}`)
-  return args[tableId]
+  debug(`Created args for entity ${entity.name}`)
+  return args[entityId]
 }
 
 

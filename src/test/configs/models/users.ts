@@ -1,4 +1,4 @@
-import { IHookProps } from "../../../types/hooks"
+import { IHookProps } from "../../../types"
 
 interface IRequest {
   user?: {
@@ -17,133 +17,39 @@ export default {
   relations: [
     {
       type: 'm:n',
-      relationalTable: 'usersroles',
+      relationalEntity: 'usersroles',
       foreignKey: 'userId',
-      remoteTable: 'roles',
+      remoteEntity: 'roles',
       remoteForeignKey: 'roleId',
     },
   ],
   properties: [
     {
       name: 'id',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: true,
-        relation: true
-      },
-      model: {
-        type: 'number',
-        allowNull: false,
-        isPk: true
-      },
-      layout: {
-        label: 'Id',
-        listColumn: {},
-        editField: {
-          type: 'number'
-        }
-      }
+      type: 'number',
+      isPk: true
     },
     {
       name: 'email',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: true,
-        relation: false
-      },
-      model: {
-        type: 'string',
-        allowNull: false
-      },
-      layout: {
-        label: 'Email',
-        listColumn: {},
-        editField: {
-          type: 'text'
-        }
-      }
+      type: 'string',
     },
     {
       name: 'name',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: true,
-        relation: false
-      },
-      model: {
-        type: 'string',
-        allowNull: true
-      },
-      layout: {
-        label: 'Name',
-        listColumn: {},
-        editField: {
-          type: 'text'
-        }
-      }
+      type: 'string',
     },
     {
       name: 'password',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: true,
-        relation: false
-      },
-      model: {
-        type: 'string',
-        allowNull: true
-      },
-      layout: {
-        label: 'Password',
-        listColumn: {},
-        editField: {
-          type: 'text'
-        }
-      }
+      visible: false,
+      filterable: false,
+      type: 'string',
     },
     {
       name: 'createdAt',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: false,
-        relation: false
-      },
-      model: {
-        type: 'string',
-        allowNull: false
-      },
-      layout: {
-        label: 'CreatedAt',
-        listColumn: {},
-        editField: {
-          type: 'date'
-        }
-      }
+      type: 'string',
     },
     {
       name: 'updatedAt',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: false,
-        relation: false
-      },
-      model: {
-        type: 'string',
-        allowNull: false
-      },
-      layout: {
-        label: 'UpdatedAt',
-        listColumn: {},
-        editField: {
-          type: 'date'
-        }
-      }
+      type: 'string',
     }
   ],
   hooks: {
@@ -156,15 +62,4 @@ export default {
       }
     }
   },
-  layout: {
-    label: 'Users',
-    listPage: {},
-    searchField: {},
-    createButton: {},
-    editButton: {},
-    deleteButton: {},
-    editPage: {
-      sections: []
-    }
-  }
 }

@@ -21,7 +21,7 @@ export interface IHookProps<Context, SchemaOptions> {
 
 export type HookFunction<Context, SchemaOptions> = (props: IHookProps<Context, SchemaOptions>) => Promise<IHookProps<Context, SchemaOptions>> | IHookProps<Context, SchemaOptions>
 
-export type ITableHooks<Context = unknown, SchemaOptions = unknown> = {
+export type IHooks<Context = unknown, SchemaOptions = unknown> = {
   [key in OperationTypes]?: {
     [key in HookTypes]?: HookFunction<Context, SchemaOptions>
   }

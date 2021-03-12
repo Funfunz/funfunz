@@ -1,4 +1,6 @@
-import { IHookProps } from '../../../types/hooks'
+import { IEntityInfo } from '../../../generator/configurationTypes'
+import { Funfunz } from '../../../middleware'
+import { IHookProps } from '../../../types'
 
 export default {
   name: 'families',
@@ -8,142 +10,38 @@ export default {
     {
       type: '1:n',
       foreignKey: 'FamilyId',
-      remoteTable: 'products'
+      remoteEntity: 'products'
     }
   ],
   properties: [
     {
       name: 'id',
-      filterable: true,
-      model: {
-        type: 'number',
-        allowNull: false,
-        isPk: true
-      },
-      layout: {
-        label: 'Id',
-        entityPage: {
-          searchable: true,
-        },
-        editField: {
-          type: 'number'
-        }
-      }
+      type: 'number',
+      isPk: true
     },
     {
       name: 'order',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: true,
-        relation: false
-      },
-      model: {
-        type: 'number',
-        allowNull: true
-      },
-      layout: {
-        label: 'Order',
-        listColumn: {},
-        editField: {
-          type: 'number'
-        }
-      }
+      type: 'number',
     },
     {
       name: 'imageUrl',
-      filterable: true,
-      model: {
-        type: 'string',
-        allowNull: true
-      },
-      'layout': {
-        'label': 'ImageUrl',
-        'listColumn': {},
-        'editField': {
-          type: 'text'
-        }
-      }
+      type: 'string',
     },
     {
-      'name': 'name',
-      'filterable': true,
-      'visible': {
-        'list': true,
-        'detail': true,
-        'relation': false,
-      },
-      model: {
-        type: 'string',
-        allowNull: false
-      },
-      layout: {
-        label: 'Name',
-        listColumn: {},
-        editField: {
-          type: 'text'
-        }
-      }
+      name: 'name',
+      type: 'string',
     },
     {
       name: 'email',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: true,
-        relation: false
-      },
-      model: {
-        type: 'string',
-        allowNull: true
-      },
-      layout: {
-        label: 'Email',
-        listColumn: {},
-        editField: {
-          type: 'text'
-        }
-      }
+      type: 'string',
     },
     {
       name: 'createdAt',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: false,
-        relation: false
-      },
-      model: {
-        type: 'string',
-        allowNull: false
-      },
-      layout: {
-        label: 'CreatedAt',
-        listColumn: {},
-        editField: {
-          type: 'date'
-        }
-      }
+      type: 'string',
     },
     {
       name: 'updatedAt',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: false,
-        relation: false
-      },
-      model: {
-        type: 'string',
-        allowNull: false
-      },
-      layout: {
-        label: 'UpdatedAt',
-        listColumn: {},
-        editField: {
-          type: 'date'
-        }
-      }
+      type: 'string',
     }
   ],
   hooks: {
@@ -165,4 +63,4 @@ export default {
       sections: []
     }
   }
-}
+} as IEntityInfo

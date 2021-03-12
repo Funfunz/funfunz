@@ -5,8 +5,8 @@ export default {
   normalize,
 }
 
-export function normalize(data: Record<string, unknown>, TABLE_CONFIG: IEntityInfo): Record<string, unknown> {
-  getPKs(TABLE_CONFIG).forEach(
+export function normalize(data: Record<string, unknown>, entityConfig: IEntityInfo): Record<string, unknown> {
+  getPKs(entityConfig).forEach(
     (pk) => {
       if (isNull(data[pk])) {
         delete data[pk]

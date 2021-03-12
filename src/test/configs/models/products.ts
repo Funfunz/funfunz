@@ -1,186 +1,56 @@
-import { IHookProps } from "../../../types/hooks"
+import { IHookProps } from "../../../types"
 
 export default {
   name: 'products',
   connector: 'mainDatabase',
   visible: true,
+  relations: [
+    {
+      type: 'n:1',
+      foreignKey: 'FamilyId',
+      remoteEntity: 'families'
+    },
+    {
+      type: '1:n',
+      foreignKey: 'ProductId',
+      remoteEntity: 'images'
+    }
+  ],
   properties: [
     {
       name: 'id',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: true,
-        relation: true
-      },
-      model: {
-        type: 'number',
-        allowNull: false,
-        isPk: true
-      },
-      layout: {
-        label: 'Id',
-        listColumn: {},
-        editField: {
-          type: 'number'
-        }
-      }
+      type: 'number',
+      isPk: true
     },
     {
       name: 'name',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: true,
-        relation: false
-      },
-      model: {
-        type: 'string',
-        allowNull: true
-      },
-      layout: {
-        label: 'Name',
-        listColumn: {},
-        editField: {
-          type: 'text'
-        }
-      }
+      type: 'string',
     },
     {
       name: 'color',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: true,
-        relation: false
-      },
-      model: {
-        type: 'string',
-        allowNull: true
-      },
-      layout: {
-        label: 'Color',
-        entityPage: {
-          filterable: {
-            type: 'enum',
-            content: ['Blue', 'Red', 'Yellow']
-          },
-        },
-        editField: {
-          type: 'text'
-        }
-      }
+      type: 'string',
     },
     {
       name: 'type',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: true,
-        relation: false
-      },
-      model: {
-        type: 'number',
-        allowNull: true
-      },
-      layout: {
-        label: 'Type',
-        listColumn: {},
-        editField: {}
-      }
+      type: 'number',
     },
     {
       name: 'createdAt',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: false,
-        relation: false
-      },
-      model: {
-        type: 'string',
-        allowNull: false
-      },
-      layout: {
-        label: 'CreatedAt',
-        listColumn: {},
-        editField: {
-          type: 'date'
-        }
-      }
+      type: 'string',
     },
     {
       name: 'updatedAt',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: false,
-        relation: false
-      },
-      model: {
-        type: 'string',
-        allowNull: false
-      },
-      layout: {
-        label: 'UpdatedAt',
-        listColumn: {},
-        editField: {
-          type: 'date'
-        }
-      }
+      type: 'string',
     },
     {
       name: 'FamilyId',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: true,
-        relation: false
-      },
-      model: {
-        type: 'number',
-        allowNull: true
-      },
-      layout: {
-        label: 'FamilyId',
-        listColumn: {},
-        editField: {
-          type: 'number'
-        }
-      }
+      type: 'number',
     },
     {
       name: 'active',
-      filterable: true,
-      visible: {
-        list: true,
-        detail: true,
-        relation: false
-      },
-      model: {
-        type: 'boolean',
-        allowNull: true
-      },
-      layout: {
-        label: 'Active',
-        listColumn: {},
-        editField: {
-          type: 'checkbox'
-        }
-      }
+      type: 'boolean',
     }
   ],
-  layout: {
-    label: 'Products',
-    listPage: {},
-    searchField: {},
-    createButton: {},
-    editButton: {},
-    deleteButton: {},
-    editPage: {
-      sections: []
-    }
-  },
   hooks: {
     count: {
       async beforeResolver(props: IHookProps<unknown, unknown>) {
@@ -188,19 +58,5 @@ export default {
         return props
       }
     }
-  },
-  relations: [
-    {
-      type: 'n:1',
-      relationalTable: 'products',
-      foreignKey: 'FamilyId',
-      remoteTable: 'families'
-    },
-    {
-      type: '1:n',
-      relationalTable: 'images',
-      foreignKey: 'ProductId',
-      remoteTable: 'images'
-    }
-  ]
+  }
 }

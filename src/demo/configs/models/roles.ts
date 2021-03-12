@@ -5,100 +5,29 @@ export default {
   relations: [
     {
       type: 'm:n',
-      relationalTable: 'usersroles',
+      relationalEntity: 'usersroles',
       foreignKey: 'roleId',
-      remoteTable: 'users',
+      remoteEntity: 'users',
       remoteForeignKey: 'userId',
     },
   ],
   properties: [
     {
       name: 'id',
-      filterable: true,
-      model: {
-        type: 'number',
-        allowNull: false,
-        isPk: true
-      },
-      layout: {
-        label: 'Id',
-        visible: {
-          entityPage: true,
-          detail: true,
-          relation: true
-        },
-        editField: {
-          type: 'number'
-        }
-      }
+      type: 'number',
+      isPk: true
     },
     {
       name: 'name',
-      filterable: true,
-      model: {
-        type: 'string',
-        allowNull: false
-      },
-      layout: {
-        label: 'Name',
-        visible: {
-          entityPage: true,
-          detail: true,
-          relation: true,
-        },
-        editField: {
-          type: 'text'
-        }
-      }
+      type: 'string',
     },
     {
       name: 'createdAt',
-      filterable: true,
-      model: {
-        type: 'string',
-        allowNull: false
-      },
-      layout: {
-        label: 'CreatedAt',
-        visible: {
-          entityPage: true,
-          detail: false,
-          relation: false
-        },
-        editField: {
-          type: 'date'
-        }
-      }
+      type: 'string',
     },
     {
       name: 'updatedAt',
-      filterable: true,
-      model: {
-        type: 'string',
-        allowNull: false
-      },
-      layout: {
-        label: 'UpdatedAt',
-        visible: {
-          entityPage: true,
-          detail: false,
-          relation: false
-        },
-        editField: {
-          type: 'date'
-        }
-      }
+      type: 'string',
     }
   ],
-  layout: {
-    label: 'Roles',
-    listPage: {},
-    searchField: {},
-    createButton: {},
-    editButton: {},
-    deleteButton: {},
-    editPage: {
-      sections: []
-    }
-  }
 }

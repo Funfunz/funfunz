@@ -16,10 +16,10 @@ export function buildQueries<OptionsContext>(schemaManager: SchemaManager<Option
   const configs = config()
   const queries: Thunk<GraphQLFieldConfigMap<unknown, unknown>> = {}
   configs.settings.forEach(
-    (table) => {
-      if (table.visible) {
-        queries[table.name] = buildQuery<OptionsContext>(table, schemaManager, options)
-        queries[table.name + 'Count'] = buildCount(table, schemaManager, options)
+    (entity) => {
+      if (entity.visible) {
+        queries[entity.name] = buildQuery<OptionsContext>(entity, schemaManager, options)
+        queries[entity.name + 'Count'] = buildCount(entity, schemaManager, options)
       }
     }
   )
@@ -29,44 +29,44 @@ export function buildQueries<OptionsContext>(schemaManager: SchemaManager<Option
   return queries
 }
 
-function buildQuery<OptionsContext>(table: IEntityInfo, schemaManager: SchemaManager<OptionsContext>, options: TSchemaOptions<OptionsContext>): GraphQLFieldConfig<unknown, unknown> {
-  debug(`Creating ${table.name} query`)
+function buildQuery<OptionsContext>(entity: IEntityInfo, schemaManager: SchemaManager<OptionsContext>, options: TSchemaOptions<OptionsContext>): GraphQLFieldConfig<unknown, unknown> {
+  debug(`Creating ${entity.name} query`)
   const query: GraphQLFieldConfig<unknown, unknown> = {
-    type: new GraphQLList(buildType(table, schemaManager, options)),
-    description: `This will return all the ${pluralize(table.name)}.`,
-    resolve: resolver(table, schemaManager, options),
-    args: buildArgs(table, { pagination: true, filter: true }),
+    type: new GraphQLList(buildType(entity, schemaManager, options)),
+    description: `This will return all the ${pluralize(entity.name)}.`,
+    resolve: resolver(entity, schemaManager, options),
+    args: buildArgs(entity, { pagination: true, filter: true }),
   }
-  debug(`Created ${table.name} query`)
+  debug(`Created ${entity.name} query`)
   return query
 }
 
-function buildCount<OptionsContext>(table: IEntityInfo, schemaManager: SchemaManager<OptionsContext>, options: TSchemaOptions<OptionsContext>) {
-  debug(`Creating ${table.name} query`)
+function buildCount<OptionsContext>(entity: IEntityInfo, schemaManager: SchemaManager<OptionsContext>, options: TSchemaOptions<OptionsContext>) {
+  debug(`Creating ${entity.name} query`)
   const query: GraphQLFieldConfig<unknown, unknown> = {
     type: GraphQLInt,
-    description: `This will return the ${pluralize(table.name)} count.`,
-    resolve: resolverCount(table, schemaManager, options),
-    args: buildArgs(table, { pagination: false,  filter: true }),
+    description: `This will return the ${pluralize(entity.name)} count.`,
+    resolve: resolverCount(entity, schemaManager, options),
+    args: buildArgs(entity, { pagination: false,  filter: true }),
   }
-  debug(`Created ${table.name} count`)
+  debug(`Created ${entity.name} count`)
   return query
 }
 
-function buildConfig(tables: IEntityInfo[]) {
+function buildConfig(entities: IEntityInfo[]) {
   debug('Creating config query')
 
   const resolveData = {}
   const fields = {}
-  tables.forEach(
-    (table) => {
-      if (!table.visible) {
+  entities.forEach(
+    (entity) => {
+      if (!entity.visible) {
         return
       }
-      resolveData[table.name] = table
-      fields[table.name] = {
+      resolveData[entity.name] = entity
+      fields[entity.name] = {
         type: GraphQLJSON,
-        description: `${table.name} configuration`,
+        description: `${entity.name} configuration`,
       }
     }
   )
@@ -79,17 +79,17 @@ function buildConfig(tables: IEntityInfo[]) {
     resolve: () => {
       return resolveData
     },
-    description: 'This will return the tables configuration.',
+    description: 'This will return the entities configuration.',
   }
   debug('Created config query')
   return query
 }
 
-function buildEntities(tables: IEntityInfo[]) {
+function buildEntities(entities: IEntityInfo[]) {
   
   const query: GraphQLFieldConfig<unknown, unknown> = {
     type: new GraphQLList(new GraphQLObjectType({
-      name: 'tableConfig',
+      name: 'entityConfig',
       fields: {
         name: {
           type: GraphQLString,
@@ -103,7 +103,7 @@ function buildEntities(tables: IEntityInfo[]) {
           description: 'Relation list',
           type: new GraphQLList(
             new GraphQLObjectType({
-              name: 'tableConfigRelations',
+              name: 'entityConfigRelations',
               fields: {
                 type: {
                   type: GraphQLString,
@@ -113,7 +113,7 @@ function buildEntities(tables: IEntityInfo[]) {
                   type: GraphQLString,
                   description: 'Name of the foreignKey'
                 },
-                remoteTable: {
+                remoteEntity: {
                   type: GraphQLString,
                   description: 'Name of target entity'
                 },
@@ -131,27 +131,22 @@ function buildEntities(tables: IEntityInfo[]) {
                   type: GraphQLString,
                   description: 'Name of the property'
                 },
-                model: {
-                  description: 'Property model',
-                  type: new GraphQLObjectType({
-                    name: 'columnModel',
-                    fields: {
-                      type: {
-                        type: GraphQLString,
-                        description: 'Type of property'
-                      },
-                      allowNull: {
-                        type: GraphQLBoolean,
-                        description: 'Allows null values'
-                      },
-                      isPk: {
-                        type: GraphQLBoolean,
-                        description: 'Is a primary key'
-                      }
-                    }
-                  }),
+                type: {
+                  type: GraphQLString,
+                  description: 'Type of property'
                 },
-                layout: {
+                required: {
+                  type: GraphQLBoolean,
+                  description: 'Allows null values'
+                },
+                isPk: {
+                  type: GraphQLBoolean,
+                  description: 'Is a primary key'
+                },
+                connector: {
+                  type: GraphQLJSONObject
+                },
+                backoffice: {
                   type: GraphQLJSONObject
                 }
               }
@@ -170,12 +165,12 @@ function buildEntities(tables: IEntityInfo[]) {
     },
     resolve: (parent, args) => {
       const requestedEntity = args.name
-      const entityNames = tables.filter(
-        (table) => {
-          if (requestedEntity && requestedEntity !== table.name) {
+      const entityNames = entities.filter(
+        (entity) => {
+          if (requestedEntity && requestedEntity !== entity.name) {
             return false
           }
-          return table.visible
+          return entity.visible
         }
       )
       return entityNames

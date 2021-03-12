@@ -1,31 +1,31 @@
-import { IPropertyInfo, IEntityInfo } from '../../generator/configurationTypes'
+import { IProperty, IEntityInfo } from '../../generator/configurationTypes'
 import { GraphQLResolveInfo } from 'graphql'
 import { parseResolveInfo, simplifyParsedResolveInfoFragmentWithType, ResolveTree } from 'graphql-parse-resolve-info'
 import { IFunfunzConfig } from '../types'
 
 /**
- * returns the table configuration based on the table name
- * @param {string} TABLE_NAME - the name of the table
+ * returns the entity configuration based on the entity name
+ * @param {string} ENTITY_NAME - the name of the entity
  *
- * @returns {ITableInfo} table configuration
+ * @returns {IEntityInfo} entity configuration
  */
-export function getTableConfig(TABLE_NAME: string, funfunz: IFunfunzConfig): IEntityInfo {
+export function getEntityConfig(ENTITY_NAME: string, funfunz: IFunfunzConfig): IEntityInfo {
   return funfunz.settings.filter(
-    (tableItem) => tableItem.name === TABLE_NAME
+    (entityItem) => entityItem.name === ENTITY_NAME
   )[0]
 }
 
 /**
  * returns the columns configuration list transformed into an key:value object
  * where key equals to the column name, and value equals to the column configuration
- * @param {ITableInfo} TABLE_CONFIG - the table configuration
+ * @param {IEntityInfo} ENTITY_CONFIG - the entity configuration
  *
  * @returns {{ [key: string]: IColumnInfo }} {[columnName]:[columnConfig]} object
  */
-export function getColumnsByName(TABLE_CONFIG: IEntityInfo): Record<string, IPropertyInfo> {
-  const columnsByName: Record<string, IPropertyInfo> = {}
+export function getColumnsByName(ENTITY_CONFIG: IEntityInfo): Record<string, IProperty> {
+  const columnsByName: Record<string, IProperty> = {}
 
-  TABLE_CONFIG.properties.forEach(
+  ENTITY_CONFIG.properties.forEach(
     (column) => {
       columnsByName[column.name] = column
     }
@@ -35,27 +35,15 @@ export function getColumnsByName(TABLE_CONFIG: IEntityInfo): Record<string, IPro
 }
 
 /**
- * returns the columns configuration list for the columns containing a relation
- * @param {ITableInfo} TABLE_CONFIG - the table configuration
- *
- * @returns {IColumnInfo[]} array of relation columns
- */
-export function getColumnsWithRelations(TABLE_CONFIG: IEntityInfo): IPropertyInfo[] {
-  return TABLE_CONFIG.properties.filter(
-    (property) => property.relation
-  )
-}
-
-/**
- * returns a list of primary keys for a give table configuration
- * @param {ITableInfo} TABLE_CONFIG - the table configuration
+ * returns a list of primary keys for a give entity configuration
+ * @param {IEntityInfo} ENTITY_CONFIG - the entity configuration
  *
  * @returns {string[]} array of primary keys
  */
-export function getPKs(TABLE_CONFIG: IEntityInfo): string[] {
-  return TABLE_CONFIG.properties.filter(
-    (entity) => {
-      return entity.model.isPk
+export function getPKs(ENTITY_CONFIG: IEntityInfo): string[] {
+  return ENTITY_CONFIG.properties.filter(
+    (property) => {
+      return property.isPk
     }
   ).map(
     (property) => {
@@ -97,10 +85,10 @@ export function capitalize(str: string): string {
 }
 
 export function getFields(
-  table: IEntityInfo,
+  entity: IEntityInfo,
   info: GraphQLResolveInfo
 ): string[] {
-  const fields = [...(getPKs(table))]
+  const fields = [...(getPKs(entity))]
   const parsedResolveInfoFragment = parseResolveInfo(info)
   if (parsedResolveInfoFragment) {
     const {fields: properties} = simplifyParsedResolveInfoFragmentWithType(
@@ -109,11 +97,11 @@ export function getFields(
     )
     Object.keys(properties).forEach(
       (propertyName) => {
-        if (table.properties.find((c) => c.name === propertyName)) {
+        if (entity.properties.find((c) => c.name === propertyName)) {
           fields.push(propertyName)
         }
-        const relation = table.relations && table.relations.find((r) => {
-          return r.remoteTable === propertyName && r.type === 'n:1'
+        const relation = entity.relations && entity.relations.find((r) => {
+          return r.remoteEntity === propertyName && r.type === 'n:1'
         })
         if (relation) {
           fields.push(relation.foreignKey)
