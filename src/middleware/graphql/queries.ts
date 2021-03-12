@@ -153,7 +153,7 @@ function buildEntities(entities: IEntityInfo[]) {
             })
           ),
         },
-        layout: {
+        backoffice: {
           type: GraphQLJSONObject
         }
       }
