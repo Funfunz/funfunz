@@ -13,9 +13,9 @@ class IndexRouter {
             req,
             res,
           },
-          graphiql: {
-            headerEditorEnabled: true
-          },
+          graphiql: funfunz.config().config.graphiql ? 
+            { headerEditorEnabled: true }
+            : false,
           schema: funfunz.schemaManager.getSchemas().api
         }
       }

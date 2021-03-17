@@ -79,6 +79,5 @@ export interface IProperty {
 
 export interface IConfig {
   connectors: Record<string, IDataConnector>
+  graphiql?: boolean
 }
-
-export type ISettings = IEntityInfo[]

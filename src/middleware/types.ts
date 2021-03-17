@@ -1,6 +1,6 @@
 import express from 'express'
 import { Thunk, GraphQLFieldConfigMap } from 'graphql'
-import { IConfig, ISettings } from '../generator/configurationTypes'
+import { IConfig, IEntityInfo } from '../generator/configurationTypes'
 
 export interface IUser {
   [key: string]: unknown,
@@ -16,7 +16,7 @@ export interface IFunfunzResponse extends express.Response {
 
 export interface IFunfunzConfig<QSource = unknown, QContext = unknown, SchemaContext = unknown> {
   config: IConfig
-  settings: ISettings
+  settings: IEntityInfo[]
   queries?: Thunk<GraphQLFieldConfigMap<QSource, QContext>>
   mutations?: Thunk<GraphQLFieldConfigMap<QSource, QContext>>
   context?: SchemaContext
