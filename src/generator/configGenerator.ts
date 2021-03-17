@@ -1,4 +1,4 @@
-import { describeInfo, IProperty, IConfig, ISettings, IEntityInfo, schemaInfo } from './configurationTypes'
+import { describeInfo, IProperty, IConfig, IEntityInfo, schemaInfo } from './configurationTypes'
 import Debug from 'debug'
 import fs from 'fs'
 import path from 'path'
@@ -25,7 +25,7 @@ export function generateSettings(
   DBData: Array<{ schema: schemaInfo, describe: describeInfo }>,
   selectedPath: string
 ): void {
-  const resultData: ISettings = []
+  const resultData: IEntityInfo[] = []
   fs.mkdirSync(path.join(selectedPath, '/models/'))
   DBData.forEach(
     (tableData) => {
