@@ -1,5 +1,5 @@
 import configSchema from '../../types/configSchema'
-import settingsSchema from '../../types/settingsSchema'
+import entitiesSchema from '../../types/entitiesSchema'
 import type { IConfig, IEntityInfo } from '../../generator/configurationTypes'
 import { Validator } from 'jsonschema'
 import { IFunfunzConfig } from '../types'
@@ -24,7 +24,7 @@ function configCheck(configs: unknown, target: string) {
     throw new Error('Configuration is missing')
   }
   if (target === 'settings') {
-    const validation = validator.validate(configs, settingsSchema)
+    const validation = validator.validate(configs, entitiesSchema)
     if (validation.errors.length > 0) {
       throw new Error(validation.errors.toString())
     }
