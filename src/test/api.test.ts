@@ -2,8 +2,8 @@ import { GraphQLList, GraphQLFloat, GraphQLInt } from 'graphql'
 import request from 'supertest'
 import { Funfunz } from '../middleware'
 
-import config from './configs/MCconfig'
-import settings from './configs/MCsettings'
+import config from './configs/config'
+import settings from './configs/entities'
 
 import { authenticatedServer } from './utils'
 
@@ -63,6 +63,7 @@ describe('graphql', () => {
     })
     .set('Accept', 'application/json').end(
       (err, response) => {
+        console.log(err, response)
         if (err) {
           return done(err)
         }

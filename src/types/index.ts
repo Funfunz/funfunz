@@ -1,5 +1,5 @@
 export * from './configSchema'
-export * from './settingsSchema'
+export * from './entitiesSchema'
 export * from './connector'
 export * from './graphql'
 export * from './hooks'

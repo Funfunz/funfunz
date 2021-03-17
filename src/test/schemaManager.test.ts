@@ -2,8 +2,8 @@ import { GraphQLString } from 'graphql'
 import request from 'supertest'
 import { Funfunz } from '../middleware'
 
-import config from './configs/MCconfig'
-import settings from './configs/MCsettings'
+import config from './configs/config'
+import settings from './configs/entities'
 
 const funfunz = new Funfunz({
   config,
