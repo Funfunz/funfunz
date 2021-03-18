@@ -117,6 +117,14 @@ function buildEntities(entities: IEntityInfo[]) {
                   type: GraphQLString,
                   description: 'Name of target entity'
                 },
+                remoteForeignKey: {
+                  type: GraphQLString,
+                  description: 'Name of target foreignKey'
+                },
+                relationalEntity: {
+                  type: GraphQLString,
+                  description: 'Name of relational entity'
+                },
               }
             })
           ),
