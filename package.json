@@ -69,7 +69,7 @@
   "dependencies": {
     "enquirer": "^2.3.6",
     "express": "^4.17.1",
-    "express-graphql": "^0.11.0",
+    "express-graphql": "^0.12.0",
     "graphql": "^15.5.0",
     "graphql-parse-resolve-info": "^4.9.0",
     "graphql-type-json": "^0.3.2",
