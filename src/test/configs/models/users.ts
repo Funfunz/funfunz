@@ -17,6 +17,7 @@ export default {
   relations: [
     {
       type: 'm:n',
+      localPrimaryKey: 'id',
       relationalEntity: 'usersroles',
       foreignKey: 'userId',
       remoteEntity: 'roles',

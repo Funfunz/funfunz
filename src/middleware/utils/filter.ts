@@ -79,10 +79,10 @@ export async function getParentEntryFilter(
     }
     const pk = pks[0]
     const remotePks = getPKs(parentEntity)
-    if (remotePks.length > 1) {
+    if (remotePks.length > 1 && !relation.localPrimaryKey) {
       throw new Error('Multiple pks relation not supported')
     }
-    const remotePk = remotePks[0]
+    const remotePk = relation.localPrimaryKey || remotePks[0]
     const relationalEntity = relation.relationalEntity
     const remoteForeignKey = relation.remoteForeignKey
     const result = Funfunz.executeGraphQL(schemas.local, `query {
