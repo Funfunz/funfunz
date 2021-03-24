@@ -60,6 +60,7 @@ export interface IRelationN1 {
 }
 export interface IRelationMN {
   type: 'm:n'
+  localPrimaryKey?: string
   relationalEntity: string
   foreignKey: string
   remoteForeignKey: string
