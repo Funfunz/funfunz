@@ -104,7 +104,7 @@ export function generateConfig(answers: Record<string, string>, selectedPath: st
   const finalConfig: IConfig = {
     connectors: {
       [answers.DBType]: {
-        type: answers.DBType as 'sql',
+        connector: '' as never,
         config: {
           host: answers.DBHost,
           database: answers.DBName,

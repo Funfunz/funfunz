@@ -1,3 +1,4 @@
+import { Funfunz } from '..'
 import { IFilter } from '../middleware/utils/filter'
 
 export interface IQueryArgs {
@@ -34,9 +35,10 @@ export interface IRemoveArgs {
   filter: IFilter
 }
 
-export interface IDataConnector<C = unknown> {
-    type: string,
-    config: C
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface IDataConnector<Config = unknown> {
+    connector: Connector,
+    config: Config
 }
 
 export abstract class DataConnector {
@@ -47,6 +49,9 @@ export abstract class DataConnector {
   public abstract create(args: ICreateArgs): Promise<unknown[] | unknown>
 
   public abstract remove(args: IRemoveArgs): Promise<number>
-
+  
   public abstract connection: unknown
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Connector = (new (connector: IDataConnector<any>, funfunz: Funfunz) => DataConnector) & { [key: string]: unknown }

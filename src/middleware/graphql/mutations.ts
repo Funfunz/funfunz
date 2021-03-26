@@ -22,7 +22,7 @@ export function buildMutations<OptionsContext>(
   const mutations: GraphQLFieldConfigMap<unknown, unknown> = {}
   configs.settings.forEach((entity) => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const dataConnector = require(configs.config.connectors[typeof entity.connector === 'string' ? entity.connector : entity.connector.name].type)
+    const dataConnector = configs.config.connectors[typeof entity.connector === 'string' ? entity.connector : entity.connector.name].connector
     mutations[`add${capitalize(entity.name)}`] = buildAddMutation(entity, schemaManager, options, typeof dataConnector.addMutation === 'function' && dataConnector.addMutation(entity))
     mutations[`update${capitalize(entity.name)}`] = buildUpdateMutation(entity, schemaManager, options, typeof dataConnector.updateMutation === 'function' && dataConnector.updateMutation(entity))
     mutations[`delete${capitalize(entity.name)}`] = buildDeleteMutation(entity, schemaManager, options, typeof dataConnector.deleteMutation === 'function' && dataConnector.deleteMutation(entity))

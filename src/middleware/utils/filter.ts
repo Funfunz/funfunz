@@ -71,6 +71,7 @@ export async function getParentEntryFilter(
     }
   }
 
+  // Gets the relation M:N object from the parentEntity
   relation = manyToManyRelation(entity, parentEntity) as IRelationMN
   if (relation) {
     const pks = getPKs(entity)
@@ -94,7 +95,7 @@ export async function getParentEntryFilter(
         }
       ){
         ${relation.foreignKey}
-        ${relation.remoteForeignKey}
+        ${remoteForeignKey}
       }
     }`)
 
