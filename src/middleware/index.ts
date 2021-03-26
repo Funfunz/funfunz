@@ -16,7 +16,7 @@ export class Funfunz {
   constructor(configs: IFunfunzConfig) {
     const debug = Debug('funfunz:server')
 
-    if (!configs.settings) {
+    if (!configs.entities) {
       throw new Error('Missing object "settings" on the cofiguration')
     }
 

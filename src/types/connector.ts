@@ -1,4 +1,5 @@
 import { Funfunz } from '..'
+import { IRelationMN } from '../generator/configurationTypes'
 import { IFilter } from '../middleware/utils/filter'
 
 export interface IQueryArgs {
@@ -21,13 +22,21 @@ export interface IUpdateArgs {
   data: Record<string, unknown>
 }
 
+export type relatedData = {
+  [entity: string]: IRelationMN & {
+    value: unknown,
+  }
+}
+
 export interface ICreateArgs {
   entityName: string,
   count?: boolean,
   fields?: string[],
   skip?: number,
   take?: number,
-  data: Record<string, unknown>
+  relatedData?: relatedData
+  data: Record<string, unknown>,
+
 }
 
 export interface IRemoveArgs {

@@ -171,7 +171,7 @@ export function buildArgs(
             entity.relations?.forEach(
               (relation) => {
                 if (relation.type === 'm:n') {
-                  const remoteEntity = config().settings.find(
+                  const remoteEntity = config().entities.find(
                     (settingsEntity) => settingsEntity.name === relation.remoteEntity
                   )
                   let pk = relation.remotePrimaryKey

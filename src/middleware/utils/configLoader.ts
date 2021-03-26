@@ -5,7 +5,7 @@ import { Validator } from 'jsonschema'
 import { IFunfunzConfig } from '../types'
 
 const config: IFunfunzConfig = {
-  settings: [],
+  entities: [],
   config: {
     connectors: {},
   },

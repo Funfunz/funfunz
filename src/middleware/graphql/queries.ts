@@ -15,7 +15,7 @@ const debug = Debug('funfunz:graphql-query-builder')
 export function buildQueries<OptionsContext>(schemaManager: SchemaManager<OptionsContext>, options: TSchemaOptions<OptionsContext>): Thunk<GraphQLFieldConfigMap<unknown, unknown>> {
   const configs = config()
   const queries: Thunk<GraphQLFieldConfigMap<unknown, unknown>> = {}
-  configs.settings.forEach(
+  configs.entities.forEach(
     (entity) => {
       if (entity.visible) {
         queries[entity.name] = buildQuery<OptionsContext>(entity, schemaManager, options)
@@ -23,8 +23,8 @@ export function buildQueries<OptionsContext>(schemaManager: SchemaManager<Option
       }
     }
   )
-  queries.config = buildConfig(configs.settings)
-  queries.entities = buildEntities(configs.settings)
+  queries.config = buildConfig(configs.entities)
+  queries.entities = buildEntities(configs.entities)
   debug('Queries built')
   return queries
 }
