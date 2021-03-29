@@ -19,6 +19,7 @@ export interface IUpdateArgs {
   filter: IFilter,
   skip?: number,
   take?: number,
+  relatedData?: relatedData
   data: Record<string, unknown>
 }
 
