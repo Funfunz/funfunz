@@ -2,7 +2,7 @@ import { buildDeleteMutationType, buildType } from './typeBuilder'
 import config from '../utils/configLoader'
 import Debug from 'debug'
 import { GraphQLFieldConfig, GraphQLFieldConfigMap, GraphQLList } from 'graphql'
-import { capitalize, extractManyToManyRelatedData, getEntityConfig, getFields, getPKs } from '../utils/index'
+import { capitalize, extractManyToManyRelatedData, getFields, getPKs } from '../utils/index'
 import { executeHook } from '../utils/lifeCycle'
 import { normalize } from '../utils/data'
 import { update, create, remove, query as connectorQuery } from '../dataConnector/index'
@@ -62,10 +62,10 @@ function buildUpdateMutation<OptionsContext>(
       }
       const { query, context: newContext } = await executeHook(entity, 'update', 'beforeSendQuery', { args, query: rawquery, context, requestContext }, options, schemaManager.getSchemas())
 
-      const entityName = typeof entity.connector === 'string' ? entity.connector : entity.connector.name
+      const connectorName = typeof entity.connector === 'string' ? entity.connector : entity.connector.name
       const results = (Object.keys(rawquery.data || {}).length > 0)
-        ? await update(entityName, query as IUpdateArgs) as Record<string, unknown>[]
-        : await connectorQuery(entityName, {
+        ? await update(connectorName, query as IUpdateArgs) as Record<string, unknown>[]
+        : await connectorQuery(connectorName, {
           entityName: rawquery.entityName,
           fields: rawquery.fields as string[],
           filter: rawquery.filter,
@@ -74,13 +74,12 @@ function buildUpdateMutation<OptionsContext>(
         }) as Record<string, unknown>[]
 
       if (rawquery.relatedData) {
-        const configs = config()
+        const parentEntity = entity
         await Promise.all(Object.keys(rawquery.relatedData).map(
           (entity) => {
             const entityRelatedData = (rawquery.relatedData as relatedData)[entity]
-            const localPrimaryKey = entityRelatedData.localPrimaryKey || getPKs(getEntityConfig(entity, configs))[0]
+            const localPrimaryKey = entityRelatedData.localPrimaryKey || getPKs(parentEntity)[0]
             const mutationName = `${entityRelatedData.relationalEntity.charAt(0).toUpperCase() + entityRelatedData.relationalEntity.slice(1)}`
-            console.log({entityRelatedData, localPrimaryKey, mutationName})
             return Funfunz.executeGraphQL(schemas.api, `
               mutation {
                 delete${mutationName} (
@@ -93,8 +92,7 @@ function buildUpdateMutation<OptionsContext>(
                   deleted
                 }
               }
-            `).then((afterDelete) => {
-              console.log({ afterDelete })
+            `).then(() => {
               return Promise.all((entityRelatedData.value as unknown[]).map(
                 (value) => {
                   return Funfunz.executeGraphQL(schemas.api, `
@@ -152,9 +150,7 @@ function buildAddMutation<OptionsContext>(
       const { args, context } = await executeHook(entity, 'add', 'beforeResolver', { args: rawargs, requestContext }, options, schemas)
       const data = normalize(args.data as Record<string, unknown>, entity)
       const fields = getFields(entity, info)
-      console.log('before extract data', data)
       const newDataset = extractManyToManyRelatedData(data, entity)
-      console.log('after extract data', newDataset)
       const rawquery: ICreateArgs = {
         entityName: entity.name,
         fields,
@@ -164,16 +160,13 @@ function buildAddMutation<OptionsContext>(
         take: args.take as number
       }
       const { query, context: newContext } = await executeHook(entity, 'add', 'beforeSendQuery', { args, query: rawquery, context, requestContext }, options, schemas)
-      console.log('after hook', query)
       const results = await create(typeof entity.connector === 'string' ? entity.connector : entity.connector.name, query as ICreateArgs) as Record<string, unknown>[]
-      console.log('before if relatedData', results)
       if (rawquery.relatedData) {
-        console.log('inside if relatedData')
-        const configs = config()
+        const parentEntity = entity
         await Promise.all(Object.keys(rawquery.relatedData).map(
           (entity) => {
             const entityRelatedData = (rawquery.relatedData as relatedData)[entity]
-            const localPrimaryKey = entityRelatedData.localPrimaryKey || getPKs(getEntityConfig(entity, configs))[0]
+            const localPrimaryKey = entityRelatedData.localPrimaryKey || getPKs(parentEntity)[0]
             const mutationName = `add${entityRelatedData.relationalEntity.charAt(0).toUpperCase() + entityRelatedData.relationalEntity.slice(1)}`
             return Promise.all((entityRelatedData.value as unknown[]).map(
               (value) => Funfunz.executeGraphQL(schemas.api, `
