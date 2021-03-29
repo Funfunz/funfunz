@@ -76,7 +76,7 @@ export function buildFields<TSource>(
           throw new Error('Invalid relation configuration: relation not found')
         }
         const remoteEntity = relation.remoteEntity
-        const relatedEntity = config().settings.find(
+        const relatedEntity = config().entities.find(
           (settingsEntity) => settingsEntity.name === remoteEntity
         )
         if (!relatedEntity) {
@@ -105,7 +105,7 @@ export function buildFields<TSource>(
     if (oneToMany) {
       oneToMany.forEach((relation: IRelation) => {
         const remoteEntity = relation.remoteEntity
-        const relatedEntity = config().settings.find(
+        const relatedEntity = config().entities.find(
           (settingsEntity) => (
             settingsEntity.name === relation.remoteEntity
           )
@@ -125,7 +125,7 @@ export function buildFields<TSource>(
     if (manyToMany) {
       manyToMany.forEach((relation) => {
         const columnName = relation.remoteEntity
-        const remoteEntity = config().settings.find(
+        const remoteEntity = config().entities.find(
           (settingsEntity) => settingsEntity.name === relation.remoteEntity
         )
         if (!remoteEntity) {

@@ -11,15 +11,3 @@ services:
       - ./docker/mysql/db:/docker-entrypoint-initdb.d
     ports:
       - 3306:3306
-
-  mongodb:
-    image: mongo
-    restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password
-    volumes:
-      - ./docker/mongo/northwind:/db
-      - ./docker/mongo/northwind:/docker-entrypoint-initdb.d
-    ports:
-      - 27017:27017

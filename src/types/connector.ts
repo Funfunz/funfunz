@@ -1,3 +1,5 @@
+import { Funfunz } from '..'
+import { IRelationMN } from '../generator/configurationTypes'
 import { IFilter } from '../middleware/utils/filter'
 
 export interface IQueryArgs {
@@ -17,7 +19,14 @@ export interface IUpdateArgs {
   filter: IFilter,
   skip?: number,
   take?: number,
+  relatedData?: relatedData
   data: Record<string, unknown>
+}
+
+export type relatedData = {
+  [entity: string]: IRelationMN & {
+    value: unknown,
+  }
 }
 
 export interface ICreateArgs {
@@ -26,7 +35,9 @@ export interface ICreateArgs {
   fields?: string[],
   skip?: number,
   take?: number,
-  data: Record<string, unknown>
+  relatedData?: relatedData
+  data: Record<string, unknown>,
+
 }
 
 export interface IRemoveArgs {
@@ -34,9 +45,10 @@ export interface IRemoveArgs {
   filter: IFilter
 }
 
-export interface IDataConnector<C = unknown> {
-    type: string,
-    config: C
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface IDataConnector<Config = unknown> {
+    connector: Connector,
+    config: Config
 }
 
 export abstract class DataConnector {
@@ -47,6 +59,9 @@ export abstract class DataConnector {
   public abstract create(args: ICreateArgs): Promise<unknown[] | unknown>
 
   public abstract remove(args: IRemoveArgs): Promise<number>
-
+  
   public abstract connection: unknown
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Connector = (new (connector: IDataConnector<any>, funfunz: Funfunz) => DataConnector) & { [key: string]: unknown }
