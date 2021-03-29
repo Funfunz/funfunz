@@ -63,7 +63,6 @@ describe('graphql', () => {
     })
     .set('Accept', 'application/json').end(
       (err, response) => {
-        console.log(err, response.body)
         if (err) {
           return done(err)
         }
