@@ -2,13 +2,13 @@ import request from 'supertest'
 import { Funfunz } from '../middleware'
 
 import config from './configs/config'
-import settings from './configs/entities'
+import entities from './configs/entities'
 
 import { authenticatedServer } from './utils'
 
 const funfunz = new Funfunz({
   config,
-  settings
+  entities
 })
 
 const application = funfunz.middleware
@@ -21,11 +21,11 @@ describe('graphql', () => {
         config,
       })
     } catch (error) {
-      expect(error.message).toBe('Missing object "settings" on the cofiguration')
+      expect(error.message).toBe('Missing object "entities" on the cofiguration')
     }
     try {
       new Funfunz({
-        settings,
+        entities,
       })
     } catch (error) {
       expect(error.message).toBe('Missing object "config" on the cofiguration')

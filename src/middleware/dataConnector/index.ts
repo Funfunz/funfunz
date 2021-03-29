@@ -24,6 +24,7 @@ export const update = (connectorName: string, args: IUpdateArgs): Promise<unknow
 }
 
 export const create = (connectorName: string, args: ICreateArgs): Promise<unknown[] | unknown> => {
+  console.log('calling connector', connectorName, args)
   return connectors[connectorName].create(args)
 }
 

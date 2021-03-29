@@ -2,11 +2,11 @@ import request from 'supertest'
 import { Funfunz } from '../middleware'
 
 import config from './configs/config'
-import settings from './configs/entities'
+import entities from './configs/entities'
 
 const application = new Funfunz({
   config,
-  settings
+  entities
 }).middleware
 
 describe('hooks', () => {

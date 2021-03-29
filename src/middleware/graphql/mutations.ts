@@ -152,8 +152,9 @@ function buildAddMutation<OptionsContext>(
       const { args, context } = await executeHook(entity, 'add', 'beforeResolver', { args: rawargs, requestContext }, options, schemas)
       const data = normalize(args.data as Record<string, unknown>, entity)
       const fields = getFields(entity, info)
+      console.log('before extract data', data)
       const newDataset = extractManyToManyRelatedData(data, entity)
-
+      console.log('after extract data', newDataset)
       const rawquery: ICreateArgs = {
         entityName: entity.name,
         fields,
@@ -163,8 +164,11 @@ function buildAddMutation<OptionsContext>(
         take: args.take as number
       }
       const { query, context: newContext } = await executeHook(entity, 'add', 'beforeSendQuery', { args, query: rawquery, context, requestContext }, options, schemas)
+      console.log('after hook', query)
       const results = await create(typeof entity.connector === 'string' ? entity.connector : entity.connector.name, query as ICreateArgs) as Record<string, unknown>[]
+      console.log('before if relatedData', results)
       if (rawquery.relatedData) {
+        console.log('inside if relatedData')
         const configs = config()
         await Promise.all(Object.keys(rawquery.relatedData).map(
           (entity) => {

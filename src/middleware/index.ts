@@ -17,7 +17,7 @@ export class Funfunz {
     const debug = Debug('funfunz:server')
 
     if (!configs.entities) {
-      throw new Error('Missing object "settings" on the cofiguration')
+      throw new Error('Missing object "entities" on the cofiguration')
     }
 
     if (!configs.config) {

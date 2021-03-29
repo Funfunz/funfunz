@@ -1,9 +1,10 @@
 import { IConfig } from '../../generator/configurationTypes'
-
+import { Connector } from '@funfunz/sql-data-connector'
 const config: IConfig = {
   connectors: {
     mainDatabase: {
-      type: '@funfunz/sql-data-connector',
+      // @ts-ignore
+      connector: Connector,
       config: {
         client: 'mysql2',
         host: process.env.DB_HOST || '127.0.0.1',
