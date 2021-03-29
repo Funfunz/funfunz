@@ -1,5 +1,6 @@
 import { operators, OperatorsType } from '../utils/filter'
 import { IEntityInfo } from '../../generator/configurationTypes'
+import config from '../utils/configLoader'
 import Debug from 'debug'
 import {
   GraphQLArgumentConfig,
@@ -162,6 +163,44 @@ export function buildArgs(
                   inputFields[property.name] = {
                     type: isRequired ? new GraphQLNonNull(type) : type,
                     description: property.name,
+                  }
+                }
+              }
+            )
+
+            entity.relations?.forEach(
+              (relation) => {
+                if (relation.type === 'm:n') {
+                  const remoteEntity = config().entities.find(
+                    (settingsEntity) => settingsEntity.name === relation.remoteEntity
+                  )
+                  let pk = relation.remotePrimaryKey
+                    ? remoteEntity?.properties.find(
+                      (property) => {
+                        return property.name === relation.remotePrimaryKey
+                      }
+                    )
+                    : remoteEntity?.properties.filter(
+                      (property) => {
+                        return property.isPk
+                      }
+                    )
+
+                  if (!pk) {
+                    return
+                  }
+                  
+                  if (Array.isArray(pk)) {
+                    if (pk.length === 1) {
+                      pk = pk[0]
+                    } else {
+                      return
+                    }
+                  }
+
+                  inputFields[relation.remoteEntity] = {
+                    type: GraphQLList(MATCHER[pk.type] || 'string'),
+                    description: relation.remoteEntity,
                   }
                 }
               }

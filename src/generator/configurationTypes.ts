@@ -64,6 +64,7 @@ export interface IRelationMN {
   relationalEntity: string
   foreignKey: string
   remoteForeignKey: string
+  remotePrimaryKey?: string
   remoteEntity: string
 }
 export type IRelation = IRelation1N | IRelationN1 | IRelationMN
@@ -79,6 +80,6 @@ export interface IProperty {
 }
 
 export interface IConfig {
-  connectors: Record<string, IDataConnector>
+  connectors: Record<string, IDataConnector<unknown>>
   graphiql?: boolean
 }

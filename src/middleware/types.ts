@@ -16,7 +16,7 @@ export interface IFunfunzResponse extends express.Response {
 
 export interface IFunfunzConfig<QSource = unknown, QContext = unknown, SchemaContext = unknown> {
   config: IConfig
-  settings: IEntityInfo[]
+  entities: IEntityInfo[]
   queries?: Thunk<GraphQLFieldConfigMap<QSource, QContext>>
   mutations?: Thunk<GraphQLFieldConfigMap<QSource, QContext>>
   context?: SchemaContext

@@ -3,11 +3,11 @@ import request from 'supertest'
 import { Funfunz } from '../middleware'
 
 import config from './configs/config'
-import settings from './configs/entities'
+import entities from './configs/entities'
 
 const funfunz = new Funfunz({
   config,
-  settings
+  entities
 })
 
 const application = funfunz.middleware

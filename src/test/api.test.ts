@@ -3,7 +3,7 @@ import request from 'supertest'
 import { Funfunz } from '../middleware'
 
 import config from './configs/config'
-import settings from './configs/entities'
+import entities from './configs/entities'
 
 import { authenticatedServer } from './utils'
 
@@ -11,7 +11,7 @@ let randomNumberCount = 4
 
 const application = new Funfunz({
   config,
-  settings,
+  entities,
   queries: {
     randomNumbers: {
       type: new GraphQLList(GraphQLFloat),
@@ -63,7 +63,7 @@ describe('graphql', () => {
     })
     .set('Accept', 'application/json').end(
       (err, response) => {
-        console.log(err, response)
+        console.log(err, response.body)
         if (err) {
           return done(err)
         }

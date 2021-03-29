@@ -2,6 +2,7 @@ import { IProperty, IEntityInfo } from '../../generator/configurationTypes'
 import { GraphQLResolveInfo } from 'graphql'
 import { parseResolveInfo, simplifyParsedResolveInfoFragmentWithType, ResolveTree } from 'graphql-parse-resolve-info'
 import { IFunfunzConfig } from '../types'
+import { relatedData } from '../../types'
 
 /**
  * returns the entity configuration based on the entity name
@@ -10,7 +11,7 @@ import { IFunfunzConfig } from '../types'
  * @returns {IEntityInfo} entity configuration
  */
 export function getEntityConfig(ENTITY_NAME: string, funfunz: IFunfunzConfig): IEntityInfo {
-  return funfunz.settings.filter(
+  return funfunz.entities.filter(
     (entityItem) => entityItem.name === ENTITY_NAME
   )[0]
 }
@@ -110,4 +111,39 @@ export function getFields(
     )
   }
   return [...new Set(fields)]
+}
+
+/**
+ * Returns a new object containing the original mutation data but extracts the data
+ * related to many to many relations in a separate property and removes that data
+ * from the original dataset
+ * 
+ * @param {object} data - original mutation data
+ * @param {IEntityInfo} entityConfig - the entity configuration
+ *
+ * @returns {object} new object with mutation data and many to many related data
+ */
+export function extractManyToManyRelatedData(data: Record<string, unknown>, entityConfig: IEntityInfo): {
+  entityData: Record<string, unknown>;
+  relatedData: relatedData;
+} {
+  const newDataset = {
+    entityData: data,
+    relatedData: {},
+  }
+  entityConfig.relations?.filter(
+    (relation) => {
+      if (relation.type !== 'm:n') {
+        return
+      }
+      if (data[relation.remoteEntity]) {
+        newDataset.relatedData[relation.remoteEntity] = {
+          ...relation,
+          value: data[relation.remoteEntity]
+        }
+        delete data[relation.remoteEntity]
+      }
+    }
+  )
+  return newDataset
 }

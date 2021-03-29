@@ -9,15 +9,7 @@ export const initDataConnectors = (funfunz: Funfunz): void => {
   Object.entries(configuration).forEach(
     ([key, value]) => {
       if (!connectors[key]) {
-        import(configuration[key].type).then(
-          (module) => {
-            connectors[key] = new module.Connector(value, funfunz)
-          }
-        ).catch(
-          (error) => {
-            throw Error(`${error.message}\nIssue with connector type ${configuration[key].type}`)
-          }
-        )
+        connectors[key] = new value.connector(value, funfunz)
       }
     }
   )
@@ -32,6 +24,7 @@ export const update = (connectorName: string, args: IUpdateArgs): Promise<unknow
 }
 
 export const create = (connectorName: string, args: ICreateArgs): Promise<unknown[] | unknown> => {
+  console.log('calling connector', connectorName, args)
   return connectors[connectorName].create(args)
 }
 
