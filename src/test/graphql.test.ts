@@ -59,9 +59,31 @@ describe('graphql', () => {
         query: `{
           products {
             id
+            price
             families {
               id
             }
+          }
+        }`,
+      })
+      .set('Accept', 'application/json').end(
+        (err, response) => {
+          if (err) {
+            return done(err)
+          }
+          expect(response.status).toBe(200)
+          return done()
+        }
+      )
+  })
+
+  it('graphql foat values should be supported', (done) => {
+    return request(application)
+      .post('/')
+      .send({
+        query: `{
+          products {
+            price
           }
         }`,
       })
