@@ -71,7 +71,7 @@ export type IRelation = IRelation1N | IRelationN1 | IRelationMN
 
 export interface IProperty {
   name: string
-  type: 'string' | 'number' | 'boolean' | 'file'
+  type: 'string' | 'number' | 'boolean' | 'file' | 'float'
   isPk?: boolean
   required?: boolean
   filterable?: boolean |  OperatorsType[]

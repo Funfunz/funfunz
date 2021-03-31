@@ -49,7 +49,11 @@ export default {
     {
       name: 'active',
       type: 'boolean',
-    }
+    },
+    {
+      name: 'price',
+      type: 'float',
+    },
   ],
   hooks: {
     count: {

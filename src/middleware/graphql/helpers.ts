@@ -1,4 +1,4 @@
-import { GraphQLScalarType, GraphQLString, GraphQLInt, GraphQLBoolean } from 'graphql'
+import { GraphQLScalarType, GraphQLString, GraphQLInt, GraphQLFloat, GraphQLBoolean } from 'graphql'
 import { GraphQLUpload } from 'graphql-upload'
 
 export const MATCHER: {
@@ -8,4 +8,5 @@ export const MATCHER: {
   'number': GraphQLInt,
   'boolean': GraphQLBoolean,
   'file': GraphQLUpload,
+  'float': GraphQLFloat,
 }

@@ -149,6 +149,44 @@ describe('graphql', () => {
       }
     )
   })
+  it('update product price', (done) => {
+    return request(authApplication)
+    .post('/api')
+    .send({
+      query: `
+      mutation {
+        updateProducts (
+          take: 1
+          skip: 0
+          filter: {
+            id: {
+              _eq: 1
+            }
+          }
+          data: {
+            price: 1.2
+          }
+        ){
+          id
+          price
+        }
+      }`,
+    })
+    .set('Accept', 'application/json').end(
+      (err, response) => {
+        if (err) {
+          return done(err)
+        }
+        expect(response.status).toBe(200)
+        expect(response.body).toBeTruthy()
+        const data = response.body.data
+        expect(Array.isArray(data.updateProducts)).toBeTruthy()
+        expect(data.updateProducts[0].id).toBeTruthy()
+        expect(data.updateProducts[0].price).toEqual(1.2)
+        return done()
+      }
+    )
+  })
   it('query data', (done) => {
     return request(authApplication)
     .post('/api')
