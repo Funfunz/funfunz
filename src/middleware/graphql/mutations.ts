@@ -80,7 +80,7 @@ function buildUpdateMutation<OptionsContext>(
             const entityRelatedData = (rawquery.relatedData as relatedData)[entity]
             const localPrimaryKey = entityRelatedData.localPrimaryKey || getPKs(parentEntity)[0]
             const mutationName = `${entityRelatedData.relationalEntity.charAt(0).toUpperCase() + entityRelatedData.relationalEntity.slice(1)}`
-            return Funfunz.executeGraphQL(schemas.api, `
+            return Funfunz.executeGraphQL(options.isLocal ? schemas.local : schemas.api, `
               mutation {
                 delete${mutationName} (
                   filter: {
@@ -95,7 +95,7 @@ function buildUpdateMutation<OptionsContext>(
             `).then(() => {
               return Promise.all((entityRelatedData.value as unknown[]).map(
                 (value) => {
-                  return Funfunz.executeGraphQL(schemas.api, `
+                  return Funfunz.executeGraphQL(options.isLocal ? schemas.local : schemas.api, `
                     mutation {
                       add${mutationName} (
                         data: {
