@@ -47,10 +47,11 @@ export class Funfunz {
     this.middleware = (new ExpressMiddleware(this)).express
   }
 
-  public static executeGraphQL(schema: GraphQLSchema, document: string): Promise<ExecutionResult> {
+  public static executeGraphQL(schema: GraphQLSchema, document: string, context?: unknown): Promise<ExecutionResult> {
     const result = execute({
       schema,
       document: parse(document),
+      contextValue: context
     })
     if (isPromise<ExecutionResult>(result)) {
       return result
