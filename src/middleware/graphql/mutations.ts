@@ -2,7 +2,7 @@ import { buildDeleteMutationType, buildType } from './typeBuilder'
 import config from '../utils/configLoader'
 import Debug from 'debug'
 import { GraphQLFieldConfig, GraphQLFieldConfigMap, GraphQLList } from 'graphql'
-import { capitalize, extractManyToManyRelatedData, getFields, getPKs } from '../utils/index'
+import { capitalize, extractToManyRelatedData, getEntityConfig, getFields, getPKs } from '../utils/index'
 import { executeHook } from '../utils/lifeCycle'
 import { normalize } from '../utils/data'
 import { update, create, remove, query as connectorQuery } from '../dataConnector/index'
@@ -49,7 +49,7 @@ function buildUpdateMutation<OptionsContext>(
       const fields = getFields(entity, info)
       const filter = args.filter || undefined
 
-      const newDataset = extractManyToManyRelatedData(data, entity)
+      const newDataset = extractToManyRelatedData(data, entity)
 
       const rawquery: IUpdateArgs = {
         entityName: entity.name,
@@ -79,42 +79,84 @@ function buildUpdateMutation<OptionsContext>(
           (entity) => {
             const entityRelatedData = (rawquery.relatedData as relatedData)[entity]
             const localPrimaryKey = entityRelatedData.localPrimaryKey || getPKs(parentEntity)[0]
-            const mutationName = `${entityRelatedData.relationalEntity.charAt(0).toUpperCase() + entityRelatedData.relationalEntity.slice(1)}`
-            return Funfunz.executeGraphQL(
-              options.isLocal ? schemas.local : schemas.api, `
-              mutation {
-                delete${mutationName} (
-                  filter: {
-                    ${entityRelatedData.foreignKey}: {
-                      _eq: ${results[0][localPrimaryKey]}
-                    }
-                  }
-                ) {
-                  deleted
-                }
-              }`,
-              requestContext
-            ).then(() => {
-              return Promise.all((entityRelatedData.value as unknown[]).map(
-                (value) => {
-                  return Funfunz.executeGraphQL(
-                    options.isLocal ? schemas.local : schemas.api, `
-                    mutation {
-                      add${mutationName} (
-                        data: {
-                          ${entityRelatedData.remoteForeignKey}: ${value}
-                          ${entityRelatedData.foreignKey}: ${results[0][localPrimaryKey]}
-                        }
-                      ){
-                        ${entityRelatedData.foreignKey}
-                        ${entityRelatedData.remoteForeignKey}
+            if (entityRelatedData.type === '1:n') {
+              const configs = config()
+              const foreignEntity = getEntityConfig(entityRelatedData.remoteEntity, configs)
+              const mutationName = entityRelatedData.remoteEntity?.charAt(0).toUpperCase() + (entityRelatedData.remoteEntity?.slice(1) || '')
+              return Funfunz.executeGraphQL(
+                options.isLocal ? schemas.local : schemas.api, `
+                mutation {
+                  update${mutationName} (
+                    filter: {
+                      ${entityRelatedData.foreignKey}: {
+                        _eq: ${results[0][localPrimaryKey]}
                       }
-                    }`,
-                    requestContext
-                  )
-                }
-              ))
-            })
+                    }
+                    data: {
+                      ${entityRelatedData.foreignKey}: null
+                    }
+                  ) {
+                    ${getPKs(foreignEntity)[0]}
+                  }
+                }`,
+                requestContext
+              ).then(() => Funfunz.executeGraphQL(
+                options.isLocal ? schemas.local : schemas.api, `
+                mutation {
+                  update${mutationName} (
+                    filter: {
+                      ${getPKs(foreignEntity)[0]}: {
+                        _in: [${(entityRelatedData.value as unknown[]).join(',')}]
+                      }
+                    }
+                    data: {
+                      ${entityRelatedData.foreignKey}: ${results[0][localPrimaryKey]}
+                    }
+                  ) {
+                    ${getPKs(foreignEntity)[0]}
+                  }
+                }`,
+                requestContext
+              )).then(() => true)
+            } else {
+              const mutationName = entityRelatedData.relationalEntity?.charAt(0).toUpperCase() + (entityRelatedData.relationalEntity?.slice(1) || '')
+              return Funfunz.executeGraphQL(
+                options.isLocal ? schemas.local : schemas.api, `
+                mutation {
+                  delete${mutationName} (
+                    filter: {
+                      ${entityRelatedData.foreignKey}: {
+                        _eq: ${results[0][localPrimaryKey]}
+                      }
+                    }
+                  ) {
+                    deleted
+                  }
+                }`,
+                requestContext
+              ).then(() => {
+                return Promise.all((entityRelatedData.value as unknown[]).map(
+                  (value) => {
+                    return Funfunz.executeGraphQL(
+                      options.isLocal ? schemas.local : schemas.api, `
+                      mutation {
+                        add${mutationName} (
+                          data: {
+                            ${entityRelatedData.remoteForeignKey}: ${value}
+                            ${entityRelatedData.foreignKey}: ${results[0][localPrimaryKey]}
+                          }
+                        ){
+                          ${entityRelatedData.foreignKey}
+                          ${entityRelatedData.remoteForeignKey}
+                        }
+                      }`,
+                      requestContext
+                    )
+                  }
+                ))
+              }).then(() => true)
+            }
+            
           }
         ))
       }
@@ -154,7 +196,7 @@ function buildAddMutation<OptionsContext>(
       const { args, context } = await executeHook(entity, 'add', 'beforeResolver', { args: rawargs, requestContext }, options, schemas)
       const data = normalize(args.data as Record<string, unknown>, entity)
       const fields = getFields(entity, info)
-      const newDataset = extractManyToManyRelatedData(data, entity)
+      const newDataset = extractToManyRelatedData(data, entity)
       const rawquery: ICreateArgs = {
         entityName: entity.name,
         fields,
@@ -171,24 +213,48 @@ function buildAddMutation<OptionsContext>(
           (entity) => {
             const entityRelatedData = (rawquery.relatedData as relatedData)[entity]
             const localPrimaryKey = entityRelatedData.localPrimaryKey || getPKs(parentEntity)[0]
-            const mutationName = `add${entityRelatedData.relationalEntity.charAt(0).toUpperCase() + entityRelatedData.relationalEntity.slice(1)}`
-            return Promise.all((entityRelatedData.value as unknown[]).map(
-              (value) => Funfunz.executeGraphQL(
+            if (entityRelatedData.type === '1:n') {
+              const configs = config()
+              const foreignEntity = getEntityConfig(entityRelatedData.remoteEntity, configs)
+              const mutationName = entityRelatedData.remoteEntity?.charAt(0).toUpperCase() + (entityRelatedData.remoteEntity?.slice(1) || '')
+              return Funfunz.executeGraphQL(
                 options.isLocal ? schemas.local : schemas.api, `
                 mutation {
-                  ${mutationName} (
+                  update${mutationName} (
+                    filter: {
+                      ${getPKs(foreignEntity)[0]}: {
+                        _in: [${(entityRelatedData.value as unknown[]).join(',')}]
+                      }
+                    }
                     data: {
-                      ${entityRelatedData.remoteForeignKey}: ${value}
                       ${entityRelatedData.foreignKey}: ${results[0][localPrimaryKey]}
                     }
-                  ){
-                    ${entityRelatedData.foreignKey}
-                    ${entityRelatedData.remoteForeignKey}
+                  ) {
+                    ${getPKs(foreignEntity)[0]}
                   }
                 }`,
                 requestContext
-              )
-            ))
+              ).then(() => true)
+            } else {
+              const mutationName = `add${entityRelatedData.relationalEntity?.charAt(0).toUpperCase() + (entityRelatedData.relationalEntity?.slice(1) || '')}`
+              return Promise.all((entityRelatedData.value as unknown[]).map(
+                (value) => Funfunz.executeGraphQL(
+                  options.isLocal ? schemas.local : schemas.api, `
+                  mutation {
+                    ${mutationName} (
+                      data: {
+                        ${entityRelatedData.remoteForeignKey}: ${value}
+                        ${entityRelatedData.foreignKey}: ${results[0][localPrimaryKey]}
+                      }
+                    ){
+                      ${entityRelatedData.foreignKey}
+                      ${entityRelatedData.remoteForeignKey}
+                    }
+                  }`,
+                  requestContext
+                )
+              )).then(() => true)
+            }
           }
         ))
       }

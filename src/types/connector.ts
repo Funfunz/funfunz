@@ -1,5 +1,4 @@
 import { Funfunz } from '..'
-import { IRelationMN } from '../generator/configurationTypes'
 import { IFilter } from '../middleware/utils/filter'
 
 export interface IQueryArgs {
@@ -24,7 +23,14 @@ export interface IUpdateArgs {
 }
 
 export type relatedData = {
-  [entity: string]: IRelationMN & {
+  [entity: string]: {
+    type: 'm:n' | '1:n'
+    localPrimaryKey?: string
+    relationalEntity?: string
+    foreignKey: string
+    remoteForeignKey?: string
+    remotePrimaryKey?: string
+    remoteEntity: string
     value: unknown,
   }
 }

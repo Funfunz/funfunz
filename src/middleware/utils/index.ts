@@ -123,7 +123,7 @@ export function getFields(
  *
  * @returns {object} new object with mutation data and many to many related data
  */
-export function extractManyToManyRelatedData(data: Record<string, unknown>, entityConfig: IEntityInfo): {
+export function extractToManyRelatedData(data: Record<string, unknown>, entityConfig: IEntityInfo): {
   entityData: Record<string, unknown>;
   relatedData: relatedData;
 } {
@@ -133,7 +133,7 @@ export function extractManyToManyRelatedData(data: Record<string, unknown>, enti
   }
   entityConfig.relations?.filter(
     (relation) => {
-      if (relation.type !== 'm:n') {
+      if (relation.type !== 'm:n' && relation.type !== '1:n') {
         return
       }
       if (data[relation.remoteEntity]) {
