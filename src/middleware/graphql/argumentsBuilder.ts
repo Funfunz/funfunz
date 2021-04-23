@@ -1,5 +1,5 @@
 import { operators, OperatorsType } from '../utils/filter'
-import { IEntityInfo } from '../../generator/configurationTypes'
+import { IEntityInfo, IRelationMN } from '../../generator/configurationTypes'
 import config from '../utils/configLoader'
 import Debug from 'debug'
 import {
@@ -170,14 +170,14 @@ export function buildArgs(
 
             entity.relations?.forEach(
               (relation) => {
-                if (relation.type === 'm:n') {
+                if (relation.type === 'm:n' || relation.type === '1:n') {
                   const remoteEntity = config().entities.find(
                     (settingsEntity) => settingsEntity.name === relation.remoteEntity
                   )
-                  let pk = relation.remotePrimaryKey
+                  let pk = (relation as IRelationMN)?.remotePrimaryKey
                     ? remoteEntity?.properties.find(
                       (property) => {
-                        return property.name === relation.remotePrimaryKey
+                        return property.name === (relation as IRelationMN).remotePrimaryKey
                       }
                     )
                     : remoteEntity?.properties.filter(
