@@ -1,10 +1,9 @@
-import { initDataConnectors } from './dataConnector/index'
-import IndexRouter from './routes/index'
+import { initDataConnectors } from './dataConnector/index.js'
+import IndexRouter from './routes/index.js'
 import Debug from 'debug'
 import express, { Response, Request } from 'express'
-import logger from 'morgan'
-import { HttpException } from './utils/exception'
-import { Funfunz } from './index'
+import { HttpException } from './utils/exception.js'
+import { Funfunz } from './index.js'
 
 const debug = Debug('funfunz:init')
 
@@ -20,8 +19,6 @@ export class ExpressMiddleware {
     initDataConnectors(funfunz)
     this.express = express()
     this.express.disable('x-powered-by')
-
-    this.express.use(logger('dev'))
 
     const indexRouter = new IndexRouter(funfunz)
     this.express.use(indexRouter.getRouter())

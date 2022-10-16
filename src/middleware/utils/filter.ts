@@ -1,7 +1,7 @@
-import { isNull, getPKs } from './index'
-import { IEntityInfo, IRelationMN, IRelation } from '../../generator/configurationTypes'
-import { Funfunz } from '..'
-import { SchemaObjectMap } from '../graphql/manager'
+import { isNull, getPKs } from './index.js'
+import { IEntityInfo, IRelationMN, IRelation } from '../../generator/configurationTypes.js'
+import { Funfunz } from '../index.js'
+import { SchemaObjectMap } from '../graphql/manager.js'
 
 const oneToManyRelation = (entity: IEntityInfo, parentEntity: IEntityInfo): IRelation | undefined => {
   return parentEntity.relations?.find(
@@ -102,7 +102,7 @@ export async function getParentEntryFilter(
     return result.then(
       (results) => {
         if (results && results.data) {
-          const ids = results.data[relationalEntity].map(
+          const ids = (results.data[relationalEntity] as Record<string, string>[]).map(
             (obj) => {
               return obj[remoteForeignKey]
             }

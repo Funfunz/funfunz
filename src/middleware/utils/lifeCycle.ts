@@ -1,7 +1,7 @@
-import { IEntityInfo } from '../../generator/configurationTypes'
-import { HookTypes, IHookProps, OperationTypes } from '../../types/hooks'
-import { connector } from '../dataConnector'
-import type { SchemaObjectMap, TSchemaOptions } from '../graphql/manager'
+import { IEntityInfo } from '../../generator/configurationTypes.js'
+import { HookTypes, IHookProps, OperationTypes } from '../../types/hooks.js'
+import { connector } from '../dataConnector/index.js'
+import type { SchemaObjectMap, TSchemaOptions } from '../graphql/manager.js'
 
 export async function executeHook(
   entity: IEntityInfo,

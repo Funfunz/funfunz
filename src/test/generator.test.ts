@@ -1,18 +1,18 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require('mysql2/node_modules/iconv-lite').encodingExists('foo')
 import fs from 'fs'
 import path from 'path'
-import { parse } from '../generator/parser'
-import { deleteFolderRecursive, isEmptyFolder } from '../generator/utils'
+import test from 'node:test'
+import assert from 'node:assert'
+import { parse } from '../generator/parser.js'
+import { deleteFolderRecursive, isEmptyFolder } from '../generator/utils.js'
 
 const mongoTargetPath = path.join(process.cwd(), '/src/test/generatedConfigsMongo')
 deleteFolderRecursive(mongoTargetPath)
 
-describe('parse mongo', () => {
-  it('checks if the target folder is empty', () => {
-    expect(isEmptyFolder(mongoTargetPath)).toBeTruthy()
+test('parse mongo', async (t) => {
+  await t.test('checks if the target folder is empty', () => {
+    assert.equal(!!isEmptyFolder(mongoTargetPath), true)
     fs.mkdirSync(mongoTargetPath)
-    expect(isEmptyFolder(mongoTargetPath)).toBeTruthy()
+    assert.equal(!!isEmptyFolder(mongoTargetPath), true)
     deleteFolderRecursive(mongoTargetPath)
   })
 
@@ -28,9 +28,9 @@ describe('parse mongo', () => {
       DBAuthMechanism: 'SCRAM-SHA-1',
     }, 'mongoDB', mongoTargetPath).then(
       () => {
-        expect(true).toBeTruthy()
-        expect(fs.existsSync(mongoTargetPath)).toBeTruthy()
-        expect(fs.readdirSync(mongoTargetPath).length).toBeGreaterThan(0)
+        assert.equal(true).toBeTruthy()
+        assert.equal(fs.existsSync(mongoTargetPath)).toBeTruthy()
+        assert.equal(fs.readdirSync(mongoTargetPath).length).toBeGreaterThan(0)
         deleteFolderRecursive(mongoTargetPath)
         done()
       }
@@ -42,16 +42,16 @@ describe('parse mongo', () => {
 const mysqlTargetPath = path.join(process.cwd(), '/src/test/generatedConfigsMysql')
 deleteFolderRecursive(mysqlTargetPath)
 
-describe('parse mysql', () => {
-  it('checks if the target folder is empty', () => {
-    expect(isEmptyFolder(mysqlTargetPath)).toBeTruthy()
+test('parse mysql', async (t) => {
+  await t.test('checks if the target folder is empty', () => {
+    assert.equal(!!isEmptyFolder(mysqlTargetPath), true)
     fs.mkdirSync(mysqlTargetPath)
-    expect(isEmptyFolder(mysqlTargetPath)).toBeTruthy()
+    assert.equal(!!isEmptyFolder(mysqlTargetPath), true)
     fs.mkdirSync(mysqlTargetPath + '/inner')
     deleteFolderRecursive(mysqlTargetPath)
   })
 
-  it('should generate the required files', (done) => {
+  await t.test('should generate the required files', (done) => {
     parse({
       DBHost: process.env.DB_HOST || '127.0.0.1',
       DBName: process.env.DB_NAME || 'test_db',
@@ -60,11 +60,9 @@ describe('parse mysql', () => {
       DBPassword: process.env.DB_PASS || 'password',
     }, 'mysql', mysqlTargetPath).then(
       () => {
-        expect(true).toBeTruthy()
-        expect(fs.existsSync(mysqlTargetPath)).toBeTruthy()
-        expect(fs.readdirSync(mysqlTargetPath).length).toBeGreaterThan(0)
+        assert.equal(fs.existsSync(mysqlTargetPath), true)
+        assert.equal(fs.readdirSync(mysqlTargetPath).length > 0, true)
         deleteFolderRecursive(mysqlTargetPath)
-        done()
       }
     )
   })

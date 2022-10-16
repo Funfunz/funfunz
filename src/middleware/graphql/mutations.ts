@@ -1,17 +1,17 @@
-import { buildDeleteMutationType, buildType } from './typeBuilder'
-import config from '../utils/configLoader'
+import { buildDeleteMutationType, buildType } from './typeBuilder.js'
+import config from '../utils/configLoader.js'
 import Debug from 'debug'
 import { GraphQLFieldConfig, GraphQLFieldConfigMap, GraphQLList } from 'graphql'
-import { capitalize, extractManyToManyRelatedData, getFields, getPKs } from '../utils/index'
-import { executeHook } from '../utils/lifeCycle'
-import { normalize } from '../utils/data'
-import { update, create, remove, query as connectorQuery } from '../dataConnector/index'
-import { buildArgs } from './argumentsBuilder'
-import type { ICreateArgs, IRemoveArgs, IUpdateArgs, relatedData } from '../../types/connector'
-import type { IFilter } from '../utils/filter'
-import type { IEntityInfo } from '../..//generator/configurationTypes'
-import type { SchemaManager, TSchemaOptions } from './manager'
-import { Funfunz } from '../../middleware/index'
+import { capitalize, extractManyToManyRelatedData, getFields, getPKs } from '../utils/index.js'
+import { executeHook } from '../utils/lifeCycle.js'
+import { normalize } from '../utils/data.js'
+import { update, create, remove, query as connectorQuery } from '../dataConnector/index.js'
+import { buildArgs } from './argumentsBuilder.js'
+import type { ICreateArgs, IRemoveArgs, IUpdateArgs, relatedData } from '../../types/connector.js'
+import type { IFilter } from '../utils/filter.js'
+import type { IEntityInfo } from '../..//generator/configurationTypes.js'
+import type { SchemaManager, TSchemaOptions } from './manager.js'
+import { Funfunz } from '../index.js'
 
 const debug = Debug('funfunz:graphql-mutation-builder')
 
@@ -164,7 +164,12 @@ function buildAddMutation<OptionsContext>(
         take: args.take as number
       }
       const { query, context: newContext } = await executeHook(entity, 'add', 'beforeSendQuery', { args, query: rawquery, context, requestContext }, options, schemas)
-      const results = await create(typeof entity.connector === 'string' ? entity.connector : entity.connector.name, query as ICreateArgs) as Record<string, unknown>[]
+      let results
+      try {
+        results = await create(typeof entity.connector === 'string' ? entity.connector : entity.connector.name, query as ICreateArgs) as Record<string, unknown>[]
+      } catch (err) {
+        console.log({err})
+      }
       if (rawquery.relatedData) {
         const parentEntity = entity
         await Promise.all(Object.keys(rawquery.relatedData).map(

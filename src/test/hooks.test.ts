@@ -1,78 +1,94 @@
 import request from 'supertest'
-import { Funfunz } from '../middleware'
+import test from 'node:test'
+import assert from 'node:assert'
+import { Funfunz } from '../middleware/index.js'
 
-import config from './configs/config'
-import entities from './configs/entities'
+import config from './configs/config.js'
+import entities from './configs/entities.js'
 
 const application = new Funfunz({
   config,
   entities
 }).middleware
 
-describe('hooks', () => {
-  it('hook to throw error', (done) => {
-    return request(application)
-      .post('/api')
-      .send({
-        query: `{
-          usersCount
-        }`,
-      })
-      .set('Accept', 'application/json').end(
-        (err, response) => {
-          if (err) {
-            return done(err)
+test('hooks', async (t) => {
+  await t.test('hook to throw error', async () => {
+    return new Promise(
+      (res, rej) => {
+        request(application)
+        .post('/api')
+        .send({
+          query: `{
+            usersCount
+          }`,
+        })
+        .set('Accept', 'application/json').end(
+          (err, response) => {
+            if (err) {
+              return rej(err)
+            }
+            assert.equal(response.status, 200)
+            assert.equal(!!response.body, true)
+            const errors = response.body.errors
+            assert.equal(errors[0].message, 'Not authorized')
+            return res(true)
           }
-          expect(response.status).toBe(200)
-          expect(response.body).toBeTruthy()
-          const errors = response.body.errors
-          expect(errors[0].message).toBe('Not authorized')
-          return done()
-        }
-      )
+        )
+      }
+    )
   })
-  it('hook to change query input', (done) => {
-    return request(application)
-      .post('/api')
-      .send({
-        query: `{
-          productsCount
-        }`,
-      })
-      .set('Accept', 'application/json').end(
-        (err, response) => {
-          if (err) {
-            return done(err)
+  await t.test('hook to change query input', async () => {
+    return new Promise(
+      (res, rej) => {
+        request(application)
+        .post('/api')
+        .send({
+          query: `{
+            productsCount
+          }`,
+        })
+        .set('Accept', 'application/json').end(
+          (err, response) => {
+            if (err) {
+              return rej(err)
+            }
+            assert.equal(response.status, 200)
+            assert.equal(!!response.body, true)
+            const data = response.body.data
+            assert.equal(!!data, true)
+            console.log({data})
+            assert.equal(data.productsCount, 1)
+            return res(true)
           }
-          expect(response.status).toBe(200)
-          expect(response.body).toBeTruthy()
-          const data = response.body.data
-          expect(data).toBeTruthy()
-          expect(data.productsCount).toBe(1)
-          return done()
-        }
-      )
+        )
+      }
+    )
   })
-  it('hook to change query output', (done) => {
-    return request(application)
-      .post('/api')
-      .send({
-        query: `{
-          familiesCount
-        }`,
-      })
-      .set('Accept', 'application/json').end(
-        (err, response) => {
-          if (err) {
-            return done(err)
+  await t.test('hook to change query output', async () => {
+    return new Promise(
+      (res, rej) => {
+        request(application)
+        .post('/api')
+        .send({
+          query: `{
+            familiesCount
+          }`,
+        })
+        .set('Accept', 'application/json').end(
+          (err, response) => {
+            if (err) {
+              return rej(err)
+            }
+            assert.equal(response.status, 200)
+            assert.equal(!!response.body, true)
+            const data = response.body.data
+            assert.equal(!!data, true)
+            console.log({data})
+            assert.equal(data.familiesCount, 69)
+            return res(true)
           }
-          expect(response.status).toBe(200)
-          expect(response.body).toBeTruthy()
-          const data = response.body.data
-          expect(data).toBeTruthy()
-          expect(data.familiesCount).toBe(69)
-          return done()
-        }
-      )
+        )
+      }
+    )
   })
 })

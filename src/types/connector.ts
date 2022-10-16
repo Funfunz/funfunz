@@ -1,6 +1,6 @@
-import { Funfunz } from '..'
-import { IRelationMN } from '../generator/configurationTypes'
-import { IFilter } from '../middleware/utils/filter'
+import { Funfunz } from '../index.js'
+import { IRelationMN } from '../generator/configurationTypes.js'
+import { IFilter } from '../middleware/utils/filter.js'
 
 export interface IQueryArgs {
   entityName: string,

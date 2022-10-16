@@ -1,4 +1,4 @@
-import { IConfig } from '../../generator/configurationTypes'
+import { IConfig } from '../../generator/configurationTypes.js'
 import { Connector } from '@funfunz/sql-data-connector'
 const config: IConfig = {
   connectors: {
@@ -11,7 +11,7 @@ const config: IConfig = {
         database: process.env.DB_NAME || 'test_db',
         user: process.env.DB_USER || 'root',
         password: process.env.DB_PASS || 'password',
-        port: process.env.DB_PORT || '3306'
+        port: process.env.DB_PORT || '3306',
       },
     }
   }

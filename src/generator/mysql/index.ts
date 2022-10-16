@@ -1,5 +1,5 @@
 // get the client
-import { describeInfo, IDatabaseData, schemaInfo } from '../../generator/configurationTypes'
+import { describeInfo, IDatabaseData, schemaInfo } from '../../generator/configurationTypes.js'
 import mysql from 'mysql2'
 
 let userAnswers: Record<string, string> = {}

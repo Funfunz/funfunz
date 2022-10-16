@@ -1,5 +1,5 @@
-import { generateConfig, generateSettings } from './configGenerator'
-import { databaseTypes } from './configurationTypes'
+import { generateConfig, generateSettings } from './configGenerator.js'
+import { databaseTypes } from './configurationTypes.js'
 
 export function parse(answers: Record<string, unknown>, databaseType: databaseTypes, selectedPath: string): Promise<void> {
   return import('./' + databaseType).then(

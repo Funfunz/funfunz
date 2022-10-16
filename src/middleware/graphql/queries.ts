@@ -1,20 +1,20 @@
 'use strict'
-import { resolver, resolverCount } from './resolver'
-import { buildType } from './typeBuilder'
-import config from '../utils/configLoader'
-import { IEntityInfo } from '../../generator/configurationTypes'
+import { resolver, resolverCount } from './resolver.js'
+import { buildType } from './typeBuilder.js'
+import config from '../utils/configLoader.js'
+import { IEntityInfo } from '../../generator/configurationTypes.js'
 import Debug from 'debug'
-import GraphQLJSON, { GraphQLJSONObject } from 'graphql-type-json'
-import { GraphQLBoolean, GraphQLFieldConfig, GraphQLFieldConfigMap, GraphQLInt, GraphQLList, GraphQLObjectType, GraphQLString, Thunk } from 'graphql'
+import { GraphQLJSONObject, GraphQLJSON } from 'graphql-type-json'
+import { GraphQLBoolean, GraphQLFieldConfig, GraphQLFieldConfigMap, GraphQLInt, GraphQLList, GraphQLObjectType, GraphQLString } from 'graphql'
 import pluralize from 'pluralize'
-import { buildArgs } from './argumentsBuilder'
-import type { SchemaManager, TSchemaOptions } from './manager'
+import { buildArgs } from './argumentsBuilder.js'
+import type { SchemaManager, TSchemaOptions } from './manager.js'
 
 const debug = Debug('funfunz:graphql-query-builder')
 
-export function buildQueries<OptionsContext>(schemaManager: SchemaManager<OptionsContext>, options: TSchemaOptions<OptionsContext>): Thunk<GraphQLFieldConfigMap<unknown, unknown>> {
+export function buildQueries<OptionsContext>(schemaManager: SchemaManager<OptionsContext>, options: TSchemaOptions<OptionsContext>): GraphQLFieldConfigMap<unknown, unknown> {
   const configs = config()
-  const queries: Thunk<GraphQLFieldConfigMap<unknown, unknown>> = {}
+  const queries: GraphQLFieldConfigMap<unknown, unknown> = {}
   configs.entities.forEach(
     (entity) => {
       if (entity.visible) {

@@ -1,6 +1,6 @@
-import { resolver } from './resolver'
-import config from '../utils/configLoader'
-import { IRelation, IEntityInfo } from '../../generator/configurationTypes'
+import { resolver } from './resolver.js'
+import config from '../utils/configLoader.js'
+import { IRelation, IEntityInfo } from '../../generator/configurationTypes.js'
 import Debug from 'debug'
 import {
   GraphQLFieldConfigMap,
@@ -10,11 +10,11 @@ import {
   GraphQLObjectType,
   GraphQLString,
 } from 'graphql'
-import { capitalize, getPKs } from '../utils/index'
-import { buildArgs } from './argumentsBuilder'
-import { MATCHER } from './helpers'
-import type { SchemaManager, TSchemaOptions } from './manager'
-import { GraphQLUpload } from 'graphql-upload'
+import { capitalize, getPKs } from '../utils/index.js'
+import { buildArgs } from './argumentsBuilder.js'
+import { MATCHER } from './helpers.js'
+import type { SchemaManager, TSchemaOptions } from './manager.js'
+import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs'
 
 const debug = Debug('funfunz:graphql-type-builder')
 

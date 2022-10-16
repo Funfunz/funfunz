@@ -1,4 +1,4 @@
-import { IDatabaseData, IDescribeItem } from '../../generator/configurationTypes'
+import { IDatabaseData, IDescribeItem } from '../../generator/configurationTypes.js'
 import { Db, MongoClient } from 'mongodb'
 
 function mongoURIBuilder() {

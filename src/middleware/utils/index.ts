@@ -1,8 +1,8 @@
-import { IProperty, IEntityInfo } from '../../generator/configurationTypes'
+import { IProperty, IEntityInfo } from '../../generator/configurationTypes.js'
 import { GraphQLResolveInfo } from 'graphql'
-import { parseResolveInfo, simplifyParsedResolveInfoFragmentWithType, ResolveTree } from 'graphql-parse-resolve-info'
-import { IFunfunzConfig } from '../types'
-import { relatedData } from '../../types'
+import { parseResolveInfo, simplifyParsedResolveInfoFragmentWithType } from '../../graphql-parse-resolve-info/index.js'
+import { IFunfunzConfig } from '../types.js'
+import { relatedData } from '../../types/index.js'
 
 /**
  * returns the entity configuration based on the entity name
@@ -93,7 +93,7 @@ export function getFields(
   const parsedResolveInfoFragment = parseResolveInfo(info)
   if (parsedResolveInfoFragment) {
     const {fields: properties} = simplifyParsedResolveInfoFragmentWithType(
-      parsedResolveInfoFragment as ResolveTree,
+      parsedResolveInfoFragment,
       info.returnType
     )
     Object.keys(properties).forEach(

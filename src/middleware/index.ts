@@ -1,13 +1,13 @@
-import { ExpressMiddleware } from './middleware'
-import configLoaded, { setConfig } from './utils/configLoader'
+import { ExpressMiddleware } from './middleware.js'
+import configLoaded, { setConfig } from './utils/configLoader.js'
 import { Express } from 'express'
 import Debug from 'debug'
-import { IFunfunzConfig } from './types'
+import { IFunfunzConfig } from './types.js'
 import { execute, ExecutionResult, GraphQLSchema, parse } from 'graphql'
-import { isPromise } from './utils'
-import { SchemaManager } from './graphql/manager'
+import { isPromise } from './utils/index.js'
+import { SchemaManager } from './graphql/manager.js'
 
-export * from './types'
+export * from './types.js'
 export class Funfunz {
   public middleware: Express
   public config: () => IFunfunzConfig

@@ -1,9 +1,11 @@
 import { GraphQLString } from 'graphql'
 import request from 'supertest'
-import { Funfunz } from '../middleware'
+import { Funfunz } from '../middleware/index.js'
+import test from 'node:test'
+import assert from 'node:assert'
 
-import config from './configs/config'
-import entities from './configs/entities'
+import config from './configs/config.js'
+import entities from './configs/entities.js'
 
 const funfunz = new Funfunz({
   config,
@@ -18,8 +20,8 @@ const queryDescription = 'query created during runtime'
 const mutationName = 'jejayMutation'
 const mutationDescription = 'mutation created during runtime'
 
-describe('schema manager', () => {
-  it('should be possible to add new queries and mutations during runtime', (done) => {
+test('schema manager', async (t) => {
+  await t.test('should be possible to add new queries and mutations during runtime', async () => {
     funfunz.schemaManager.addOrUpdateQuery({
       [queryName]: {
         description: queryDescription,
@@ -79,15 +81,14 @@ describe('schema manager', () => {
         },
       }
     }, 'local')
-    expect(funfunz.schemaManager.listQueries().api.indexOf(queryName)).toBeGreaterThan(-1)
-    expect(funfunz.schemaManager.listQueries().api.indexOf(queryName + 'LOCAL')).toBe(-1)
-    expect(funfunz.schemaManager.listMutations().api.indexOf(mutationName)).toBeGreaterThan(-1)
-    expect(funfunz.schemaManager.listMutations().api.indexOf(mutationName + 'LOCAL')).toBe(-1)
-    
-    expect(funfunz.schemaManager.listQueries().local.indexOf(queryName)).toBeGreaterThan(-1)
-    expect(funfunz.schemaManager.listQueries().local.indexOf(queryName + 'API')).toBe(-1)
-    expect(funfunz.schemaManager.listMutations().local.indexOf(mutationName)).toBeGreaterThan(-1)
-    expect(funfunz.schemaManager.listMutations().local.indexOf(mutationName + 'API')).toBe(-1)
+    assert.equal(funfunz.schemaManager.listQueries().api.indexOf(queryName) > -1, true)
+    assert.equal(funfunz.schemaManager.listQueries().api.indexOf(queryName + 'LOCAL'), -1)
+    assert.equal(funfunz.schemaManager.listMutations().api.indexOf(mutationName) > -1, true)
+    assert.equal(funfunz.schemaManager.listMutations().api.indexOf(mutationName + 'LOCAL'), -1)
+    assert.equal(funfunz.schemaManager.listQueries().local.indexOf(queryName) > -1, true)
+    assert.equal(funfunz.schemaManager.listQueries().local.indexOf(queryName + 'API'),-1)
+    assert.equal(funfunz.schemaManager.listMutations().local.indexOf(mutationName) > -1, true)
+    assert.equal(funfunz.schemaManager.listMutations().local.indexOf(mutationName + 'API'), -1)
 
     return new Promise(
       (res, rej) => {
@@ -103,11 +104,11 @@ describe('schema manager', () => {
               if (err) {
                 rej(err)
               }
-              expect(response.status).toBe(200)
-              expect(response.body).toBeTruthy()
+              assert.equal(response.status, 200, `Status is ${response.status} instead of 200`)
+              assert.equal(!!response.body, true)
               const data = response.body.data
-              expect(data[queryName]).toBeTruthy()
-              expect(data[queryName]).toBe(queryDescription)
+              assert.equal(!!data[queryName], true)
+              assert.equal(data[queryName], queryDescription)
               res(true)
             }
         )
@@ -126,11 +127,11 @@ describe('schema manager', () => {
                   if (err) {
                     rej(err)
                   }
-                  expect(response.status).toBe(200)
-                  expect(response.body).toBeTruthy()
+                  assert.equal(response.status, 200)
+                  assert.equal(!!response.body, true)
                   const data = response.body.data
-                  expect(data[mutationName]).toBeTruthy()
-                  expect(data[mutationName]).toBe(mutationDescription)
+                  assert.equal(!!data[mutationName], true)
+                  assert.equal(data[mutationName], mutationDescription)
                   res(true)
                 }
               )
@@ -139,26 +140,26 @@ describe('schema manager', () => {
       }
     ).then(
       () => {
-        done()
+        return true
       }
     ).catch(
       (err) => {
-        done(err)
+        return err
       }
     )
   })
 
-  it('should be possible to remove queries and mutations during runtime', (done) => {
-    expect(funfunz.schemaManager.removeQuery(queryName, 'api')).toBe(1)
-    expect(funfunz.schemaManager.removeQuery(queryName)).toBe(1)
-    expect(funfunz.schemaManager.removeMutation(mutationName, 'api')).toBe(1)
-    expect(funfunz.schemaManager.removeMutation(mutationName)).toBe(1)
+  await t.test('should be possible to remove queries and mutations during runtime', () => {
+    assert.equal(funfunz.schemaManager.removeQuery(queryName, 'api'), 1)
+    assert.equal(funfunz.schemaManager.removeQuery(queryName), 1)
+    assert.equal(funfunz.schemaManager.removeMutation(mutationName, 'api'), 1)
+    assert.equal(funfunz.schemaManager.removeMutation(mutationName), 1)
 
-    expect(funfunz.schemaManager.listQueries().api.indexOf(queryName)).toBe(-1)
-    expect(funfunz.schemaManager.listMutations().api.indexOf(mutationName)).toBe(-1)
+    assert.equal(funfunz.schemaManager.listQueries().api.indexOf(queryName), -1)
+    assert.equal(funfunz.schemaManager.listMutations().api.indexOf(mutationName), -1)
     
-    expect(funfunz.schemaManager.listQueries().local.indexOf(queryName)).toBe(-1)
-    expect(funfunz.schemaManager.listMutations().local.indexOf(mutationName)).toBe(-1)
+    assert.equal(funfunz.schemaManager.listQueries().local.indexOf(queryName), -1)
+    assert.equal(funfunz.schemaManager.listMutations().local.indexOf(mutationName), -1)
     return new Promise(
       (res, rej) => {
         request(application)
@@ -174,10 +175,10 @@ describe('schema manager', () => {
                 rej(err)
               }
 
-              expect(response.status).toBe(400)
-              expect(response.body).toBeTruthy()
+              assert.equal(response.status, 200)
+              assert.equal(!!response.body, true)
               const errors = response.body.errors
-              expect(errors[0].message).toContain(`Cannot query field "${queryName}" on type "Query".`)
+              assert.equal(errors[0].message.indexOf(`Cannot query field "${queryName}" on type "Query".`) > -1, true)
               res(true)
             }
         )
@@ -196,10 +197,10 @@ describe('schema manager', () => {
                   if (err) {
                     rej(err)
                   }
-                  expect(response.status).toBe(400)
-                  expect(response.body).toBeTruthy()
+                  assert.equal(response.status, 400)
+                  assert.equal(!!response.body, true)
                   const errors = response.body.errors
-                  expect(errors[0].message).toContain(`Cannot query field "${mutationName}" on type "Mutation".`)
+                  assert.equal(errors[0].message.indexOf(`Cannot query field "${mutationName}" on type "Mutation".`) > -1, true)
                   res(true)
                 }
               )
@@ -208,11 +209,11 @@ describe('schema manager', () => {
       }
     ).then(
       () => {
-        done()
+        return true
       }
     ).catch(
       (err) => {
-        done(err)
+        return err
       }
     )
   })

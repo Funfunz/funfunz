@@ -1,4 +1,4 @@
-import { describeInfo, IProperty, IConfig, IEntityInfo, schemaInfo } from './configurationTypes'
+import { describeInfo, IProperty, IConfig, IEntityInfo, schemaInfo } from './configurationTypes.js'
 import Debug from 'debug'
 import fs from 'fs'
 import path from 'path'
