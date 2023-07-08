@@ -1,20 +1,63 @@
-import request from 'supertest'
 import { Funfunz } from '../middleware/index.js'
 import test from 'node:test'
 import assert from 'node:assert'
 import config from './configs/config.js'
 import entities from './configs/entities.js'
-import { authenticatedServer } from './utils.js'
+import { authenticatedServer, server } from './utils.js'
+import axios from 'axios'
 
-const funfunz = new Funfunz({
-  config,
-  entities
-})
+let funfunzInstance
+let authApplication
+let authApplicationUrl
+let simpleApplication
+let simpleApplicationUrl
 
-const application = funfunz.middleware
-const authApplication = authenticatedServer(application)
 
 test('graphql', async (t) => {
+  t.before(() => {
+    funfunzInstance = new Funfunz({
+      config,
+      entities
+    })
+ 
+    const authPort = 4022
+    authApplication = authenticatedServer(funfunzInstance.middleware, authPort)
+    authApplicationUrl = 'http://localhost:' + authPort + '/api'
+    const simplePort = 4023
+    simpleApplication = server(funfunzInstance.middleware, simplePort)
+    simpleApplicationUrl = 'http://localhost:' + simplePort + '/api'
+    return new Promise(
+      (res) => {
+        setTimeout(() => {res(true)}, 2000)
+      }
+    )
+  })
+
+  t.after(async () => {
+    await new Promise(
+      (res) => {
+        funfunzInstance.stopDataConnectors()
+        authApplication.closeAllConnections()
+        authApplication.close(
+          (errorAuth) => {
+            if (errorAuth) {
+              console.log({errorAuth})
+            }
+            simpleApplication.closeAllConnections()
+            simpleApplication.close(
+              (errorSimple) => {
+                if (errorSimple) {
+                  console.log({errorSimple})
+                }
+                res(true)
+              }          
+            )
+          }
+        )
+      }
+    )
+  })
+  
   await t.test('should throw an error if instanciating Funfunz without configs', () => {
     try {
       new Funfunz({
@@ -32,306 +75,168 @@ test('graphql', async (t) => {
     }
     true
   })
-  await t.test('graphql endpoint should return status 200', () => {
-    return new Promise(
-      (res, rej) => {
-        request(application)
-        .post('/')
-        .send({
-          query: `{
+  await t.test('graphql endpoint should return status 200', async () => {
+    const response = await axios.post(authApplicationUrl, {
+      query: `{
+        families {
+          id
+        }
+      }`,
+    })
+   
+    assert.equal(response.status, 200)
+  })
+  await t.test('graphql endpoint with deep queries should return 200', async () => {
+    const response = await axios.post(authApplicationUrl, {
+      query: `{
+        products {
+          id
+          price
+          families {
+            id
+          }
+        }
+      }`,
+    })
+    assert.equal(response.status, 200)
+  })
+
+  await t.test('graphql foat values should be supported', async () => {
+    const response = await axios.post(authApplicationUrl, {
+      query: `{
+        products {
+          price
+        }
+      }`,
+    })
+    assert.equal(response.status, 200)
+  })
+
+  await t.test('graphql endpoint with recursive deep queries should return 200', async () => {
+    const response = await axios.post(authApplicationUrl, {
+      query: `{
+        images {
+          id
+          products {
+            id
             families {
-              id
-            }
-          }`,
-        })
-        .set('Accept', 'application/json').end(
-          (err, response) => {
-            if (err) {
-              return rej(err)
-            }
-            assert.equal(response.status, 200)
-            return res(true)
-          }
-        )
-      }
-    )
-  })
-  await t.test('graphql endpoint with deep queries should return 200', () => {
-    return new Promise(
-      (res, rej) => {
-        request(application)
-        .post('/')
-        .send({
-          query: `{
-            products {
-              id
-              price
-              families {
-                id
-              }
-            }
-          }`,
-        })
-        .set('Accept', 'application/json').end(
-          (err, response) => {
-            if (err) {
-              return rej(err)
-            }
-            assert.equal(response.status, 200)
-            return res(true)
-          }
-        )
-      }
-    )
-  })
-
-  await t.test('graphql foat values should be supported', () => {
-    return new Promise(
-      (res, rej) => {
-        request(application)
-        .post('/')
-        .send({
-          query: `{
-            products {
-              price
-            }
-          }`,
-        })
-        .set('Accept', 'application/json').end(
-          (err, response) => {
-            if (err) {
-              return rej(err)
-            }
-            assert.equal(response.status, 200)
-            return res(true)
-          }
-        )
-      }
-    )
-  })
-
-  await t.test('graphql endpoint with recursive deep queries should return 200', () => {
-    return new Promise(
-      (res, rej) => {
-        request(application)
-        .post('/')
-        .send({
-          query: `{
-            images {
               id
               products {
                 id
-                families {
+                images {
                   id
-                  products {
-                    id
-                    images {
-                      id
-                    }
-                  }
                 }
               }
             }
-          }`,
-        })
-        .set('Accept', 'application/json').end(
-          (err, response) => {
-            if (err) {
-              return rej(err)
-            }
-            assert.equal(response.status, 200)
-            return res(true)
           }
-        )
-      }
-    )
+        }
+      }`,
+    })
+    assert.equal(response.status, 200)
   })
 
-  await t.test('graphql endpoint with unauthorized access', () => {
-    return new Promise(
-      (res, rej) => {
-        request(application)
-        .post('/')
-        .send({
-          query: `{
-            users {
-              id
-            }
-          }`,
-        })
-        .set('Accept', 'application/json').end(
-          (err, response) => {
-            if (err) {
-              return rej(err)
-            }
-            assert.equal(response.status, 200)
-            assert.equal(response.body.errors[0].message, 'Not authorized')
-            return res(true)
-          }
-        )
-      }
-    )
+  await t.test('graphql endpoint with unauthorized access', async () => {
+    const response = await axios.post(simpleApplicationUrl, {
+      query: `{
+        users {
+          id
+        }
+      }`,
+    })
+    assert.equal(response.status, 200)
+    assert.equal(response.data.errors[0].message, 'Not authorized')
   })
 
-  await t.test('graphql endpoint with many to many relations', () => {
-    return new Promise(
-      (res, rej) => {
-        request(authApplication)
-        .post('/')
-        .send({
-          query: `{
-            users {
-              id
-              roles {
-                id
-              }
-            }
-          }`,
-        })
-        .set('Accept', 'application/json').end(
-          (err, response) => {
-            if (err) {
-              return rej(err)
-            }
-            assert.equal(response.status, 200)
-            assert.equal(!!response.body, true)
-            const data = response.body.data
-            assert.equal(!!data.users[0], true)
-            assert.equal(!!data.users[0].id, true)
-            assert.equal(!!data.users[0].roles[0], true)
-            assert.equal(!!data.users[0].roles[0].id, true)
-            return res(true)
-          }
-        )
-      }
-    )
-  })
-
-  await t.test('graphql endpoint with many to one relations', () => {
-    return new Promise(
-      (res, rej) => {
-        request(application)
-        .post('/')
-        .send({
-          query: `{
-            products {
-              id
-              families {
-                id
-              }
-            }
-          }`,
-        })
-        .set('Accept', 'application/json').end(
-          (err, response) => {
-            if (err) {
-              return rej(err)
-            }
-            assert.equal(response.status, 200)
-            assert.equal(!!response.body, true)
-            const data = response.body.data
-            assert.equal(!!data.products[0], true)
-            assert.equal(!!data.products[0].id, true)
-            assert.equal(!!data.products[0].families, true)
-            assert.equal(!!data.products[0].families.id, true)
-            return res(true)
-          }
-        )
-      }
-    )
-  })
-  await t.test('graphql endpoint with one to many relations', () => {
-    return new Promise(
-      (res, rej) => {
-        request(application)
-        .post('/')
-        .send({
-          query: `{
-            families {
-              id
-              products {
-                id
-              }
-            }
-          }`,
-        })
-        .set('Accept', 'application/json').end(
-          (err, response) => {
-            if (err) {
-              return rej(err)
-            }
-            assert.equal(response.status, 200)
-            assert.equal(!!response.body, true)
-            const data = response.body.data
-            assert.equal(!!data.families[0], true)
-            assert.equal(!!data.families[0].id, true)
-            assert.equal(!!data.families[0].products[0], true)
-            assert.equal(!!data.families[0].products[0].id, true)
-            return res(true)
-          }
-        )
-      }
-    )
-  })
-  await t.test('graphql endpoint with one to many relations with child filter', () => {
-    return new Promise(
-      (res, rej) => {
-        request(application)
-        .post('/')
-        .send({
-          query: `{
-            families {
-              id
-              products (filter: { id: { _eq: 1}}) {
-                id
-              }
-            }
-          }`,
-        })
-        .set('Accept', 'application/json').end(
-          (err, response) => {
-            if (err) {
-              return rej(err)
-            }
-            assert.equal(response.status, 200)
-            assert.equal(!!response.body, true)
-            const data = response.body.data
-            assert.equal(!!data.families[0], true)
-            assert.equal(!!data.families[0].id, true)
-            assert.equal(!!data.families[0].products, true)
-            return res(true)
-          }
-        )
-      }
-    )
-  })
-  
-  await t.test('graphql pagination', () => {
-    return new Promise(
-      (res, rej) => {
-        request(authApplication)
-        .post('/')
-        .send({
-          query: `{
-          users(take:1, skip: 1) {
+  await t.test('graphql endpoint with many to many relations', async () => {
+    const response = await axios.post(authApplicationUrl, {
+      query: `{
+        users {
+          id
+          roles {
             id
           }
-          }`,
-        })
-        .set('Accept', 'application/json').end(
-          (err, response) => {
-            if (err) {
-              return rej(err)
-            }
-            assert.equal(response.status, 200)
-            assert.equal(!!response.body, true)
-            const data = response.body.data
-            assert.equal(!!data.users, true)
-            assert.equal(!!data.users[0].id, true)
-            return res(true)
+        }
+      }`,
+    })
+    assert.equal(response.status, 200)
+    assert.equal(!!response.data, true)
+    const data = response.data.data
+    assert.equal(!!data.users[0], true)
+    assert.equal(!!data.users[0].id, true)
+    assert.equal(!!data.users[0].roles[0], true)
+    assert.equal(!!data.users[0].roles[0].id, true)
+  })
+
+  await t.test('graphql endpoint with many to one relations', async () => {
+    const response = await axios.post(authApplicationUrl, {
+      query: `{
+        products {
+          id
+          families {
+            id
           }
-        )
-      }
-    )
+        }
+      }`,
+    })
+    assert.equal(response.status, 200)
+    assert.equal(!!response.data, true)
+    const data = response.data.data
+    assert.equal(!!data.products[0], true)
+    assert.equal(!!data.products[0].id, true)
+    assert.equal(!!data.products[0].families, true)
+    assert.equal(!!data.products[0].families.id, true)
+  })
+
+  await t.test('graphql endpoint with one to many relations', async () => {
+    const response = await axios.post(authApplicationUrl, {
+      query: `{
+        families {
+          id
+          products {
+            id
+          }
+        }
+      }`,
+    })
+    assert.equal(response.status, 200)
+    assert.equal(!!response.data, true)
+    const data = response.data.data
+    assert.equal(!!data.families[0], true)
+    assert.equal(!!data.families[0].id, true)
+    assert.equal(!!data.families[0].products[0], true)
+    assert.equal(!!data.families[0].products[0].id, true)
+  })
+  await t.test('graphql endpoint with one to many relations with child filter', async () => {
+    const response = await axios.post(authApplicationUrl, {
+      query: `{
+        families {
+          id
+          products (filter: { id: { _eq: 1}}) {
+            id
+          }
+        }
+      }`,
+    })
+    assert.equal(response.status, 200)
+    assert.equal(!!response.data, true)
+    const data = response.data.data
+    assert.equal(!!data.families[0], true)
+    assert.equal(!!data.families[0].id, true)
+    assert.equal(!!data.families[0].products, true)
+  })
+  
+  await t.test('graphql pagination', async () => {
+    const response = await axios.post(authApplicationUrl, {
+      query: `{
+        users(take:1, skip: 1) {
+          id
+        }
+      }`,
+    })
+    assert.equal(response.status, 200)
+    assert.equal(!!response.data, true)
+    const data = response.data.data
+    assert.equal(!!data.users, true)
+    assert.equal(!!data.users[0].id, true)
   })
 })

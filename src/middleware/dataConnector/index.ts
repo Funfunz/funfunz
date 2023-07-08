@@ -15,6 +15,14 @@ export const initDataConnectors = (funfunz: Funfunz): void => {
   )
 }
 
+export const stopDataConnectors = (): void => {
+  Object.entries(connectors).forEach(
+    ([key]) => {
+      connectors[key].stop()
+    }
+  )
+}
+
 export const query = (connectorName: string, args: IQueryArgs): Promise<unknown[] | unknown> => {
   return connectors[connectorName].query(args)
 }

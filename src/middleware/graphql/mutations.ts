@@ -168,7 +168,7 @@ function buildAddMutation<OptionsContext>(
       try {
         results = await create(typeof entity.connector === 'string' ? entity.connector : entity.connector.name, query as ICreateArgs) as Record<string, unknown>[]
       } catch (err) {
-        console.log({err})
+        console.warn({err})
       }
       if (rawquery.relatedData) {
         const parentEntity = entity

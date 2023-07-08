@@ -32,7 +32,7 @@ function promptUserAboutDatabase(selectedPath: string) {
     }
   ).catch(
     (error: Error) => {
-      console.log(error.message)
+      console.error(error.message)
     }
   )
 }

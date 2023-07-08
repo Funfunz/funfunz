@@ -1,7 +1,10 @@
 /* istanbul ignore file */
 import express, { Express } from 'express'
+import { Server } from 'node:http'
 
-export function authenticatedServer(funfunz: Express): Express {
+interface IServerInstance {server: Server, port: number}
+
+export function authenticatedServer(funfunz: Express, port: number): Server {
   const server = express()
   server.use((req: any, res, next) => {
     req.user = {
@@ -17,5 +20,11 @@ export function authenticatedServer(funfunz: Express): Express {
     next()
   })
   server.use(funfunz)
-  return server
+  return server.listen(port)
+}
+
+export function server(funfunz: Express, port: number): Server {
+  const server = express()
+  server.use(funfunz)
+  return server.listen(port)
 }
