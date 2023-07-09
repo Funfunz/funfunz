@@ -5,7 +5,7 @@ import { Funfunz } from '../middleware/index.js'
 import config from './configs/config.js'
 import entities from './configs/entities.js'
 import axios from 'axios'
-import { authenticatedServer, server } from './utils.js'
+import { authenticatedServer, closeConnections, server, stopDataConnectors } from './utils.js'
 
 let randomNumberCount = 4
 
@@ -54,11 +54,11 @@ test('api', async (t) => {
     const authPort = 4012
     authApplication = authenticatedServer(authFunfunz.middleware, authPort)
     authApplicationUrl = 'http://localhost:' + authPort + '/api'
+    
     simpleFunfunz = new Funfunz({
       config,
       entities,
     })
-
     const simplePort = 4013
     application = server(authFunfunz.middleware, simplePort)
     simpleApplicationUrl = 'http://localhost:' + simplePort + '/api'
@@ -73,25 +73,8 @@ test('api', async (t) => {
   t.after(async () => {
     await new Promise(
       (res) => {
-        authFunfunz.stopDataConnectors()
-        authApplication.closeAllConnections()
-        authApplication.close(
-          (errorAuth) => {
-            if (errorAuth) {
-              console.log({errorAuth})
-            }
-            simpleFunfunz.stopDataConnectors()
-            application.closeAllConnections()
-            application.close(
-              (errorSimple) => {
-                if (errorSimple) {
-                  console.log({errorSimple})
-                }
-                res(true)
-              }          
-            )
-          }
-        )
+        stopDataConnectors([authFunfunz, simpleFunfunz])
+        closeConnections([authApplication, application], res)
       }
     )
   })

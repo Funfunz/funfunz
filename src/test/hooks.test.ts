@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import { Funfunz } from '../middleware/index.js'
 import config from './configs/config.js'
 import entities from './configs/entities.js'
-import { server } from './utils.js'
+import { closeConnections, server, stopDataConnectors } from './utils.js'
 import axios from 'axios'
 
 const applicationMiddleware = new Funfunz({
@@ -35,16 +35,8 @@ test('hooks', async (t) => {
   t.after(async () => {
     await new Promise(
       (res) => {
-        funfunzInstance.stopDataConnectors()
-        simpleApplication.closeAllConnections()
-        simpleApplication.close(
-          (errorAuth) => {
-            if (errorAuth) {
-              console.log({errorAuth})
-            }
-            res(true)
-          }
-        )
+        stopDataConnectors([funfunzInstance])
+        closeConnections([simpleApplication], res)
       }
     )
   })

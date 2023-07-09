@@ -3,7 +3,7 @@ import test from 'node:test'
 import assert from 'node:assert'
 import config from './configs/config.js'
 import entities from './configs/entities.js'
-import { authenticatedServer, server } from './utils.js'
+import { authenticatedServer, closeConnections, server, stopDataConnectors } from './utils.js'
 import axios from 'axios'
 
 let funfunzInstance
@@ -36,24 +36,8 @@ test('graphql', async (t) => {
   t.after(async () => {
     await new Promise(
       (res) => {
-        funfunzInstance.stopDataConnectors()
-        authApplication.closeAllConnections()
-        authApplication.close(
-          (errorAuth) => {
-            if (errorAuth) {
-              console.log({errorAuth})
-            }
-            simpleApplication.closeAllConnections()
-            simpleApplication.close(
-              (errorSimple) => {
-                if (errorSimple) {
-                  console.log({errorSimple})
-                }
-                res(true)
-              }          
-            )
-          }
-        )
+        stopDataConnectors([funfunzInstance])
+        closeConnections([authApplication, simpleApplication], res)
       }
     )
   })
