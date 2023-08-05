@@ -119,6 +119,7 @@ test('schemaManager', async (t) => {
     assert.equal(response.status, 200, `Status is ${response.status} instead of 200`)
     assert.equal(!!response.data, true)
     const dataQuery = response.data.data
+    console.log(response.data)
     assert.equal(!!dataQuery[queryName], true)
     assert.equal(dataQuery[queryName], queryDescription)
    
