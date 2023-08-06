@@ -1,6 +1,6 @@
 import { IProperty, IEntityInfo } from '../../generator/configurationTypes.js'
 import { GraphQLResolveInfo } from 'graphql'
-import { parseResolveInfo, simplifyParsedResolveInfoFragmentWithType } from '../../graphql-parse-resolve-info/index.js'
+import { ResolveTree, parseResolveInfo, simplifyParsedResolveInfoFragmentWithType } from 'graphql-parse-resolve-info'
 import { IFunfunzConfig } from '../types.js'
 import { relatedData } from '../../types/index.js'
 
@@ -93,7 +93,7 @@ export function getFields(
   const parsedResolveInfoFragment = parseResolveInfo(info)
   if (parsedResolveInfoFragment) {
     const {fields: properties} = simplifyParsedResolveInfoFragmentWithType(
-      parsedResolveInfoFragment,
+      parsedResolveInfoFragment as ResolveTree,
       info.returnType
     )
     Object.keys(properties).forEach(
