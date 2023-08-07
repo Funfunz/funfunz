@@ -30,14 +30,6 @@ export function server(funfunz: Express, port: number): Server {
   return server.listen(port)
 }
 
-export function stopDataConnectors(instances: Funfunz[]) {
-  instances.forEach(
-    (instance) => {
-      instance.stopDataConnectors()
-    }
-  )
-}
-
 export function closeConnections(servers: Server[], cb: (boolean) => void) {
   if (servers.length === 0) {
     return

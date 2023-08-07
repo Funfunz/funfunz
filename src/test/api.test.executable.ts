@@ -38,7 +38,8 @@ const application = new Funfunz({
     }
   }
 }).middleware
-const authApplication = authenticatedServer(application)
+const authPort = 4052
+const authApplication = authenticatedServer(application, authPort)
 
 let familyTestName = 'TestFamily'
 
