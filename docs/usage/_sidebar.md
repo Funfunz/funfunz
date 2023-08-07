@@ -7,5 +7,6 @@
   - [Hooks](usage/hooks.md)
   - [Permissions](usage/permissions.md)
 - [Configuration](configuration/main.md)
+- [Architecture](architecture/main.md)
 - [End Goals](endgoals.md)
 - [Contributing](contributing.md)

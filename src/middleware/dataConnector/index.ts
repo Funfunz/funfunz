@@ -1,6 +1,6 @@
-import config from '../utils/configLoader'
-import type { IQueryArgs, IUpdateArgs, ICreateArgs, IRemoveArgs, DataConnector } from '../../types/connector'
-import { Funfunz } from '../index'
+import config from '../utils/configLoader.js'
+import type { IQueryArgs, IUpdateArgs, ICreateArgs, IRemoveArgs, DataConnector } from '../../types/connector.js'
+import { Funfunz } from '../index.js'
 
 const connectors: Record<string, DataConnector> = {} 
 
@@ -11,6 +11,14 @@ export const initDataConnectors = (funfunz: Funfunz): void => {
       if (!connectors[key]) {
         connectors[key] = new value.connector(value, funfunz)
       }
+    }
+  )
+}
+
+export const stopDataConnectors = (): void => {
+  Object.entries(connectors).forEach(
+    ([key]) => {
+      connectors[key].stop()
     }
   )
 }

@@ -1,8 +1,8 @@
-import configSchema from '../../types/configSchema'
-import entitiesSchema from '../../types/entitiesSchema'
-import type { IConfig, IEntityInfo } from '../../generator/configurationTypes'
+import configSchema from '../../types/configSchema.js'
+import entitiesSchema from '../../types/entitiesSchema.js'
+import type { IConfig, IEntityInfo } from '../../generator/configurationTypes.js'
 import { Validator } from 'jsonschema'
-import { IFunfunzConfig } from '../types'
+import { IFunfunzConfig } from '../types.js'
 
 const config: IFunfunzConfig = {
   entities: [],

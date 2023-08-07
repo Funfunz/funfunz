@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import { databaseTypes } from './configurationTypes'
-import { parse } from './parser'
-import { databaseQuestions, databaseTypeQuestion } from './questions'
-import { deleteFolderRecursive, isEmptyFolder } from './utils'
+import { databaseTypes } from './configurationTypes.js'
+import { parse } from './parser.js'
+import { databaseQuestions, databaseTypeQuestion } from './questions.js'
+import { deleteFolderRecursive, isEmptyFolder } from './utils.js'
 import { prompt } from 'enquirer'
 import minimist from 'minimist'
 import path from 'path'
@@ -32,7 +32,7 @@ function promptUserAboutDatabase(selectedPath: string) {
     }
   ).catch(
     (error: Error) => {
-      console.log(error.message)
+      console.error(error.message)
     }
   )
 }

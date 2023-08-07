@@ -1,11 +1,11 @@
-import { query as sendQuery } from '../dataConnector/index'
-import { getFields } from '../utils/index'
-import { IEntityInfo } from '../../generator/configurationTypes'
+import { query as sendQuery } from '../dataConnector/index.js'
+import { getFields } from '../utils/index.js'
+import { IEntityInfo } from '../../generator/configurationTypes.js'
 import { GraphQLFieldResolver } from 'graphql'
-import { getParentEntryFilter, FilterValues, ParentFilterResult, IFilter } from '../utils/filter'
-import { executeHook } from '../utils/lifeCycle'
-import { IQueryArgs } from '../../types/connector'
-import type { SchemaManager, TSchemaOptions } from './manager'
+import { getParentEntryFilter, FilterValues, ParentFilterResult, IFilter } from '../utils/filter.js'
+import { executeHook } from '../utils/lifeCycle.js'
+import { IQueryArgs } from '../../types/connector.js'
+import type { SchemaManager, TSchemaOptions } from './manager.js'
 
 export function resolver<SchemaOptions>(
   entity: IEntityInfo,

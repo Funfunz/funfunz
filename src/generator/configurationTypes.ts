@@ -1,6 +1,6 @@
-import { OperatorsType } from '../middleware/utils/filter'
-import { IDataConnector } from '../types/connector'
-import { IHooks } from '../types/hooks'
+import { OperatorsType } from '../middleware/utils/filter.js'
+import { IDataConnector } from '../types/connector.js'
+import { IHooks } from '../types/hooks.js'
 
 export interface IDatabaseData {
   schema: schemaInfo,

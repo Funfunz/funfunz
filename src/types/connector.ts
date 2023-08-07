@@ -1,6 +1,7 @@
-import { Funfunz } from '..'
-import { IRelationMN } from '../generator/configurationTypes'
-import { IFilter } from '../middleware/utils/filter'
+/* eslint-disable no-unused-vars */
+import { Funfunz } from '../index.js'
+import { IRelationMN } from '../generator/configurationTypes.js'
+import { IFilter } from '../middleware/utils/filter.js'
 
 export interface IQueryArgs {
   entityName: string,
@@ -59,6 +60,8 @@ export abstract class DataConnector {
   public abstract create(args: ICreateArgs): Promise<unknown[] | unknown>
 
   public abstract remove(args: IRemoveArgs): Promise<number>
+
+  public abstract stop(): void
   
   public abstract connection: unknown
 }

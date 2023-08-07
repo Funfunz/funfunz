@@ -1,6 +1,6 @@
-import { operators, OperatorsType } from '../utils/filter'
-import { IEntityInfo } from '../../generator/configurationTypes'
-import config from '../utils/configLoader'
+import { operators, OperatorsType } from '../utils/filter.js'
+import { IEntityInfo } from '../../generator/configurationTypes.js'
+import config from '../utils/configLoader.js'
 import Debug from 'debug'
 import {
   GraphQLArgumentConfig,
@@ -12,9 +12,9 @@ import {
   GraphQLNonNull,
   GraphQLScalarType,
 } from 'graphql'
-import { getPKs } from '../utils/index'
-import { MATCHER } from './helpers'
-import { GraphQLUpload } from 'graphql-upload'
+import { getPKs } from '../utils/index.js'
+import { MATCHER } from './helpers.js'
+import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs'
 
 const debug = Debug('funfunz:graphql-args-builder')
 
@@ -199,7 +199,7 @@ export function buildArgs(
                   }
 
                   inputFields[relation.remoteEntity] = {
-                    type: GraphQLList(MATCHER[pk.type] || 'string'),
+                    type: new GraphQLList(MATCHER[pk.type] || 'string'),
                     description: relation.remoteEntity,
                   }
                 }
@@ -224,7 +224,7 @@ export function argFieldBuilder(matchedType: GraphQLScalarType, supportedOperato
     operator => {
       if (operator === '_in' || operator === '_nin') {
         argFilter[operator] = {
-          type: GraphQLList(matchedType)
+          type: new GraphQLList(matchedType)
         }
       } else {
         argFilter[operator] = {

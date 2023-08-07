@@ -1,4 +1,4 @@
-import { IHookProps } from "../../../types"
+import { IHookProps } from "../../../types/index.js"
 
 interface IRequest {
   user?: {

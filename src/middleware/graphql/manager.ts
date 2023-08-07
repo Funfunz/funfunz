@@ -1,27 +1,27 @@
 import Debug from 'debug'
-import { GraphQLSchema, GraphQLObjectType, GraphQLFieldConfigMap, GraphQLFieldConfig, Thunk } from 'graphql'
-import { buildMutations } from './mutations'
-import { buildQueries } from './queries'
+import { GraphQLSchema, GraphQLObjectType, GraphQLFieldConfigMap, GraphQLFieldConfig } from 'graphql'
+import { buildMutations } from './mutations.js'
+import { buildQueries } from './queries.js'
 const debug = Debug('funfunz:graphql-schema')
 
 export type getSchemas = SchemaManager<unknown>['getSchemas']
 
 export type TSchemaOptions<Context> = {
   api: {
-    queries: Thunk<GraphQLFieldConfigMap<unknown, unknown>>,
-    mutations: Thunk<GraphQLFieldConfigMap<unknown, unknown>>,
+    queries: GraphQLFieldConfigMap<unknown, unknown>,
+    mutations: GraphQLFieldConfigMap<unknown, unknown>,
   },
   local: {
-    queries: Thunk<GraphQLFieldConfigMap<unknown, unknown>>,
-    mutations: Thunk<GraphQLFieldConfigMap<unknown, unknown>>,
+    queries: GraphQLFieldConfigMap<unknown, unknown>,
+    mutations: GraphQLFieldConfigMap<unknown, unknown>,
   },
   isLocal?: boolean
   context?: Context
 }
 
 export type TSchemaConfig<Context> = {
-  queries: Thunk<GraphQLFieldConfigMap<unknown, unknown>>,
-  mutations: Thunk<GraphQLFieldConfigMap<unknown, unknown>>,
+  queries: GraphQLFieldConfigMap<unknown, unknown>,
+  mutations: GraphQLFieldConfigMap<unknown, unknown>,
   context?: Context
 }
 
@@ -159,7 +159,6 @@ export class SchemaManager<OptionsContext> {
       name: 'Mutation',
       fields: mutations,
     })
-  
     return {
       queries,
       mutations,

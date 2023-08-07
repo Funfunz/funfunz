@@ -1,5 +1,6 @@
-import type { SchemaObjectMap, TSchemaOptions } from '../middleware/graphql/manager'
-import type { IQueryArgs, DataConnector, ICreateArgs, IRemoveArgs, IUpdateArgs } from './connector'
+/* eslint-disable no-unused-vars */
+import type { SchemaObjectMap, TSchemaOptions } from '../middleware/graphql/manager.js'
+import type { IQueryArgs, DataConnector, ICreateArgs, IRemoveArgs, IUpdateArgs } from './connector.js'
 
 export type OperationTypes = 'all' | 'config' | 'count' | 'add' | 'query' | 'update' | 'delete'
 export type HookTypes = 'beforeResolver' | 'beforeSendQuery' | 'afterQueryResult' | 'afterResultSent'

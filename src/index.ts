@@ -1,4 +1,5 @@
-export { Funfunz } from './middleware/index'
-export * from './middleware/types'
-export * from './types'
+export { Funfunz } from './middleware/index.js'
+export * from './middleware/types.js'
+export * from './types/index.js'
 export * from 'graphql'
+export * from './generator/configurationTypes.js'

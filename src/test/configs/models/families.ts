@@ -1,6 +1,5 @@
-import { IEntityInfo } from '../../../generator/configurationTypes'
-import { Funfunz } from '../../../middleware'
-import { IHookProps } from '../../../types'
+import { IEntityInfo } from '../../../generator/configurationTypes.js'
+import { IHookProps } from '../../../types/index.js'
 
 export default {
   name: 'families',
