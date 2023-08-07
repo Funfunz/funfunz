@@ -5,7 +5,7 @@ import { Funfunz } from '../middleware/index.js'
 import config from './configs/config.js'
 import entities from './configs/entities.js'
 import axios from 'axios'
-import { authenticatedServer, closeConnections, server } from './utils.js'
+import { authenticatedServer, closeConnections, server, stopDataConnectors } from './utils.js'
 
 let randomNumberCount = 4
 
@@ -73,6 +73,7 @@ test('api', async (t) => {
   t.after(async () => {
     await new Promise(
       (res) => {
+        stopDataConnectors([authFunfunz])
         closeConnections([authApplication, application], res)
       }
     )

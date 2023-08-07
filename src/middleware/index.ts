@@ -6,6 +6,7 @@ import { IFunfunzConfig } from './types.js'
 import { execute, ExecutionResult, GraphQLSchema, parse } from 'graphql'
 import { isPromise } from './utils/index.js'
 import { SchemaManager } from './graphql/manager.js'
+import { stopDataConnectors } from './dataConnector/index.js'
 
 export * from './types.js'
 export class Funfunz {
@@ -45,6 +46,10 @@ export class Funfunz {
     })
 
     this.middleware = (new ExpressMiddleware(this)).express
+  }
+
+  public stopDataConnectors(): void {
+    stopDataConnectors()
   }
 
   public static executeGraphQL(schema: GraphQLSchema, document: string, context?: unknown): Promise<ExecutionResult> {
