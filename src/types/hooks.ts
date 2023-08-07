@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import type { SchemaObjectMap, TSchemaOptions } from '../middleware/graphql/manager.js'
 import type { IQueryArgs, DataConnector, ICreateArgs, IRemoveArgs, IUpdateArgs } from './connector.js'
 

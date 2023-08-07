@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Funfunz } from '../index.js'
 import { IRelationMN } from '../generator/configurationTypes.js'
 import { IFilter } from '../middleware/utils/filter.js'
