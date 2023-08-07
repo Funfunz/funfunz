@@ -60,8 +60,6 @@ export abstract class DataConnector {
   public abstract create(args: ICreateArgs): Promise<unknown[] | unknown>
 
   public abstract remove(args: IRemoveArgs): Promise<number>
-
-  public abstract stop(): void
   
   public abstract connection: unknown
 }
