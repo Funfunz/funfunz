@@ -1,4 +1,4 @@
-import { IProperty, IEntityInfo } from '../../generator/configurationTypes.js'
+import { IProperty, IEntityInfo } from './configurationTypes.js'
 import { GraphQLResolveInfo } from 'graphql'
 import { ResolveTree, parseResolveInfo, simplifyParsedResolveInfoFragmentWithType } from 'graphql-parse-resolve-info'
 import { IFunfunzConfig } from '../types.js'

@@ -9,7 +9,7 @@ import { update, create, remove, query as connectorQuery } from '../dataConnecto
 import { buildArgs } from './argumentsBuilder.js'
 import type { ICreateArgs, IRemoveArgs, IUpdateArgs, relatedData } from '../../types/connector.js'
 import type { IFilter } from '../utils/filter.js'
-import type { IEntityInfo } from '../..//generator/configurationTypes.js'
+import type { IEntityInfo } from '../utils/configurationTypes.js'
 import type { SchemaManager, TSchemaOptions } from './manager.js'
 import { Funfunz } from '../index.js'
 

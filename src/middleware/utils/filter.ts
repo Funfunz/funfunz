@@ -1,26 +1,26 @@
 import { isNull, getPKs } from './index.js'
-import { IEntityInfo, IRelationMN, IRelation } from '../../generator/configurationTypes.js'
+import { IEntityInfo, IRelationMN, IRelation, IRelationN1, IRelation1N } from './configurationTypes.js'
 import { Funfunz } from '../index.js'
 import { SchemaObjectMap } from '../graphql/manager.js'
 
-const oneToManyRelation = (entity: IEntityInfo, parentEntity: IEntityInfo): IRelation | undefined => {
-  return parentEntity.relations?.find(
+const oneToManyRelation = (entity: IEntityInfo, parentEntity: IEntityInfo): IRelation1N | undefined => {
+  return (parentEntity.relations as IRelation1N[])?.find(
     (relation) => {
       return relation.type === '1:n' && relation.remoteEntity === entity.name
     }
   )
 }
 
-const manyToOneRelation = (entity: IEntityInfo, parentEntity: IEntityInfo): IRelation | undefined => {
-  return parentEntity.relations?.find(
+const manyToOneRelation = (entity: IEntityInfo, parentEntity: IEntityInfo): IRelationN1 | undefined => {
+  return (parentEntity.relations as IRelationN1[])?.find(
     (relation) => {
       return relation.type === 'n:1' && relation.remoteEntity === entity.name
     }
   )
 }
 
-const manyToManyRelation = (entity: IEntityInfo, parentEntity: IEntityInfo): IRelation | undefined => {
-  return parentEntity.relations?.find(
+const manyToManyRelation = (entity: IEntityInfo, parentEntity: IEntityInfo): IRelationMN | undefined => {
+  return (parentEntity.relations as IRelationMN[])?.find(
     (relation) => {
       return relation.type === 'm:n' && relation.remoteEntity === entity.name
     }
@@ -59,7 +59,7 @@ export async function getParentEntryFilter(
 
   relation = manyToOneRelation(entity, parentEntity)
   if (relation) {
-    const pks = getPKs(entity)
+    const pks = relation.remoteKey ? [relation.remoteKey] : getPKs(entity)
     if (pks.length > 1) {
       throw new Error('Multiple pks relation not supported')
     }

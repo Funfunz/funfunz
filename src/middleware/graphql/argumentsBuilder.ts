@@ -1,5 +1,5 @@
 import { operators, OperatorsType } from '../utils/filter.js'
-import { IEntityInfo } from '../../generator/configurationTypes.js'
+import { IEntityInfo } from '../utils/configurationTypes.js'
 import config from '../utils/configLoader.js'
 import Debug from 'debug'
 import {

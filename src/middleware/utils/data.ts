@@ -1,5 +1,5 @@
 import { isNull, getPKs } from './index.js'
-import { IEntityInfo } from '../../generator/configurationTypes.js'
+import { IEntityInfo } from './configurationTypes.js'
 
 export default {
   normalize,

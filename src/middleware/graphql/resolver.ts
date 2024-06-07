@@ -1,6 +1,6 @@
 import { query as sendQuery } from '../dataConnector/index.js'
 import { getFields } from '../utils/index.js'
-import { IEntityInfo } from '../../generator/configurationTypes.js'
+import { IEntityInfo } from '../utils/configurationTypes.js'
 import { GraphQLFieldResolver } from 'graphql'
 import { getParentEntryFilter, FilterValues, ParentFilterResult, IFilter } from '../utils/filter.js'
 import { executeHook } from '../utils/lifeCycle.js'

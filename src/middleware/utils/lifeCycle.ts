@@ -1,4 +1,4 @@
-import { IEntityInfo } from '../../generator/configurationTypes.js'
+import { IEntityInfo } from './configurationTypes.js'
 import { HookTypes, IHookProps, OperationTypes } from '../../types/hooks.js'
 import { connector } from '../dataConnector/index.js'
 import type { SchemaObjectMap, TSchemaOptions } from '../graphql/manager.js'
