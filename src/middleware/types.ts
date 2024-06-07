@@ -1,6 +1,6 @@
 import express from 'express'
 import { GraphQLFieldConfigMap } from 'graphql'
-import { IConfig, IEntityInfo } from '../generator/configurationTypes.js'
+import { IConfig, IEntityInfo } from './utils/configurationTypes.js'
 
 export interface IUser {
   [key: string]: unknown,

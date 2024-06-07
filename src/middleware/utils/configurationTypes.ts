@@ -1,13 +1,11 @@
-import { OperatorsType } from '../middleware/utils/filter.js'
-import { IDataConnector } from '../types/connector.js'
-import { IHooks } from '../types/hooks.js'
+import { OperatorsType } from '../utils/filter.js'
+import { IDataConnector } from '../../types/connector.js'
+import { IHooks } from '../../types/hooks.js'
 
 export interface IDatabaseData {
   schema: schemaInfo,
   describe: describeInfo
 }
-
-export type databaseTypes = 'mysql' | 'pgsql' | 'mongoDB'
 
 export interface ITypeAnswers {
   DBHost: string,
@@ -57,6 +55,7 @@ export interface IRelationN1 {
   type: 'n:1'
   foreignKey: string
   remoteEntity: string
+  remoteKey: string
 }
 export interface IRelationMN {
   type: 'm:n'

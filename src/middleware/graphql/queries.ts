@@ -2,7 +2,7 @@
 import { resolver, resolverCount } from './resolver.js'
 import { buildType } from './typeBuilder.js'
 import config from '../utils/configLoader.js'
-import { IEntityInfo } from '../../generator/configurationTypes.js'
+import { IEntityInfo } from '../utils/configurationTypes.js'
 import Debug from 'debug'
 import { GraphQLJSONObject, GraphQLJSON } from 'graphql-type-json'
 import { GraphQLBoolean, GraphQLFieldConfig, GraphQLFieldConfigMap, GraphQLInt, GraphQLList, GraphQLObjectType, GraphQLString } from 'graphql'

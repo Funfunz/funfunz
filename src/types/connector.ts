@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { Funfunz } from '../index.js'
-import { IRelationMN } from '../generator/configurationTypes.js'
+import { IRelationMN } from '../middleware/utils/configurationTypes.js'
 import { IFilter } from '../middleware/utils/filter.js'
 
 export interface IQueryArgs {

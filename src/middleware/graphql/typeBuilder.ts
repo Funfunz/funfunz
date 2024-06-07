@@ -1,6 +1,6 @@
 import { resolver } from './resolver.js'
 import config from '../utils/configLoader.js'
-import { IRelation, IEntityInfo } from '../../generator/configurationTypes.js'
+import { IRelation, IEntityInfo } from '../utils/configurationTypes.js'
 import Debug from 'debug'
 import {
   GraphQLFieldConfigMap,
